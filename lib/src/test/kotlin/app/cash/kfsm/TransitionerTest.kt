@@ -61,7 +61,7 @@ class TransitionerTest : StringSpec({
     val transitioner = transitioner()
 
     transitioner.transition(Letter(C), transition).shouldBeFailure()
-      .shouldHaveMessage("Value cannot transition {A} to B, because it is currently C")
+      .shouldHaveMessage("Value cannot transition {A} to B, because it is currently C. [value=Letter(state=C)]")
 
     transitioner.preHookExecuted shouldBe 0
     transition.effected shouldBe 0

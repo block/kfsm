@@ -2,12 +2,22 @@ package app.cash.kfsm
 
 abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State<S>> {
 
+  /** Will be executed prior to the transition effect. Failure here will terminate the transition */
   open fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 
+  /** Will be executed after the transition effect. Use this to persist the value. */
   open fun persist(value: V, via: T): Result<V> = Result.success(value)
 
+  /** Will be executed after the transition effect & value persistence. Use this to perform side effects such as notifications. */
   open fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
 
+  /**
+   * Execute the given transition on the given value.
+   *
+   * If the target state is already present, then this is a no-op.
+   * If the provided transition cannot apply to the value's state, then this is a failure.
+   * Otherwise, the transition is applied and the state is updated in the returned value.
+   */
   fun transition(
     value: V,
     transition: T
