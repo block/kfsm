@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.7.1]
+
+* Added additional information to invalid transition error messages.
+
 ## [0.7.0]
 
 ### Breaking
