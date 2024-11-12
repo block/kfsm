@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+## [0.7.2]
+* Exposes state on `InvalidStateTransition`
+
 ## [0.7.1]
 
 * Added additional information to invalid transition error messages.
