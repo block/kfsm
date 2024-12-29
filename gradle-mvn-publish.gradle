@@ -10,9 +10,13 @@ plugins.withId(libs.plugins.mavenPublishGradlePlugin.get().pluginId) {
 publishing {
     repositories {
         maven {
-            def releasesRepoUrl = "$buildDir/localMaven"
-            def snapshotsRepoUrl = "$buildDir/localMaven"
-            url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+          url = "${getLayout().getBuildDirectory()}/localMaven"
+          if (!version.toString().endsWith('SNAPSHOT')) {
+            credentials {
+              username = System.getenv("SONATYPE_USERNAME_APP_CASH")
+              password = System.getenv("SONATYPE_PASSWORD_APP_CASH")
+            }
+          }
         }
     }
 }
