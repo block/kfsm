@@ -4,6 +4,7 @@ plugins {
 }
 
 dependencies {
+    // Core KFSM library
     api(project(":lib"))
     
     // Guice for dependency injection
@@ -17,10 +18,24 @@ dependencies {
     
     // Test dependencies
     testImplementation(kotlin("test"))
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation(rootProject.libs.junitApi)
+    testImplementation(rootProject.libs.kotestAssertions)
+    testImplementation(rootProject.libs.kotestJunitRunnerJvm)
+    testImplementation(rootProject.libs.kotestProperty)
     testImplementation("io.mockk:mockk:1.13.10")
+    
+    testRuntimeOnly(rootProject.libs.slf4jSimple)
+    testRuntimeOnly(rootProject.libs.junitEngine)
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+// Configure Java compatibility
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "11"
+        allWarningsAsErrors = true
+    }
 }
