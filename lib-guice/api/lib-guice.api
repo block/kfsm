@@ -3,6 +3,13 @@ public abstract class app/cash/kfsm/guice/KfsmModule : com/google/inject/Abstrac
 	protected fun configure ()V
 }
 
+public final class app/cash/kfsm/guice/StateMachine {
+	public fun <init> (Ljava/util/Set;Lapp/cash/kfsm/Transitioner;)V
+	public final fun execute-gIAlu-s (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
+	public final fun getAvailableTransitions (Lapp/cash/kfsm/State;)Ljava/util/Set;
+	public final fun getTransition (Lkotlin/reflect/KClass;)Lapp/cash/kfsm/Transition;
+}
+
 public abstract interface annotation class app/cash/kfsm/guice/annotations/TransitionDefinition : java/lang/annotation/Annotation {
 }
 
