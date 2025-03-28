@@ -4,6 +4,7 @@ import app.cash.kfsm.State
 import app.cash.kfsm.Transition
 import app.cash.kfsm.Value
 import app.cash.kfsm.guice.annotations.TransitionDefinition
+import app.cash.kfsm.guice.annotations.TransitionKey
 import com.google.inject.AbstractModule
 import com.google.inject.TypeLiteral
 import com.google.inject.multibindings.Multibinder
@@ -28,15 +29,21 @@ import kotlin.reflect.KClass
  * ```
  */
 abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
-    private val basePackage: String
+    private val basePackage: String,
+    private val valueClass: Class<V>,
+    private val stateClass: Class<S>
 ) : AbstractModule() {
 
     override fun configure() {
         // Create a multibinder for the transition set
         val transitionBinder = Multibinder.newSetBinder(
             binder(),
-            object : TypeLiteral<Transition<V, S>>() {}
+            object : TypeLiteral<Transition<V, S>>() {},
+            TransitionKey::class.java
         )
+        
+        // Bind the state machine
+        bind(object : TypeLiteral<StateMachine<V, S>>() {})
         
         // Configure and create the reflections instance for scanning
         val reflections = Reflections(

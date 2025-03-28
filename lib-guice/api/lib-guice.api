@@ -1,5 +1,5 @@
 public abstract class app/cash/kfsm/guice/KfsmModule : com/google/inject/AbstractModule {
-	public fun <init> (Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Class;)V
 	protected fun configure ()V
 }
 
@@ -11,5 +11,8 @@ public final class app/cash/kfsm/guice/StateMachine {
 }
 
 public abstract interface annotation class app/cash/kfsm/guice/annotations/TransitionDefinition : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class app/cash/kfsm/guice/annotations/TransitionKey : java/lang/annotation/Annotation {
 }
 
