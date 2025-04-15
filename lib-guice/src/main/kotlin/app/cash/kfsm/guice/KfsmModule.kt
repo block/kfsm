@@ -30,8 +30,6 @@ import kotlin.reflect.KClass
  */
 abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
     private val basePackage: String,
-    private val valueClass: Class<V>,
-    private val stateClass: Class<S>
 ) : AbstractModule() {
 
     override fun configure() {

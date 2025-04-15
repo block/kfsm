@@ -1,5 +1,5 @@
 public abstract class app/cash/kfsm/guice/KfsmModule : com/google/inject/AbstractModule {
-	public fun <init> (Ljava/lang/String;Ljava/lang/Class;Ljava/lang/Class;)V
+	public fun <init> (Ljava/lang/String;)V
 	protected fun configure ()V
 }
 
