@@ -1,6 +1,7 @@
 public abstract class app/cash/kfsm/guice/KfsmModule : com/google/inject/AbstractModule {
 	public static final field Companion Lapp/cash/kfsm/guice/KfsmModule$Companion;
-	public fun <init> (Ljava/lang/String;Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;)V
+	public fun <init> (Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;Ljava/lang/String;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	protected fun configure ()V
 }
 

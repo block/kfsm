@@ -19,30 +19,44 @@ import org.reflections.util.ConfigurationBuilder
  *
  * This module scans the specified package for classes annotated with [TransitionDefinition]
  * and binds them to a set of transitions that can be injected into the [StateMachine].
+ * If no package is specified, it will scan the package of the concrete module class.
  *
  * @param V The type of value being managed by the state machine
  * @param S The type of state, must extend [State]
- * @property basePackage The base package to scan for transitions
+ * @property basePackage The base package to scan for transitions. If not provided, uses the package of the concrete module class.
+ * @property types The type literals for the state machine, transitions, and transitioner
  *
  * Example usage:
  * ```kotlin
- * class MyStateMachineModule : KfsmModule<MyValue, MyState>("com.example.myapp")
+ * // With explicit package
+ * class MyStateMachineModule : KfsmModule<MyValue, MyState>(
+ *   basePackage = "com.example.myapp",
+ *   types = typeLiteralsFor(MyValue::class.java, MyState::class.java)
+ * )
+ *
+ * // Using default package (scans the package of MyStateMachineModule)
+ * class MyStateMachineModule : KfsmModule<MyValue, MyState>(
+ *   types = typeLiteralsFor(MyValue::class.java, MyState::class.java)
+ * )
  * ```
  */
 abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
-  private val basePackage: String,
   private val types: KfsmMachineTypes<V, S>,
+  private val basePackage: String? = null,
 ) : AbstractModule() {
 
   @Suppress("UNCHECKED_CAST")
   override fun configure() {
+    // Use the concrete module's package if basePackage is not provided
+    val packageToScan = basePackage ?: this::class.java.`package`.name
+
     // Create a multibinder for the transition set
     val transitionBinder = Multibinder.newSetBinder(binder(), types.transition)
 
     // Configure and create the reflections instance for scanning
     val reflections = Reflections(
       ConfigurationBuilder()
-        .forPackages(basePackage)
+        .forPackages(packageToScan)
         .setScanners(Scanners.TypesAnnotated)
     )
 
