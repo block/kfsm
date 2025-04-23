@@ -81,6 +81,11 @@ public abstract class app/cash/kfsm/TransitionerAsync {
 
 public abstract interface class app/cash/kfsm/Value {
 	public abstract fun getState ()Lapp/cash/kfsm/State;
+	public abstract fun id ()Ljava/lang/String;
 	public abstract fun update (Lapp/cash/kfsm/State;)Lapp/cash/kfsm/Value;
+}
+
+public final class app/cash/kfsm/Value$DefaultImpls {
+	public static fun id (Lapp/cash/kfsm/Value;)Ljava/lang/String;
 }
 
