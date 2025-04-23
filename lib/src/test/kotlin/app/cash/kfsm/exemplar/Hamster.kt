@@ -4,9 +4,11 @@ import app.cash.kfsm.Value
 
 data class Hamster(
   val name: String,
-  override val state: State
-): Value<Hamster, Hamster.State> {
+  override val state: State,
+): Value<String, Hamster, Hamster.State> {
   override fun update(newState: State): Hamster = this.copy(state = newState)
+
+  override val id : String = name
 
   fun eat(food: String) {
     println("@ (･ｪ･´)◞    (eats $food)")

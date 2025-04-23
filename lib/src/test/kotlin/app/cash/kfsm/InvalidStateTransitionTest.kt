@@ -6,17 +6,17 @@ import io.kotest.matchers.shouldBe
 
 class InvalidStateTransitionTest : StringSpec({
   "with single from-state has correct message" {
-    InvalidStateTransition(LetterTransition(A, B), Letter(E)).message shouldBe
-      "Value cannot transition {A} to B, because it is currently E. [value=Letter(state=E)]"
+    InvalidStateTransition(LetterTransition(A, B), Letter(E, id = "my_letter")).message shouldBe
+      "Value cannot transition {A} to B, because it is currently E. [id=my_letter]"
   }
 
   "with many from-states has correct message" {
-    InvalidStateTransition(LetterTransition(States(C, B), D), Letter(E)).message shouldBe
-      "Value cannot transition {B, C} to D, because it is currently E. [value=Letter(state=E)]"
+    InvalidStateTransition(LetterTransition(States(C, B), D), Letter(E, "my_letter")).message shouldBe
+      "Value cannot transition {B, C} to D, because it is currently E. [id=my_letter]"
   }
 
   "exposes transition and state" {
-    val error = InvalidStateTransition(LetterTransition(A, B), Letter(E))
+    val error = InvalidStateTransition(LetterTransition(A, B), Letter(E, "my_letter"))
 
     error.getState<Char>() shouldBe E
   }

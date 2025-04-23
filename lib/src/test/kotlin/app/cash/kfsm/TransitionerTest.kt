@@ -12,7 +12,7 @@ class TransitionerTest : StringSpec({
     pre: (Letter, LetterTransition) -> Result<Unit> = { _, _ -> Result.success(Unit) },
     post: (Char, Letter, LetterTransition) -> Result<Unit> = { _, _, _ -> Result.success(Unit) },
     persist: (Letter) -> Result<Letter> = { Result.success(it) },
-  ) = object : Transitioner<LetterTransition, Letter, Char>() {
+  ) = object : Transitioner<String, LetterTransition, Letter, Char>() {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
@@ -38,7 +38,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), transition) shouldBeSuccess Letter(B)
+    transitioner.transition(Letter(A, "my_letter_01"), transition) shouldBeSuccess Letter(B, "my_letter_01")
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 1
@@ -49,7 +49,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(B), transition) shouldBeSuccess Letter(B)
+    transitioner.transition(Letter(B, "my_letter_02"), transition) shouldBeSuccess Letter(B, "my_letter_02")
 
     transitioner.preHookExecuted shouldBe 0
     transition.effected shouldBe 0
@@ -60,8 +60,8 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(C), transition).shouldBeFailure()
-      .shouldHaveMessage("Value cannot transition {A} to B, because it is currently C. [value=Letter(state=C)]")
+    transitioner.transition(Letter(C, "my_letter_03"), transition).shouldBeFailure()
+      .shouldHaveMessage("Value cannot transition {A} to B, because it is currently C. [id=my_letter_03]")
 
     transitioner.preHookExecuted shouldBe 0
     transition.effected shouldBe 0
@@ -74,7 +74,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(pre = { _, _ -> Result.failure(error) })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_04"), transition) shouldBeFailure error
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 0
@@ -89,7 +89,7 @@ class TransitionerTest : StringSpec({
     }
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_05"), transition) shouldBeFailure error
 
     transitioner.preHookExecuted shouldBe 1
     transitioner.postHookExecuted shouldBe 0
@@ -101,7 +101,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(post = { _, _, _ -> Result.failure(error) })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_06"), transition) shouldBeFailure error
 
     transition.effected shouldBe 1
     transitioner.preHookExecuted shouldBe 1
@@ -114,7 +114,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(pre = { _, _ -> throw error })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_07"), transition) shouldBeFailure error
 
     transition.effected shouldBe 0
     transitioner.postHookExecuted shouldBe 0
@@ -128,7 +128,7 @@ class TransitionerTest : StringSpec({
     }
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_08"), transition) shouldBeFailure error
 
     transitioner.preHookExecuted shouldBe 1
     transitioner.postHookExecuted shouldBe 0
@@ -140,7 +140,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(post = { _, _, _ -> throw error })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_09"), transition) shouldBeFailure error
 
     transition.effected shouldBe 1
     transitioner.preHookExecuted shouldBe 1
@@ -152,7 +152,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(persist = { Result.failure(error) })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_0a"), transition) shouldBeFailure error
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 1
@@ -165,7 +165,7 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(persist = { throw error })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A, "my_letter_0b"), transition) shouldBeFailure error
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 1
@@ -179,10 +179,10 @@ class TransitionerTest : StringSpec({
     val dToE = transition(D, E)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), aToB)
+    transitioner.transition(Letter(A, "my_letter_0c"), aToB)
       .mapCatching { transitioner.transition(it, bToC).getOrThrow() }
       .mapCatching { transitioner.transition(it, cToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E)
+      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E, "my_letter_0c")
 
     transitioner.preHookExecuted shouldBe 4
     aToB.effected shouldBe 1
@@ -200,13 +200,13 @@ class TransitionerTest : StringSpec({
     val dToE = transition(D, E)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), aToB)
+    transitioner.transition(Letter(A, "my_letter_0d"), aToB)
       .mapCatching { transitioner.transition(it, bToC).getOrThrow() }
       .mapCatching { transitioner.transition(it, cToD).getOrThrow() }
       .mapCatching { transitioner.transition(it, dToB).getOrThrow() }
       .mapCatching { transitioner.transition(it, bToC).getOrThrow() }
       .mapCatching { transitioner.transition(it, cToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E)
+      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E, "my_letter_0d")
 
     transitioner.preHookExecuted shouldBe 7
     aToB.effected shouldBe 1
@@ -224,11 +224,11 @@ class TransitionerTest : StringSpec({
     val dToE = transition(D, E)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), aToB)
+    transitioner.transition(Letter(A, "my_letter_0e"), aToB)
       .mapCatching { transitioner.transition(it, bToD).getOrThrow() }
       .mapCatching { transitioner.transition(it, dToB).getOrThrow() }
       .mapCatching { transitioner.transition(it, bToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E)
+      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E, "my_letter_0e")
 
     transitioner.preHookExecuted shouldBe 5
     aToB.effected shouldBe 1
@@ -244,11 +244,11 @@ class TransitionerTest : StringSpec({
     val bToC = transition(B, C)
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), aToB)
+    transitioner.transition(Letter(A, "my_letter_0f"), aToB)
       .mapCatching { transitioner.transition(it, bToB).getOrThrow() }
       .mapCatching { transitioner.transition(it, bToB).getOrThrow() }
       .mapCatching { transitioner.transition(it, bToB).getOrThrow() }
-      .mapCatching { transitioner.transition(it, bToC).getOrThrow() } shouldBeSuccess Letter(C)
+      .mapCatching { transitioner.transition(it, bToC).getOrThrow() } shouldBeSuccess Letter(C, "my_letter_0f")
 
     transitioner.preHookExecuted shouldBe 5
     aToB.effected shouldBe 1
@@ -261,14 +261,14 @@ class TransitionerTest : StringSpec({
     val transition = transition(from = A, to = B)
     val transitioner = transitioner(
       pre = { value, t ->
-        value shouldBe Letter(A)
+        value shouldBe Letter(A, "my_letter_10")
         t shouldBe transition
         t.specificToThisTransitionType shouldBe "[A] -> B"
         Result.success(Unit)
       }
     )
 
-    transitioner.transition(Letter(A), transition).shouldBeSuccess()
+    transitioner.transition(Letter(A, "my_letter_10"), transition).shouldBeSuccess()
   }
 
   "post hook contains the correct from state, post value and transition" {
@@ -276,14 +276,14 @@ class TransitionerTest : StringSpec({
     val transitioner = transitioner(
       post = { from, value, t ->
         from shouldBe B
-        value shouldBe Letter(C)
+        value shouldBe Letter(C, "my_letter_11")
         t shouldBe transition
         t.specificToThisTransitionType shouldBe "[B] -> C"
         Result.success(Unit)
       }
     )
 
-    transitioner.transition(Letter(B), transition).shouldBeSuccess()
+    transitioner.transition(Letter(B, "my_letter_11"), transition).shouldBeSuccess()
   }
 })
 

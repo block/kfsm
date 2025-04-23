@@ -1,7 +1,7 @@
 package app.cash.kfsm
 
 /** A simple state machine that represents a letter of the alphabet. */
-data class Letter(override val state: Char) : Value<Letter, Char> {
+data class Letter(override val state: Char, override val id: String) : Value<String, Letter, Char> {
   override fun update(newState: Char): Letter = copy(state = newState)
 }
 

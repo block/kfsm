@@ -6,7 +6,7 @@ public abstract class app/cash/kfsm/guice/KfsmModule : com/google/inject/Abstrac
 }
 
 public final class app/cash/kfsm/guice/KfsmModule$Companion {
-	public final fun typeLiteralsFor (Ljava/lang/Class;Ljava/lang/Class;)Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;
+	public final fun typeLiteralsFor (Ljava/lang/Class;Ljava/lang/Class;Ljava/lang/Class;)Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;
 }
 
 public final class app/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes {

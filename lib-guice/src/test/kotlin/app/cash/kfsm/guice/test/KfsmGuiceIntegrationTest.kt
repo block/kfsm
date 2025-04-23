@@ -12,9 +12,9 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class KfsmGuiceIntegrationTest : StringSpec({
     val injector = Guice.createInjector(TestModule())
     val stateMachine = injector.getInstance(
-        Key.get(object : TypeLiteral<StateMachine<TestValue, TestState>>() {})
+        Key.get(object : TypeLiteral<StateMachine<String, TestValue, TestState>>() {})
     )
-    val startValue = TestValue(TestState.START)
+    val startValue = TestValue(id = "test_value_01", state = TestState.START)
 
     "START state should have exactly one available transition of type StartToMiddle" {
         val transitions = stateMachine.getAvailableTransitions(startValue.state)

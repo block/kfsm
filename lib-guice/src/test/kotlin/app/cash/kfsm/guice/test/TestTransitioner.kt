@@ -8,4 +8,4 @@ import jakarta.inject.Singleton
 
 @TransitionerDefinition
 @Singleton
-class TestTransitioner @Inject constructor() : Transitioner<Transition<TestValue, TestState>, TestValue, TestState>()
+class TestTransitioner @Inject constructor() : Transitioner<String, Transition<String, TestValue, TestState>, TestValue, TestState>()
