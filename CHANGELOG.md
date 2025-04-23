@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.7.5]
+
 * Added id(): String function to Value.
 
 ## [0.7.4]
