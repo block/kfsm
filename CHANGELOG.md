@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8.0]
+
 ### Breaking
 
 * Added ID type parameter to Value interface to support custom identifier types. This is a breaking change that requires:
