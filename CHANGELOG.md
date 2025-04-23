@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Added id(): String function to Value.
+
 ## [0.7.4]
 
 * Exposes state on `InvalidStateTransition`
