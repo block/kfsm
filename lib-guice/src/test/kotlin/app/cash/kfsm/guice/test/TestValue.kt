@@ -4,7 +4,7 @@ import app.cash.kfsm.Value
 
 data class TestValue(
     override val state: TestState,
-    val data: String = ""
-) : Value<TestValue, TestState> {
+    override val id: String
+) : Value<String, TestValue, TestState> {
     override fun update(newState: TestState): TestValue = copy(state = newState)
 } 

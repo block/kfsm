@@ -21,6 +21,7 @@ import org.reflections.util.ConfigurationBuilder
  * and binds them to a set of transitions that can be injected into the [StateMachine].
  * If no package is specified, it will scan the package of the concrete module class.
  *
+ * @param ID The type of the ID for the value
  * @param V The type of value being managed by the state machine
  * @param S The type of state, must extend [State]
  * @property basePackage The base package to scan for transitions. If not provided, uses the package of the concrete module class.
@@ -40,8 +41,8 @@ import org.reflections.util.ConfigurationBuilder
  * )
  * ```
  */
-abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
-  private val types: KfsmMachineTypes<V, S>,
+abstract class KfsmModule<ID, V : Value<ID, V, S>, S : State<S>>(
+  private val types: KfsmMachineTypes<ID, V, S>,
   private val basePackage: String? = null,
 ) : AbstractModule() {
 
@@ -65,7 +66,7 @@ abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
       .getTypesAnnotatedWith(TransitionDefinition::class.java)
       .asSequence()
       .filter { clazz -> Transition::class.java.isAssignableFrom(clazz) }
-      .map { it as Class<out Transition<V, S>> }
+      .map { it as Class<out Transition<ID, V, S>> }
       .forEach { transitionClass ->
         transitionBinder.addBinding().to(transitionClass)
       }
@@ -74,10 +75,10 @@ abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
     reflections.getTypesAnnotatedWith(TransitionerDefinition::class.java)
       .asSequence()
       .filter { clazz -> Transitioner::class.java.isAssignableFrom(clazz) }
-      .map { it as Class<out Transitioner<*, *, *>> }
+      .map { it as Class<out Transitioner<*, *, *, *>> }
       .forEach { transitionerClass ->
         bind(types.transitioner)
-          .to(transitionerClass as Class<out Transitioner<Transition<V, S>, V, S>>)
+          .to(transitionerClass as Class<out Transitioner<ID, Transition<ID, V, S>, V, S>>)
       }
 
     // Bind the state machine
@@ -86,25 +87,26 @@ abstract class KfsmModule<V : Value<V, S>, S : State<S>>(
 
   companion object {
 
-    data class KfsmMachineTypes<V : Value<V, S>, S : State<S>>(
-      val stateMachine: TypeLiteral<StateMachine<V, S>>,
-      val transition: TypeLiteral<Transition<V, S>>,
-      val transitioner: TypeLiteral<Transitioner<Transition<V, S>, V, S>>,
+    data class KfsmMachineTypes<ID, V : Value<ID, V, S>, S : State<S>>(
+      val stateMachine: TypeLiteral<StateMachine<ID, V, S>>,
+      val transition: TypeLiteral<Transition<ID, V, S>>,
+      val transitioner: TypeLiteral<Transitioner<ID, Transition<ID, V, S>, V, S>>,
     )
 
     @Suppress("UNCHECKED_CAST")
-    fun <V : Value<V, S>, S : State<S>> typeLiteralsFor(
+    fun <ID, V : Value<ID, V, S>, S : State<S>> typeLiteralsFor(
+      idType: Class<ID>,
       valueType: Class<V>,
       stateType: Class<S>
-    ): KfsmMachineTypes<V, S> {
-      val stateMachineType = Types.newParameterizedType(StateMachine::class.java, valueType, stateType)
-      val transitionType = Types.newParameterizedType(Transition::class.java, valueType, stateType)
-      val transitionerType = Types.newParameterizedType(Transitioner::class.java, transitionType, valueType, stateType)
+    ): KfsmMachineTypes<ID, V, S> {
+      val stateMachineType = Types.newParameterizedType(StateMachine::class.java, idType, valueType, stateType)
+      val transitionType = Types.newParameterizedType(Transition::class.java, idType, valueType, stateType)
+      val transitionerType = Types.newParameterizedType(Transitioner::class.java, idType, transitionType, valueType, stateType)
 
       return KfsmMachineTypes(
-        TypeLiteral.get(stateMachineType) as TypeLiteral<StateMachine<V, S>>,
-        TypeLiteral.get(transitionType) as TypeLiteral<Transition<V, S>>,
-        TypeLiteral.get(transitionerType) as TypeLiteral<Transitioner<Transition<V, S>, V, S>>,
+        TypeLiteral.get(stateMachineType) as TypeLiteral<StateMachine<ID, V, S>>,
+        TypeLiteral.get(transitionType) as TypeLiteral<Transition<ID, V, S>>,
+        TypeLiteral.get(transitionerType) as TypeLiteral<Transitioner<ID, Transition<ID, V, S>, V, S>>,
       )
     }
   }

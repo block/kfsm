@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* Added ID type parameter to Value interface to support custom identifier types. This is a breaking change that requires:
+  * Adding an ID type parameter to all Value implementations
+  * Adding an ID type parameter to all Transition, Transitioner, and related classes
+  * Implementing the `id` property in all Value implementations
+  * Updating all type references to include the ID type parameter
+
 ## [0.7.5]
 
 * Added id(): String function to Value.

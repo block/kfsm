@@ -15,7 +15,7 @@ class TransitionTest : StringSpec({
 
 })
 
-open class LetterTransition(from: States<Char>, to: Char): Transition<Letter, Char>(from, to) {
+open class LetterTransition(from: States<Char>, to: Char): Transition<String, Letter, Char>(from, to) {
   constructor(from: Char, to: Char) : this(States(from), to)
 
   val specificToThisTransitionType: String = "${from.set} -> $to"

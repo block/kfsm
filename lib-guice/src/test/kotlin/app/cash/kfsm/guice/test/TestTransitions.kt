@@ -6,7 +6,7 @@ import app.cash.kfsm.guice.annotations.TransitionDefinition
 import com.google.inject.Inject
 
 @TransitionDefinition
-class StartToMiddle @Inject constructor() : Transition<TestValue, TestState>(
+class StartToMiddle @Inject constructor() : Transition<String, TestValue, TestState>(
     from = States(TestState.START),
     to = TestState.MIDDLE
 ) {
@@ -15,7 +15,7 @@ class StartToMiddle @Inject constructor() : Transition<TestValue, TestState>(
 }
 
 @TransitionDefinition
-class MiddleToEnd @Inject constructor() : Transition<TestValue, TestState>(
+class MiddleToEnd @Inject constructor() : Transition<String, TestValue, TestState>(
     from = States(TestState.MIDDLE),
     to = TestState.END
 ) {

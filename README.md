@@ -40,11 +40,11 @@ data object Red : Color({ setOf(Green) })
 
 ### Value
 
-The value is responsible for knowing and updating its current state.
+The value is responsible for knowing and updating its current state. Each value must have a unique identifier.
 
 ```kotlin
-data class Light(override val state: Color) : Value<Light, Color> {
-    override fun update(newState: Color): Light = this.copy(state = newState)
+data class Light(override val state: Color, override val id: String) : Value<String, Light, Color> {
+    override fun update(newState: Color): Light = copy(state = newState)
 }
 ```
 
@@ -56,7 +56,7 @@ Types that provide the required side-effects that define a transition in the mac
 abstract class ColorChange(
     from: States<Color>,
     to: Color
-) : Transition<Light, Color>(from, to) {
+) : Transition<String, Light, Color>(from, to) {
     // Convenience constructor for when the from set has only one value
     constructor(from: Color, to: Color) : this(States(from), to)
 }
@@ -80,7 +80,7 @@ persist values.
 ```kotlin
 class LightTransitioner(
     private val database: Database
-) : Transitioner<ColorChange, Light, Color>() {
+) : Transitioner<String, ColorChange, Light, Color>() {
  
     override suspend fun persist(value: Light, change: ColorChange): Result<Light> = database.update(value)
 }
@@ -128,15 +128,15 @@ data object Amber : Color({ setOf(Red) })
 data object Red : Color({ setOf(Green) })
 
 // The value
-data class Light(override val state: Color) : Value<Light, Color> {
-    override fun update(newState: Color): Light = this.copy(state = newState)
+data class Light(override val state: Color, override val id: String) : Value<String, Light, Color> {
+    override fun update(newState: Color): Light = copy(state = newState)
 }
 
 // The transitions
 abstract class ColorChange(
     from: States<Color>,
     to: Color
-) : Transition<Light, Color>(from, to) {
+) : Transition<String, Light, Color>(from, to) {
     // Convenience constructor for when the from set has only one value
     constructor(from: Color, to: Color) : this(States(from), to)
 }
@@ -151,7 +151,7 @@ class Stop(private val camera: Camera) : ColorChange(from = Amber, to = Red) {
 // The transitioner
 class LightTransitioner(
     private val database: Database
-) : Transitioner<ColorChange, Light, Color>() {
+) : Transitioner<String, ColorChange, Light, Color>() {
     override suspend fun persist(value: Light, change: ColorChange): Result<Light> = database.update(value)
 }
 

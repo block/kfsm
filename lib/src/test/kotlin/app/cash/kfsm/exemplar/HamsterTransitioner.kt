@@ -5,7 +5,7 @@ import app.cash.kfsm.exemplar.Hamster.State
 
 class HamsterTransitioner(
   val saves: MutableList<Hamster> = mutableListOf()
-) : Transitioner<HamsterTransition, Hamster, State>() {
+) : Transitioner<String, HamsterTransition, Hamster, State>() {
 
   val locks = mutableListOf<Hamster>()
   val unlocks = mutableListOf<Hamster>()

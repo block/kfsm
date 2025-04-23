@@ -15,12 +15,14 @@ package app.cash.kfsm
  *
  * Example usage:
  * ```kotlin
- * data class Light(override val state: Color) : Value<Light, Color> {
- *     override fun update(newState: Color): Light = this.copy(state = newState)
+ * enum class Color { RED, YELLOW, GREEN }
+ *
+ * data class Light(override val state: Color, override val id: String) : Value<String, Light, Color> {
+ *     override fun update(newState: Color): Light = copy(state = newState)
  * }
  * ```
  */
-interface Value<V: Value<V, S>, S : State<S>> {
+interface Value<ID, V: Value<ID, V, S>, S : State<S>> {
   /**
    * The current state of this value in the state machine.
    *
@@ -49,5 +51,5 @@ interface Value<V: Value<V, S>, S : State<S>> {
    *
    * @return A string that uniquely identifies this value
    */
-  fun id(): String = toString()
+  val id: ID
 }

@@ -39,12 +39,12 @@ import kotlin.reflect.KClass
  * ```
  */
 @Singleton
-class StateMachine<V : Value<V, S>, S : State<S>> @Inject constructor(
-    private val transitions: Set<Transition<V, S>>,
-    private val transitioner: Transitioner<Transition<V, S>, V, S>
+class StateMachine<ID, V : Value<ID, V, S>, S : State<S>> @Inject constructor(
+    private val transitions: Set<Transition<ID, V, S>>,
+    private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
 ) {
     // Cache transitions by their class for faster lookup
-    private val transitionsByType: Map<Class<out Transition<V, S>>, Transition<V, S>> =
+    private val transitionsByType: Map<Class<out Transition<ID, V, S>>, Transition<ID, V, S>> =
         transitions.associateBy { it::class.java }
 
     /**
@@ -55,8 +55,8 @@ class StateMachine<V : Value<V, S>, S : State<S>> @Inject constructor(
      * @param state The current state to check transitions for
      * @return Set of valid transitions for the given state
      */
-    fun getAvailableTransitions(state: S): Set<Transition<V, S>> =
-        transitions.filter { transition ->
+    fun getAvailableTransitions(state: S): Set<Transition<ID, V, S>> =
+      transitions.filter { transition ->
             transition.from.set.contains(state)
         }.toSet()
 
@@ -67,7 +67,7 @@ class StateMachine<V : Value<V, S>, S : State<S>> @Inject constructor(
      * @return The requested transition instance
      * @throws IllegalArgumentException if no transition of the specified type is found
      */
-    inline fun <reified T : Transition<V, S>> getTransition(): T =
+    inline fun <reified T : Transition<ID, V, S>> getTransition(): T =
         getTransition(T::class)
 
     /**
@@ -78,9 +78,9 @@ class StateMachine<V : Value<V, S>, S : State<S>> @Inject constructor(
      * @throws IllegalArgumentException if no transition of the specified type is found
      */
     @Suppress("UNCHECKED_CAST")
-    fun <T : Transition<V, S>> getTransition(klass: KClass<T>): T =
-        transitionsByType[klass.java] as? T
-            ?: throw IllegalArgumentException("No transition found for type ${klass.simpleName}")
+    fun <T : Transition<ID, V, S>> getTransition(klass: KClass<T>): T =
+      transitionsByType[klass.java] as? T
+        ?: error("No transition found for type ${klass.simpleName}")
 
     /**
      * Executes the given transition on the provided value.
@@ -89,6 +89,6 @@ class StateMachine<V : Value<V, S>, S : State<S>> @Inject constructor(
      * @param transition The transition to execute
      * @return A [Result] containing either the transitioned value or an error
      */
-    fun execute(value: V, transition: Transition<V, S>): Result<V> =
+    fun execute(value: V, transition: Transition<ID, V, S>): Result<V> =
         transitioner.transition(value, transition)
 }
