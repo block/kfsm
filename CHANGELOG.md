@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.8.1]
+
+* Fixed gradle properties for lib-guice to enable publishing to the remote repository.
+
 ## [0.8.0]
 
 ### Breaking
