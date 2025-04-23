@@ -1,0 +1,5 @@
+# These are hints for Goose.
+
+- When you finish making a change, follow up with `gradle apiDump && gradle build`
+- There is no `gradlew`, only `gradle`. If you don't see it, run `. bin/activate-hermit` to set up your environment. This only needs to be done once.
+- The base package for the core library is app.cash.kfsm. The base package for the guice supplement is app.cash.kfsm.guice

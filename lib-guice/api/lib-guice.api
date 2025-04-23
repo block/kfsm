@@ -1,0 +1,39 @@
+public abstract class app/cash/kfsm/guice/KfsmModule : com/google/inject/AbstractModule {
+	public static final field Companion Lapp/cash/kfsm/guice/KfsmModule$Companion;
+	public fun <init> (Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;Ljava/lang/String;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun configure ()V
+}
+
+public final class app/cash/kfsm/guice/KfsmModule$Companion {
+	public final fun typeLiteralsFor (Ljava/lang/Class;Ljava/lang/Class;)Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;
+}
+
+public final class app/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes {
+	public fun <init> (Lcom/google/inject/TypeLiteral;Lcom/google/inject/TypeLiteral;Lcom/google/inject/TypeLiteral;)V
+	public final fun component1 ()Lcom/google/inject/TypeLiteral;
+	public final fun component2 ()Lcom/google/inject/TypeLiteral;
+	public final fun component3 ()Lcom/google/inject/TypeLiteral;
+	public final fun copy (Lcom/google/inject/TypeLiteral;Lcom/google/inject/TypeLiteral;Lcom/google/inject/TypeLiteral;)Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;Lcom/google/inject/TypeLiteral;Lcom/google/inject/TypeLiteral;Lcom/google/inject/TypeLiteral;ILjava/lang/Object;)Lapp/cash/kfsm/guice/KfsmModule$Companion$KfsmMachineTypes;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getStateMachine ()Lcom/google/inject/TypeLiteral;
+	public final fun getTransition ()Lcom/google/inject/TypeLiteral;
+	public final fun getTransitioner ()Lcom/google/inject/TypeLiteral;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/cash/kfsm/guice/StateMachine {
+	public fun <init> (Ljava/util/Set;Lapp/cash/kfsm/Transitioner;)V
+	public final fun execute-gIAlu-s (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
+	public final fun getAvailableTransitions (Lapp/cash/kfsm/State;)Ljava/util/Set;
+	public final fun getTransition (Lkotlin/reflect/KClass;)Lapp/cash/kfsm/Transition;
+}
+
+public abstract interface annotation class app/cash/kfsm/guice/annotations/TransitionDefinition : java/lang/annotation/Annotation {
+}
+
+public abstract interface annotation class app/cash/kfsm/guice/annotations/TransitionerDefinition : java/lang/annotation/Annotation {
+}
+
