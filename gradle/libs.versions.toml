@@ -1,4 +1,5 @@
 [versions]
+guice = "7.0.0"
 junit = "5.10.1"
 kotest = "5.8.0"
 # @pin
@@ -6,17 +7,22 @@ kotlin = "1.9.0"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 kotlinLogging = "3.0.5"
 mavenPublishGradlePlugin = "0.27.0"
+mockk = "1.13.10"
+reflections = "0.10.2"
 slf4j = "2.0.11"
 versionCatalogUpdateGradlePlugin = "0.8.3"
 versionsGradlePlugin = "0.50.0"
 
 [libraries]
+guice = { module = "com.google.inject:guice", version.ref = "guice" }
 junitApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junitEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinLoggingJvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 [bundles]
