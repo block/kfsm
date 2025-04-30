@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Breaking
+- Renamed `InvalidStateTransition` to `InvalidStateForTransition` to better reflect its purpose. This is a breaking change that requires updating any code that catches or references this exception type.
+
+### Added
+- Added `transitionToState` function to `StateMachine` that allows transitioning to a specific state if it's immediately reachable. This provides a simpler API for cases where the caller knows the target state and doesn't need to specify a particular transition.
+
 ## [0.8.3]
 
 * Fixed dependency configuration in order to fix a runtime failure with lib-guice.

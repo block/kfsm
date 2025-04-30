@@ -1,11 +1,13 @@
 package app.cash.kfsm.guice.test
 
+import app.cash.kfsm.NoPathToTargetState
 import app.cash.kfsm.guice.StateMachine
 import com.google.inject.Guice
 import com.google.inject.Key
 import com.google.inject.TypeLiteral
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -45,5 +47,17 @@ class KfsmGuiceIntegrationTest : StringSpec({
         val endValue = stateMachine.execute(middleValue, stateMachine.getTransition<MiddleToEnd>()).getOrThrow()
         val transitions = stateMachine.getAvailableTransitions(endValue.state)
         transitions shouldHaveSize 0
+    }
+
+    "transitionToState should succeed when transitioning to a directly reachable state" {
+        stateMachine.transitionToState(startValue, TestState.MIDDLE).getOrThrow().state shouldBe TestState.MIDDLE
+    }
+
+    "transitionToState should fail when transitioning to a non-directly reachable state" {
+      stateMachine.transitionToState(startValue, TestState.END).shouldBeFailure<NoPathToTargetState>()
+    }
+
+    "transitionToState should fail when transitioning to the same state" {
+      stateMachine.transitionToState(startValue, TestState.START).shouldBeFailure<NoPathToTargetState>()
     }
 }) 

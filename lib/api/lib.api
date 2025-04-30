@@ -1,3 +1,14 @@
+public final class app/cash/kfsm/InvalidStateForTransition : java/lang/Exception {
+	public fun <init> (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;)V
+	public final fun component2 ()Lapp/cash/kfsm/Value;
+	public final fun copy (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;)Lapp/cash/kfsm/InvalidStateForTransition;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/InvalidStateForTransition;Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;ILjava/lang/Object;)Lapp/cash/kfsm/InvalidStateForTransition;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()Lapp/cash/kfsm/Value;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class app/cash/kfsm/InvalidStateMachine : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
@@ -9,15 +20,10 @@ public final class app/cash/kfsm/InvalidStateMachine : java/lang/Exception {
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/InvalidStateTransition : java/lang/Exception {
-	public fun <init> (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;)V
-	public final fun component2 ()Lapp/cash/kfsm/Value;
-	public final fun copy (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;)Lapp/cash/kfsm/InvalidStateTransition;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/InvalidStateTransition;Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;ILjava/lang/Object;)Lapp/cash/kfsm/InvalidStateTransition;
-	public fun equals (Ljava/lang/Object;)Z
+public final class app/cash/kfsm/NoPathToTargetState : java/lang/Exception {
+	public fun <init> (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/State;)V
+	public final fun getTargetState ()Lapp/cash/kfsm/State;
 	public final fun getValue ()Lapp/cash/kfsm/Value;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public class app/cash/kfsm/State {

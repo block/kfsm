@@ -1,5 +1,6 @@
 package app.cash.kfsm.guice
 
+import app.cash.kfsm.NoPathToTargetState
 import app.cash.kfsm.State
 import app.cash.kfsm.Transition
 import app.cash.kfsm.Transitioner
@@ -91,4 +92,22 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<S>> @Inject constructor(
      */
     fun execute(value: V, transition: Transition<ID, V, S>): Result<V> =
         transitioner.transition(value, transition)
+
+    /**
+     * Attempts to transition the given value to the specified state.
+     * 
+     * This function will only succeed if there exists a transition that can take the value
+     * from its current state to the target state in a single step.
+     *
+     * @param value The value to transition
+     * @param targetState The state to transition to
+     * @return A [Result] containing either the transitioned value or an error
+     */
+    fun transitionToState(value: V, targetState: S): Result<V> =
+      when {
+        value.state.canDirectlyTransitionTo(targetState) -> getAvailableTransitions(value.state)
+          .find { it.to == targetState }
+          ?.let { execute(value, it) } ?: Result.failure(NoPathToTargetState(value, targetState))
+        else -> Result.failure(NoPathToTargetState(value, targetState))
+    }
 }
