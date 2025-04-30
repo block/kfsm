@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.9.0]
+
 ### Breaking
 - Renamed `InvalidStateTransition` to `InvalidStateForTransition` to better reflect its purpose. This is a breaking change that requires updating any code that catches or references this exception type.
 
