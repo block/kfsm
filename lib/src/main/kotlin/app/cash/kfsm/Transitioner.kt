@@ -26,7 +26,7 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
     // Self-cycled transitions will be effected by the first case.
     // If we still see a transition to self then this is a no-op.
     transition.to == value.state -> ignoreAlreadyCompletedTransition(value, transition)
-    else -> Result.failure(InvalidStateTransition(transition, value))
+    else -> Result.failure(InvalidStateForTransition(transition, value))
   }
 
   private fun doTheTransition(

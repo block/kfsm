@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-data class InvalidStateTransition(private val transition: Transition<*, *, *>, val value: Value<*, *, *>) : Exception(
+data class InvalidStateForTransition(private val transition: Transition<*, *, *>, val value: Value<*, *, *>) : Exception(
   "Value cannot transition ${
     transition.from.set.toList().sortedBy { it.toString() }.joinToString(", ", prefix = "{", postfix = "}")
   } to ${transition.to}, because it is currently ${value.state}. [id=${value.id}]"
