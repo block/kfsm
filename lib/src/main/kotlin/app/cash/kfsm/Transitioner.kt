@@ -34,8 +34,10 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
     transition: T
   ): Result<V> =
     runCatching { preHook(value, transition).getOrThrow() }
+      .mapCatching { value.state.validate(value).getOrThrow() }
       .mapCatching { transition.effect(value).getOrThrow() }
-      .mapCatching { transition.to.validate(value).getOrThrow() }
+      .mapCatching { transition.to.validate(it).getOrThrow() }
+      .mapCatching { it.update(transition.to) }
       .mapCatching { persist(it, transition).getOrThrow() }
       .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }
 

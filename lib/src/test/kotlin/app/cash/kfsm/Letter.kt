@@ -5,7 +5,7 @@ data class Letter(override val state: Char, override val id: String) : Value<Str
   override fun update(newState: Char): Letter = copy(state = newState)
 }
 
-sealed class Char(to: () -> Set<Char>) : State<Char>(to) {
+sealed class Char(to: () -> Set<Char>) : State<String, Letter, Char>(to) {
   fun next(count: Int): List<Char> =
     if (count <= 0) emptyList()
     else subsequentStates.filterNot { it == this }.firstOrNull()?.let { listOf(it) + it.next(count - 1) } ?: emptyList()

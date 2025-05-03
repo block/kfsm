@@ -1,10 +1,10 @@
 package app.cash.kfsm
 
-open class Transition<ID, V: Value<ID, V, S>, S : State<ID, V, S>>(val from: States<S>, val to: S) {
+open class Transition<ID, V: Value<ID, V, S>, S : State<ID, V, S>>(val from: States<ID, V, S>, val to: S) {
 
   init {
-    from.set.filterNot { it.canDirectlyTransitionTo(to) }.let {
-      require(it.isEmpty()) { "invalid transition(s): ${it.map { from -> "$from->$to" }}" }
+    from.set.filterNot { state -> state.canDirectlyTransitionTo(to) }.let { invalidTransitions ->
+      require(invalidTransitions.isEmpty()) { "invalid transition(s): ${invalidTransitions.map { fromState -> "$fromState->$to" }}" }
     }
   }
 

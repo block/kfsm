@@ -7,10 +7,10 @@ import kotlin.reflect.full.superclasses
 object StateMachine {
 
   /** Check your state machine covers all subtypes */
-  fun <S : State<S>> verify(head: S): Result<Set<State<S>>> = verify(head, baseType(head))
+  fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> verify(head: S): Result<Set<State<ID, V, S>>> = verify(head, baseType(head))
 
   /** Render a state machine in Mermaid markdown */
-  fun <S : State<S>> mermaid(head: S): Result<String> = walkTree(head).map { states ->
+  fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> mermaid(head: S): Result<String> = walkTree(head).map { states ->
     listOf("stateDiagram-v2", "[*] --> ${head::class.simpleName}").plus(
       states.toSet().flatMap { from ->
         from.subsequentStates.map { to -> "${from::class.simpleName} --> ${to::class.simpleName}" }
@@ -18,7 +18,7 @@ object StateMachine {
     ).joinToString("\n    ")
   }
 
-  private fun <S : State<S>> verify(head: S, type: KClass<out S>): Result<Set<State<S>>> =
+  private fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> verify(head: S, type: KClass<out S>): Result<Set<State<ID, V, S>>> =
     walkTree(head).mapCatching { seen ->
       val notSeen = type.sealedSubclasses.minus(seen.map { it::class }.toSet()).toList().sortedBy { it.simpleName }
       when {
@@ -29,7 +29,7 @@ object StateMachine {
       }
     }
 
-  private fun <S : State<S>> walkTree(
+  private fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> walkTree(
     current: S,
     statesSeen: Set<S> = emptySet()
   ): Result<Set<S>> = runCatching {
@@ -42,7 +42,8 @@ object StateMachine {
     }
   }
 
-  @Suppress("UNCHECKED_CAST") private fun <S : State<S>> baseType(s: S): KClass<out S> = s::class.allSuperclasses
+  @Suppress("UNCHECKED_CAST") 
+  private fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> baseType(s: S): KClass<out S> = s::class.allSuperclasses
     .find { it.superclasses.contains(State::class) }!! as KClass<out S>
 }
 

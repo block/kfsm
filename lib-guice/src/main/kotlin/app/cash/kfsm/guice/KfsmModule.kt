@@ -41,7 +41,7 @@ import org.reflections.util.ConfigurationBuilder
  * )
  * ```
  */
-abstract class KfsmModule<ID, V : Value<ID, V, S>, S : State<S>>(
+abstract class KfsmModule<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   private val types: KfsmMachineTypes<ID, V, S>,
   private val basePackage: String? = null,
 ) : AbstractModule() {
@@ -87,14 +87,14 @@ abstract class KfsmModule<ID, V : Value<ID, V, S>, S : State<S>>(
 
   companion object {
 
-    data class KfsmMachineTypes<ID, V : Value<ID, V, S>, S : State<S>>(
+    data class KfsmMachineTypes<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
       val stateMachine: TypeLiteral<StateMachine<ID, V, S>>,
       val transition: TypeLiteral<Transition<ID, V, S>>,
       val transitioner: TypeLiteral<Transitioner<ID, Transition<ID, V, S>, V, S>>,
     )
 
     @Suppress("UNCHECKED_CAST")
-    fun <ID, V : Value<ID, V, S>, S : State<S>> typeLiteralsFor(
+    fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> typeLiteralsFor(
       idType: Class<ID>,
       valueType: Class<V>,
       stateType: Class<S>

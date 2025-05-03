@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<S>> {
+abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>> {
 
   open suspend fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 

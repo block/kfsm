@@ -40,7 +40,7 @@ import kotlin.reflect.KClass
  * ```
  */
 @Singleton
-class StateMachine<ID, V : Value<ID, V, S>, S : State<S>> @Inject constructor(
+class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>> @Inject constructor(
     private val transitions: Set<Transition<ID, V, S>>,
     private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
 ) {

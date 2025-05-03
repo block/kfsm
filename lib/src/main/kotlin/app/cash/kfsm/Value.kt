@@ -22,7 +22,7 @@ package app.cash.kfsm
  * }
  * ```
  */
-interface Value<ID, V: Value<ID, V, S>, S : State<S>> {
+interface Value<ID, V: Value<ID, V, S>, S : State<ID, V, S>> {
   /**
    * The current state of this value in the state machine.
    *
