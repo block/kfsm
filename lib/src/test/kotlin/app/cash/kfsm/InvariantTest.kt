@@ -162,17 +162,4 @@ class InvariantTest : StringSpec({
         result.shouldBeFailure<PreconditionNotMet>()
         result.exceptionOrNull()?.message shouldBe "Order must have at least one item"
     }
-
-    "Transitioner should preserve invariant error messages" {
-        val draftOrder = Order(
-            state = OrderState.Draft,
-            id = "order-1",
-            items = emptyList(),
-            total = BigDecimal("10.00")
-        )
-        
-        val result = transitioner.transition(draftOrder, transition)
-        result.shouldBeFailure<PreconditionNotMet>()
-        result.exceptionOrNull()?.message shouldBe "Order must have at least one item"
-    }
-}) 
+})
