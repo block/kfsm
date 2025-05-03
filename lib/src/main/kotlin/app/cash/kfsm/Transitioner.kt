@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<S>> {
+abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>> {
 
   /** Will be executed prior to the transition effect. Failure here will terminate the transition */
   open fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
@@ -35,7 +35,7 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
   ): Result<V> =
     runCatching { preHook(value, transition).getOrThrow() }
       .mapCatching { transition.effect(value).getOrThrow() }
-      .map { it.update(transition.to) }
+      .mapCatching { transition.to.validate(value).getOrThrow() }
       .mapCatching { persist(it, transition).getOrThrow() }
       .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }
 

@@ -1,6 +1,9 @@
 package app.cash.kfsm
 
-open class State<S: State<S>>(transitionsFn: () -> Set<S>) {
+open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
+  transitionsFn: () -> Set<S>,
+  private val invariants: List<Invariant<ID, V, S>> = emptyList(),
+) {
 
   /** all states that can be transitioned to directly from this state */
   val subsequentStates: Set<S> by lazy { transitionsFn() }
@@ -17,6 +20,14 @@ open class State<S: State<S>>(transitionsFn: () -> Set<S>) {
    * Whether this state could directly or indirectly transition to the given state.
    */
   open fun canEventuallyTransitionTo(other: S): Boolean = reachableStates.contains(other)
+
+  /**
+   * Ensure that the provided value meets all the declared invariants for this state.
+   */
+  fun validate(value: V): Result<V> =
+    invariants.map { it.validate(value) }
+      .firstOrNull { it.isFailure }
+      ?: Result.success(value)
 
   private fun expand(found: Set<S> = emptySet()): Set<S> =
     subsequentStates.minus(found).flatMap {
