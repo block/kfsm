@@ -11,7 +11,7 @@ import app.cash.kfsm.exemplar.Hamster.RunningOnWheel
 
 // Create your own base transition class in order to extend your transition collection with common functionality
 abstract class HamsterTransition(
-  from: States<Hamster.State>,
+  from: States<String, Hamster, Hamster.State>,
   to: Hamster.State
 ) : Transition<String, Hamster, Hamster.State>(from, to) {
   // Convenience constructor for when the from set has only one value

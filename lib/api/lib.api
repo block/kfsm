@@ -20,18 +20,39 @@ public final class app/cash/kfsm/InvalidStateMachine : java/lang/Exception {
 	public fun toString ()Ljava/lang/String;
 }
 
+public abstract interface class app/cash/kfsm/Invariant {
+	public abstract fun validate-IoAF18A (Lapp/cash/kfsm/Value;)Ljava/lang/Object;
+}
+
+public final class app/cash/kfsm/InvariantDslKt {
+	public static final fun invariant (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lapp/cash/kfsm/Invariant;
+}
+
 public final class app/cash/kfsm/NoPathToTargetState : java/lang/Exception {
 	public fun <init> (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/State;)V
 	public final fun getTargetState ()Lapp/cash/kfsm/State;
 	public final fun getValue ()Lapp/cash/kfsm/Value;
 }
 
+public final class app/cash/kfsm/PreconditionNotMet : java/lang/Exception {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/PreconditionNotMet;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/PreconditionNotMet;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/PreconditionNotMet;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public class app/cash/kfsm/State {
-	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public fun <init> (Lkotlin/jvm/functions/Function0;Ljava/util/List;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function0;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun canDirectlyTransitionTo (Lapp/cash/kfsm/State;)Z
 	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/State;)Z
 	public final fun getReachableStates ()Ljava/util/Set;
 	public final fun getSubsequentStates ()Ljava/util/Set;
+	public final fun validate-IoAF18A (Lapp/cash/kfsm/Value;)Ljava/lang/Object;
 }
 
 public final class app/cash/kfsm/StateMachine {

@@ -1,6 +1,7 @@
 package app.cash.kfsm.exemplar
 
 import app.cash.kfsm.Value
+import app.cash.kfsm.State
 
 data class Hamster(
   val name: String,
@@ -18,7 +19,9 @@ data class Hamster(
     println("◟(`･ｪ･)  ╥━╥   (goes to bed)")
   }
 
-  sealed class State(to: () -> Set<State>) : app.cash.kfsm.State<State>(to)
+  sealed class State(
+    transitionsFn: () -> Set<State>,
+  ) : app.cash.kfsm.State<String, Hamster, State>(transitionsFn)
 
   /** Hamster is awake... and hungry! */
   data object Awake : State({ setOf(Eating) })

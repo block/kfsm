@@ -183,6 +183,46 @@ How does kFSM help validate the correctness of your state machine and your value
 3. If a value is in a state unrelated to the executed transition, then the result will be an error and no effect will be
    executed.
 
+### State Invariants
+
+kFSM supports defining invariants that must hold true for a value in a particular state. These invariants are validated 
+both when checking if a value can be in a state and during transitions.
+
+```kotlin
+sealed class OrderState(
+    transitionsFn: () -> Set<OrderState>,
+    invariants: List<Invariant<String, Order, OrderState>> = emptyList()
+) : State<String, Order, OrderState>(transitionsFn, invariants) {
+    object Draft : OrderState(
+        transitionsFn = { setOf(Submitted) },
+        invariants = listOf(
+            invariant("Order must have at least one item") { it.items.isNotEmpty() },
+            invariant("Order total must be positive") { it.total > BigDecimal.ZERO }
+        )
+    )
+    
+    object Submitted : OrderState(
+        transitionsFn = { setOf(Processing) },
+        invariants = listOf(
+            invariant("Order must have a shipping address") { it.shippingAddress != null }
+        )
+    )
+    
+    // ... other states ...
+}
+```
+
+Invariants are defined using the `invariant` DSL function, which takes a descriptive message and a predicate function. 
+When an invariant fails, a `PreconditionNotMet` exception is thrown with the provided message.
+
+The transitioner will validate invariants in the following order:
+1. Apply the transition effect
+2. Validate the target state's invariants
+3. Update the state
+4. Persist the value
+
+This ensures that target state's invariants are satisfied during the transition.
+
 ### Testing your state machine
 
 The utility `StateMachine.verify` will assert that a defined state machine is valid - i.e. that all states are visited
