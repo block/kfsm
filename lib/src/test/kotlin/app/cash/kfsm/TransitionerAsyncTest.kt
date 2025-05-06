@@ -11,7 +11,7 @@ class TransitionerAsyncTest : StringSpec({
   fun transitioner(
     pre: (Letter, LetterTransition) -> Result<Unit> = { _, _ -> Result.success(Unit) },
     post: (Char, Letter, LetterTransition) -> Result<Unit> = { _, _, _ -> Result.success(Unit) },
-    persist: (Letter) -> Result<Letter> = { Result.success(it) },
+    persist: (Char, Letter, LetterTransition) -> Result<Letter> = { _, value, _ -> Result.success(value) },
   ) = object : TransitionerAsync<String, LetterTransition, Letter, Char>() {
     var preHookExecuted = 0
     var postHookExecuted = 0
@@ -19,8 +19,8 @@ class TransitionerAsyncTest : StringSpec({
     override suspend fun preHook(value: Letter, via: LetterTransition): Result<Unit> =
       pre(value, via).also { preHookExecuted += 1 }
 
-    override suspend fun persist(value: Letter, via: LetterTransition): Result<Letter> =
-      persist(value)
+    override suspend fun persist(from: Char, value: Letter, via: LetterTransition): Result<Letter> =
+      persist(from, value, via)
 
     override suspend fun postHook(from: Char, value: Letter, via: LetterTransition): Result<Unit> =
       post(from, value, via).also { postHookExecuted += 1 }
@@ -150,7 +150,7 @@ class TransitionerAsyncTest : StringSpec({
     val error = RuntimeException("persist error")
 
     val transition = transition(from = A, to = B)
-    val transitioner = transitioner(persist = { Result.failure(error) })
+    val transitioner = transitioner(persist = { _, _, _ -> Result.failure(error) })
 
     transitioner.transition(Letter(A, "letter_0a"), transition) shouldBeFailure error
 
@@ -163,7 +163,7 @@ class TransitionerAsyncTest : StringSpec({
     val error = RuntimeException("persist error")
 
     val transition = transition(from = A, to = B)
-    val transitioner = transitioner(persist = { throw error })
+    val transitioner = transitioner(persist = { _, _, _ -> throw error })
 
     transitioner.transition(Letter(A, "letter_0b"), transition) shouldBeFailure error
 

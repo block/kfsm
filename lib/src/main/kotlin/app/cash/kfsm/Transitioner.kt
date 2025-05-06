@@ -6,7 +6,7 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
   open fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 
   /** Will be executed after the transition effect. Use this to persist the value. */
-  open fun persist(value: V, via: T): Result<V> = Result.success(value)
+  open fun persist(from: S, value: V, via: T): Result<V> = Result.success(value)
 
   /** Will be executed after the transition effect & value persistence. Use this to perform side effects such as notifications. */
   open fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
@@ -39,7 +39,7 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
     runCatching { preHook(value, transition).getOrThrow() }
       .mapCatching { transition.effect(value).getOrThrow() }
       .mapCatching { it.validateAndUpdate(transition.to).getOrThrow() }
-      .mapCatching { persist(it, transition).getOrThrow() }
+      .mapCatching { persist(value.state, it, transition).getOrThrow() }
       .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }
 
   private fun ignoreAlreadyCompletedTransition(

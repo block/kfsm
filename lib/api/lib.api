@@ -92,7 +92,7 @@ public class app/cash/kfsm/Transition {
 
 public abstract class app/cash/kfsm/Transitioner {
 	public fun <init> ()V
-	public fun persist-gIAlu-s (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
+	public fun persist-0E7RQCE (Lapp/cash/kfsm/State;Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
 	public fun postHook-0E7RQCE (Lapp/cash/kfsm/State;Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
 	public fun preHook-gIAlu-s (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
 	public final fun transition-gIAlu-s (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
@@ -100,7 +100,7 @@ public abstract class app/cash/kfsm/Transitioner {
 
 public abstract class app/cash/kfsm/TransitionerAsync {
 	public fun <init> ()V
-	public fun persist-0E7RQCE (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public fun persist-BWLJW6A (Lapp/cash/kfsm/State;Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun postHook-BWLJW6A (Lapp/cash/kfsm/State;Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public fun preHook-0E7RQCE (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public final fun transition-0E7RQCE (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
