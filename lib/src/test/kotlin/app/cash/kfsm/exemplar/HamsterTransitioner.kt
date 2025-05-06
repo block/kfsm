@@ -18,7 +18,7 @@ class HamsterTransitioner(
   }
 
   // This is where you define how to save your updated value to a data store
-  override fun persist(value: Hamster, via: HamsterTransition): Result<Hamster> =
+  override fun persist(from: State, value: Hamster, via: HamsterTransition): Result<Hamster> =
     Result.success(value.also(saves::add))
 
   // Any action you might wish to take after transitioning successfully, such as sending events or notifications

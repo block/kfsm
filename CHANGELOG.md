@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Breaking
+- Added `from` parameter to `persist` method in `Transitioner` and `TransitionerAsync` to provide the previous state during persistence operations. This allows for more context-aware persistence operations that can take into account both the previous and new state.
+
+### Added
+- Added support for state invariants, allowing you to define conditions that must hold true for values in specific states. This includes:
+  - A new `invariant` DSL function for defining state-specific conditions
+  - Automatic validation of invariants during state transitions
+  - Support for custom error messages when invariants are violated
+  - Integration with the existing state machine validation system
+
 ## [0.9.0]
 
 ### Breaking

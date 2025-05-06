@@ -4,7 +4,7 @@ abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, 
 
   open suspend fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 
-  open suspend fun persist(value: V, via: T): Result<V> = Result.success(value)
+  open suspend fun persist(from: S, value: V, via: T): Result<V> = Result.success(value)
 
   open suspend fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
 
@@ -26,7 +26,7 @@ abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, 
     runCatching { preHook(value, transition).getOrThrow() }
       .mapCatching { transition.effectAsync(value).getOrThrow() }
       .map { it.update(transition.to) }
-      .mapCatching { persist(it, transition).getOrThrow() }
+      .mapCatching { persist(value.state, it, transition).getOrThrow() }
       .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }
 
   private fun ignoreAlreadyCompletedTransition(
