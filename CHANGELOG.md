@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.10.0]
+
 ### Breaking
 - Added `from` parameter to `persist` method in `Transitioner` and `TransitionerAsync` to provide the previous state during persistence operations. This allows for more context-aware persistence operations that can take into account both the previous and new state.
 
