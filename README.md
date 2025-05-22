@@ -162,7 +162,7 @@ val greenLight: Result<Light> = transitioner.transition(redLight, Go)
 
 ### More examples
 
-See [lib/src/test/kotlin/app/cash/kfsm/exemplar](https://github.com/cashapp/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/exemplar)
+See [lib/src/test/kotlin/app/cash/kfsm/exemplar](https://github.com/block/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/exemplar)
 for a different example of how to use this library.
 
 ### Coroutine Support
@@ -249,11 +249,11 @@ StateMachine.mermaid(Green) shouldBeRight """stateDiagram-v2
 ## Documentation
 
 The API documentation is published with each release
-at [https://cashapp.github.io/kfsm](https://cashapp.github.io/kfsm)
+at [https://block.github.io/kfsm](https://block.github.io/kfsm)
 
 See a list of changes in each release in the [CHANGELOG](CHANGELOG.md).
 
-See [lib/src/test/kotlin/app/cash/kfsm/exemplar](https://github.com/cashapp/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/exemplar)
+See [lib/src/test/kotlin/app/cash/kfsm/exemplar](https://github.com/block/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/exemplar)
 for a different example of how to use this library.
 
 For details on contributing, see the [CONTRIBUTING](CONTRIBUTING.md) guide.
