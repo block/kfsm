@@ -60,4 +60,9 @@ class StateTest : StringSpec({
     E.next(2) shouldBe emptyList()
   }
 
+  "returns shortest path" {
+    Red.shortestPathTo(Green) shouldBe listOf(Red, Yellow, Green)
+    Red.shortestPathTo(Yellow) shouldBe listOf(Red, Yellow)
+    Green.shortestPathTo(Red) shouldBe listOf(Green, Yellow, Red)
+  }
 })
