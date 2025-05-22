@@ -52,6 +52,7 @@ public class app/cash/kfsm/State {
 	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/State;)Z
 	public final fun getReachableStates ()Ljava/util/Set;
 	public final fun getSubsequentStates ()Ljava/util/Set;
+	public final fun shortestPathTo (Lapp/cash/kfsm/State;)Ljava/util/List;
 	public final fun validate-IoAF18A (Lapp/cash/kfsm/Value;)Ljava/lang/Object;
 }
 

@@ -29,6 +29,55 @@ open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
       .firstOrNull { it.isFailure }
       ?: Result.success(value)
 
+  /**
+   * Finds the shortest path to a given state using a naive recursive algorithm.
+   *
+   * Note: includes this state by default.
+   *
+   * ```kotlin
+   * // Given a simple state machine: [A] -> [B] -> [C]
+   * A.shortestPathTo(C) // listOf(A, B, C)
+   * A.shortestPathTo(A) // listOf(A)
+   * ```
+   *
+   * @param to The state to find a path to.
+   * @return a list of states making up the shortest path.
+   */
+  @Suppress("UNCHECKED_CAST")
+  fun shortestPathTo(to: S): List<S> {
+    val start = this as S
+
+    if (this == to) return listOf(start)
+    if (!canEventuallyTransitionTo(to)) return emptyList()
+
+    val initialQueue = ArrayDeque(listOf(start))
+    val predecessor = mutableMapOf<S, S?>(start to null)
+
+    tailrec fun bfs(queue: ArrayDeque<S>): List<S> {
+      if (queue.isEmpty()) return emptyList()
+
+      val current = queue.removeFirst()
+
+      if (current == to) {
+        val path = generateSequence(to) { predecessor[it] }
+          .toList()
+          .asReversed()
+        return path
+      }
+
+      current.subsequentStates.forEach { next ->
+        if (next !in predecessor) {
+          predecessor[next] = current
+          queue += next
+        }
+      }
+
+      return bfs(queue)
+    }
+
+    return bfs(initialQueue)
+  }
+
   private fun expand(found: Set<S> = emptySet()): Set<S> =
     subsequentStates.minus(found).flatMap {
       it.expand(subsequentStates + found) + it
