@@ -2,25 +2,30 @@
 
 ## [Unreleased]
 
+## [0.10.1]
+
+### Added
+* Adds `shortestPathTo` method on `State`
+
 ## [0.10.0]
 
 ### Breaking
-- Added `from` parameter to `persist` method in `Transitioner` and `TransitionerAsync` to provide the previous state during persistence operations. This allows for more context-aware persistence operations that can take into account both the previous and new state.
+* Added `from` parameter to `persist` method in `Transitioner` and `TransitionerAsync` to provide the previous state during persistence operations. This allows for more context-aware persistence operations that can take into account both the previous and new state.
 
 ### Added
-- Added support for state invariants, allowing you to define conditions that must hold true for values in specific states. This includes:
-  - A new `invariant` DSL function for defining state-specific conditions
-  - Automatic validation of invariants during state transitions
-  - Support for custom error messages when invariants are violated
-  - Integration with the existing state machine validation system
+* Added support for state invariants, allowing you to define conditions that must hold true for values in specific states. This includes:
+  * A new `invariant` DSL function for defining state-specific conditions
+  * Automatic validation of invariants during state transitions
+  * Support for custom error messages when invariants are violated
+  * Integration with the existing state machine validation system
 
 ## [0.9.0]
 
 ### Breaking
-- Renamed `InvalidStateTransition` to `InvalidStateForTransition` to better reflect its purpose. This is a breaking change that requires updating any code that catches or references this exception type.
+* Renamed `InvalidStateTransition` to `InvalidStateForTransition` to better reflect its purpose. This is a breaking change that requires updating any code that catches or references this exception type.
 
 ### Added
-- Added `transitionToState` function to `StateMachine` that allows transitioning to a specific state if it's immediately reachable. This provides a simpler API for cases where the caller knows the target state and doesn't need to specify a particular transition.
+* Added `transitionToState` function to `StateMachine` that allows transitioning to a specific state if it's immediately reachable. This provides a simpler API for cases where the caller knows the target state and doesn't need to specify a particular transition.
 
 ## [0.8.3]
 
