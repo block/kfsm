@@ -1,6 +1,9 @@
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URI
 
 plugins {
   alias(libs.plugins.kotlinGradlePlugin) apply false
@@ -8,7 +11,7 @@ plugins {
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
   alias(libs.plugins.dokka)
-  id("com.vanniktech.maven.publish.base") version libs.versions.mavenPublishGradlePlugin.get() apply false
+  id("com.vanniktech.maven.publish.base") version "0.25.3" apply false
 }
 
 repositories {
@@ -37,23 +40,73 @@ subprojects {
   apply(plugin = "java")
   apply(plugin = "kotlin")
   apply(plugin = rootProject.project.libs.plugins.kotlinBinaryCompatibilityPlugin.get().pluginId)
+  apply(plugin = "com.vanniktech.maven.publish.base")
+  plugins.withId("com.vanniktech.maven.publish.base") {
+    configure<PublishingExtension> {
+      repositories {
+        maven {
+          name = "testMaven"
+          url = rootProject.layout.buildDirectory.dir("testMaven").get().asFile.toURI()
+        }
+
+        /*
+         * Want to push to an internal repository for testing?
+         * Set the following properties in ~/.gradle/gradle.properties.
+         *
+         * internalUrl=YOUR_INTERNAL_URL
+         * internalUsername=YOUR_USERNAME
+         * internalPassword=YOUR_PASSWORD
+         *
+         * Then run the following command to publish a new internal release:
+         *
+         * ./gradlew publishAllPublicationsToInternalRepository -DRELEASE_SIGNING_ENABLED=false
+         */
+        val internalUrl = providers.gradleProperty("internalUrl").orNull
+        if (internalUrl != null) {
+          maven {
+            name = "internal"
+            url = URI(internalUrl)
+            credentials {
+              username = providers.gradleProperty("internalUsername").get()
+              password = providers.gradleProperty("internalPassword").get()
+            }
+          }
+        }
+      }
+    }
+    configure<MavenPublishBaseExtension> {
+      publishToMavenCentral(automaticRelease = true)
+      signAllPublications()
+      pom {
+        description.set("Adds parameters to tests")
+        name.set(project.name)
+        url.set("https://github.com/cashapp/burst/")
+        licenses {
+          license {
+            name.set("The Apache Software License, Version 2.0")
+            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            distribution.set("repo")
+          }
+        }
+        developers {
+          developer {
+            id.set("cashapp")
+            name.set("Cash App")
+          }
+        }
+        scm {
+          url.set("https://github.com/cashapp/burst/")
+          connection.set("scm:git:https://github.com/cashapp/burst.git")
+          developerConnection.set("scm:git:ssh://git@github.com/cashapp/burst.git")
+        }
+      }
+    }
+  }
+
 
   configure<JavaPluginExtension> {
     withSourcesJar()
     withJavadocJar()
-  }
-
-  plugins.withId("com.vanniktech.maven.publish.base") {
-    val publishingExtension = extensions.getByType(PublishingExtension::class.java)
-    configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-      pomFromGradleProperties()
-      publishToMavenCentral()
-      signAllPublications()
-    }
-
-    publishingExtension.publications.create<MavenPublication>("maven") {
-      from(components["java"])
-    }
   }
 
   apply(plugin = "version-catalog")
