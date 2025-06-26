@@ -1,7 +1,7 @@
 plugins {
   alias(libs.plugins.kotlinGradlePlugin) apply false
   alias(libs.plugins.kotlinBinaryCompatibilityPlugin) apply false
-  alias(libs.plugins.dokka) apply false
+  alias(libs.plugins.dokka)
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
 }
@@ -28,4 +28,9 @@ subprojects {
   tasks.withType<Test> {
     useJUnitPlatform()
   }
+}
+
+// Configure Dokka multi-module task
+tasks.dokkaHtmlMultiModule {
+  outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
 }
