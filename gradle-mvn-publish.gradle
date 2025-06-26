@@ -2,7 +2,7 @@ apply plugin: libs.plugins.mavenPublishGradlePlugin.get().pluginId
 
 plugins.withId(libs.plugins.mavenPublishGradlePlugin.get().pluginId) {
     mavenPublish {
-        sonatypeHost="DEFAULT"
+        sonatypeHost="CENTRAL_PORTAL"
         releaseSigningEnabled = !getGpgKey().isEmpty()
     }
 }
