@@ -1,139 +1,55 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
   alias(libs.plugins.kotlinGradlePlugin) apply false
   alias(libs.plugins.kotlinBinaryCompatibilityPlugin) apply false
+  alias(libs.plugins.dokka)
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
-  alias(libs.plugins.dokka)
-  id("com.vanniktech.maven.publish.base") version libs.versions.mavenPublishGradlePlugin.get() apply false
+  `maven-publish`
+  signing
 }
 
-repositories {
-  mavenCentral()
-  gradlePluginPortal()
-}
+version = providers.gradleProperty("VERSION_NAME").get()
 
-buildscript {
+allprojects {
+  group = "app.cash.kfsm"
+  
   repositories {
     mavenCentral()
   }
 }
 
 subprojects {
-  buildscript {
-    repositories {
-      mavenCentral()
-      gradlePluginPortal()
+  apply(plugin = "org.jetbrains.kotlin.jvm")
+  apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")
+  apply(plugin = "org.jetbrains.dokka")
+  apply(plugin = "maven-publish")
+  apply(plugin = "signing")
+  
+  tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+      jvmTarget = "11"
     }
   }
-
-  repositories {
-    mavenCentral()
-  }
-
-  apply(plugin = "java")
-  apply(plugin = "kotlin")
-  apply(plugin = rootProject.project.libs.plugins.kotlinBinaryCompatibilityPlugin.get().pluginId)
-
-  configure<JavaPluginExtension> {
-    withSourcesJar()
-    withJavadocJar()
-  }
-
-  plugins.withId("com.vanniktech.maven.publish.base") {
-    val publishingExtension = extensions.getByType(PublishingExtension::class.java)
-    configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-      pomFromGradleProperties()
-      publishToMavenCentral()
-      signAllPublications()
-    }
-
-    publishingExtension.publications.create<MavenPublication>("maven") {
-      from(components["java"])
-    }
-  }
-
-  apply(plugin = "version-catalog")
-
-  // Only apply if the project has the kotlin plugin added:
-  plugins.withType<KotlinPluginWrapper> {
-    val compileKotlin by tasks.getting(KotlinCompile::class) {
-      kotlinOptions {
-        jvmTarget = "11"
-        allWarningsAsErrors = true
-      }
-    }
-    val compileTestKotlin by tasks.getting(KotlinCompile::class) {
-      kotlinOptions {
-        jvmTarget = "11"
-        allWarningsAsErrors = true
-      }
-    }
-
-    dependencies {
-      add("testImplementation", project.rootProject.libs.junitApi)
-      add("testRuntimeOnly", project.rootProject.libs.junitEngine)
-    }
-
-    tasks.withType<GenerateModuleMetadata> {
-      suppressedValidationErrors.add("enforced-platform")
-    }
-  }
-
+  
   tasks.withType<Test> {
-    dependsOn("apiCheck")
     useJUnitPlatform()
-    testLogging {
-      events("started", "passed", "skipped", "failed")
-      exceptionFormat = TestExceptionFormat.FULL
-      showStandardStreams = false
-    }
   }
-
-  apply(plugin = "com.github.ben-manes.versions")
-
-  tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
-    revision = "release"
-    resolutionStrategy {
-      componentSelection {
-        all {
-          if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
-            reject("Release candidate")
-          }
-        }
-      }
-    }
-  }
-
-}
-
-fun isNonStable(version: String): Boolean {
-  val stableKeyword = listOf("RELEASE", "FINAL", "GA").any { version.uppercase().contains(it) }
-  val regex = "^[0-9,.v-]+(-r)?$".toRegex()
-  val isStable = stableKeyword || regex.matches(version)
-  return isStable.not()
-}
-
-// this needs to be defined here for the versionCatalogUpdate
-tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask> {
-  revision = "release"
-  resolutionStrategy {
-    componentSelection {
-      all {
-        if (isNonStable(candidate.version) && !isNonStable(currentVersion)) {
-          reject("Release candidate")
+  
+  publishing {
+    repositories {
+      maven {
+        name = "MavenCentral"
+        url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+        credentials {
+          username = providers.gradleProperty("mavenCentralUsername").orNull
+          password = providers.gradleProperty("mavenCentralPassword").orNull
         }
       }
     }
   }
 }
 
-versionCatalogUpdate {
-  /**
-   * Use @pin and @keep in gradle/lib.versions.toml instead of defining here
-   */
-  sortByKey.set(true)
+// Configure Dokka multi-module task
+tasks.dokkaHtmlMultiModule {
+  outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
 }

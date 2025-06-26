@@ -18,11 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build html
-        run: bin/gradle dokkaHtml --no-daemon --stacktrace
+        run: bin/gradle dokkaHtmlMultiModule --no-daemon --stacktrace
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: lib/build/dokka/html
+          path: build/dokka/html
   # Publish job
   publish-documentation:
     needs: build-documentation

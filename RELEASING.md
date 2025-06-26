@@ -1,25 +1,38 @@
-Releasing
-=========
+# Releasing
 
-### Steps
+## Overview
 
-1. Set versions:
+kFSM uses automated publishing to Maven Central via GitHub Actions. The release process is triggered by creating a tag in semver format (e.g., `v0.10.4`) on the main branch.
+
+## Prerequisites
+
+Before releasing, ensure you have:
+- Write access to the repository
+- Access to the required GitHub secrets:
+  - `SONATYPE_CENTRAL_USERNAME`
+  - `SONATYPE_CENTRAL_PASSWORD`
+  - `GPG_SECRET_KEY`
+  - `GPG_SECRET_PASSPHRASE`
+
+## Release Steps
+
+### 1. Prepare the Release
+
+1. Set the release version:
 
     ```sh
     export RELEASE_VERSION=A.B.C
-    export NEXT_VERSION=A.B.D-SNAPSHOT
     ```
 
-2. Check out the release branch.
+2. Create a release branch:
 
     ```sh
-    git checkout -b release-$RELEASE_VERSION
+    git checkout -b release/$RELEASE_VERSION
     ```
 
-3. Update `CHANGELOG.md` with changes since the last release. Follow the existing `CHANGELOG.md` format, which is
-derived from [this guide](https://keepachangelog.com/en/1.0.0/)
+3. Update `CHANGELOG.md` with changes since the last release. Follow the existing `CHANGELOG.md` format, which is derived from [this guide](https://keepachangelog.com/en/1.0.0/)
 
-4. Update documentation and Gradle properties with `RELEASE_VERSION`
+4. Update the version in `gradle.properties`:
 
     ```sh
     sed -i "" \
@@ -27,44 +40,134 @@ derived from [this guide](https://keepachangelog.com/en/1.0.0/)
       gradle.properties
     ```
 
-5. Tag the release and push to GitHub. Submit and merge PR.
+5. Commit and push the release branch:
 
     ```sh
-    git commit -am "Prepare for release $RELEASE_VERSION."
-    git tag -a kfsm-$RELEASE_VERSION -m "Version $RELEASE_VERSION"
-    git push && git push --tags
-    gh pr create -f && gh pr merge --auto --squash
-    ``` 
+    git add .
+    git commit -m "Prepare for release $RELEASE_VERSION"
+    git push origin release/$RELEASE_VERSION
+    ```
 
-6. Wait until the PR created above is merged, then trigger the
-[Publish a release](https://github.com/block/kfsm/actions/workflows/Release.yml) action against the new tag.
-This will publish to [Sonatype Nexus](https://oss.sonatype.org/), closing and releasing the artifact 
-automatically to promote it to Maven Central. Note that it can take 10 to 30 minutes or more for the
-artifacts to appear on Maven Central.
+6. Create a pull request to merge the release branch into main:
 
-7. Checkout `main` branch and pull the latest changes
+    ```sh
+    gh pr create --title "Release $RELEASE_VERSION" --body "Release version $RELEASE_VERSION"
+    ```
+
+7. Review and merge the pull request to main
+
+### 2. Create and Push the Release Tag
+
+Once the release PR is merged to main:
+
+1. Pull the latest changes from main:
 
     ```sh
     git checkout main
-    git pull
+    git pull origin main
     ```
 
-8. In a new branch, prepare for the next release and push to GitHub. Submit and merge PR.
+2. Create a tag in semver format (must start with "v"):
 
     ```sh
-    git checkout -b next-version-$NEXT_VERSION
+    git tag -a v$RELEASE_VERSION -m "Release version $RELEASE_VERSION"
+    git push origin v$RELEASE_VERSION
+    ```
+
+### 3. Automated Publishing
+
+Once the tag is pushed, the [Publish to Maven Central](https://github.com/cashapp/kfsm/actions/workflows/publish.yml) workflow will automatically:
+
+1. Build both artifacts:
+   - `app.cash.kfsm:kfsm:$version` (core library)
+   - `app.cash.kfsm:kfsm-guice:$version` (Guice integration)
+
+2. Sign the artifacts with GPG
+
+3. Publish to Maven Central via Sonatype
+
+4. Generate and publish documentation to GitHub Pages
+
+**Note**: It can take 10-30 minutes for artifacts to appear on Maven Central after successful publishing.
+
+### 4. Create GitHub Release
+
+1. Go to [GitHub Releases](https://github.com/cashapp/kfsm/releases/new)
+2. Select the tag you just created (`v$RELEASE_VERSION`)
+3. Copy the release notes from `CHANGELOG.md` into the release description
+4. Publish the release
+
+### 5. Prepare for Next Development Version
+
+1. Create a new branch for the next development version:
+
+    ```sh
+    export NEXT_VERSION=A.B.D-SNAPSHOT
+    git checkout -b next-version/$NEXT_VERSION
+    ```
+
+2. Update the version in `gradle.properties` to the next snapshot version:
+
+    ```sh
     sed -i "" \
       "s/VERSION_NAME=.*/VERSION_NAME=$NEXT_VERSION/g" \
       gradle.properties
-    git commit -am "Prepare next development version."
-    git push
-    gh pr create -f && gh pr merge --auto --squash
     ```
 
-9. [Draft a new release](https://github.com/block/kfsm/releases/new) of `A.B.C` and publish it. Copy release 
-notes added to `CHANGELOG.md` in step 1 into the release description.
+3. Commit and push the changes:
+
+    ```sh
+    git add .
+    git commit -m "Prepare next development version"
+    git push origin next-version/$NEXT_VERSION
+    ```
+
+4. Create a pull request to merge the next version branch into main:
+
+    ```sh
+    gh pr create --title "Prepare next development version" --body "Update version to $NEXT_VERSION"
+    ```
+
+5. Review and merge the pull request
 
 ## Troubleshooting
 
-- If the GitHub action fails, drop the artifacts from Sonatype and re-run the job. A Sonatype account with app.cash permissions
-    is required. Raise an issue if you do not have this.
+### Publishing Failures
+
+- If the GitHub Action fails, check the workflow logs for specific error messages
+- Common issues include:
+  - Invalid GPG key or passphrase
+  - Incorrect Sonatype credentials
+  - Version conflicts (if the version was already published)
+  - Network connectivity issues
+
+### Manual Intervention
+
+If the automated publishing fails and you need to manually intervene:
+
+1. Check the [Sonatype Nexus](https://oss.sonatype.org/) staging repository
+2. Drop any failed artifacts from the staging repository
+3. Fix the issue and re-tag the release (delete the old tag first)
+4. Re-run the workflow
+
+### Access Issues
+
+If you don't have access to the required secrets or Sonatype account, contact the project maintainers.
+
+## Release Artifacts
+
+Each release includes:
+
+- **Core Library**: `app.cash.kfsm:kfsm:$version`
+  - Main JAR with compiled classes
+  - Sources JAR
+  - Javadoc JAR
+  - POM file
+
+- **Guice Integration**: `app.cash.kfsm:kfsm-guice:$version`
+  - Main JAR with compiled classes
+  - Sources JAR
+  - Javadoc JAR
+  - POM file
+
+All artifacts are signed with GPG and published to Maven Central.

@@ -1,42 +1,70 @@
-import org.jetbrains.dokka.gradle.DokkaTask
-import java.net.URL
-
-plugins {
-  `java-library`
-  id("com.bmuschko.docker-remote-api") version "9.3.0"
-}
-
 dependencies {
-  implementation(kotlin("reflect"))
-  implementation(libs.kotlinLoggingJvm)
-
-  testImplementation(libs.junitApi)
-  testImplementation(libs.kotestAssertions)
-  testImplementation(libs.kotestJunitRunnerJvm)
-  testImplementation(libs.kotestAssertions)
-  testImplementation(libs.kotestJunitRunnerJvm)
-  testImplementation(libs.kotestProperty)
-
-  testRuntimeOnly(libs.slf4jSimple)
-  testRuntimeOnly(libs.junitEngine)
-
-  apply(plugin = libs.plugins.dokka.get().pluginId)
+  implementation(libs.kotlinReflect)
+  testImplementation(libs.bundles.kotest)
+  testImplementation(libs.mockk)
 }
 
-tasks.withType<DokkaTask>().configureEach {
-  dokkaSourceSets {
-    named("main") {
-      moduleName.set("Kotlin FSM")
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
 
-      // Includes custom documentation
-      includes.from("module.md")
+tasks.jar {
+  archiveBaseName.set("kfsm")
+}
 
-      // Points source links to GitHub
-      sourceLink {
-        localDirectory.set(file("src/main/kotlin"))
-        remoteUrl.set(URL("https://github.com/block/kfsm/tree/main/lib/src/main/kotlin"))
-        remoteLineSuffix.set("#L")
+java {
+  withSourcesJar()
+  withJavadocJar()
+}
+
+publishing {
+  publications {
+    create<MavenPublication>("maven") {
+      from(components["java"])
+      
+      groupId = "app.cash.kfsm"
+      artifactId = "kfsm"
+      version = project.version.toString()
+      
+      pom {
+        name.set("kFSM")
+        description.set("Finite State Machinery for Kotlin")
+        url.set("https://github.com/cashapp/kfsm")
+        
+        licenses {
+          license {
+            name.set("The Apache License, Version 2.0")
+            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+          }
+        }
+        
+        developers {
+          developer {
+            id.set("cashapp")
+            name.set("Cash App")
+            organization.set("Block, Inc.")
+            organizationUrl.set("https://block.xyz")
+          }
+        }
+        
+        scm {
+          connection.set("scm:git:git://github.com/cashapp/kfsm.git")
+          developerConnection.set("scm:git:ssh://github.com/cashapp/kfsm.git")
+          url.set("https://github.com/cashapp/kfsm")
+        }
       }
     }
+  }
+}
+
+signing {
+  val signingKey = providers.gradleProperty("signingInMemoryKey").orNull
+  val signingPassword = providers.gradleProperty("signingInMemoryKeyPassword").orNull
+  
+  if (signingKey != null && signingPassword != null) {
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["maven"])
   }
 }

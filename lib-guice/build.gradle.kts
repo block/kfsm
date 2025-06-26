@@ -1,41 +1,76 @@
-plugins {
-    kotlin("jvm")
-    `java-library`
-}
-
 dependencies {
-    // Core KFSM library
-    api(project(":lib"))
-    
-    // Guice for dependency injection
-    api(rootProject.libs.guice)
-    
-    // Reflections library for classpath scanning
-    api(rootProject.libs.reflections)
-    
-    // Kotlin reflection (usually provided by the Kotlin plugin, but explicitly declared for clarity)
-    implementation(kotlin("reflect"))
-    
-    // Test dependencies
-    testImplementation(kotlin("test"))
-    testImplementation(rootProject.libs.junitApi)
-    testImplementation(rootProject.libs.kotestAssertions)
-    testImplementation(rootProject.libs.kotestJunitRunnerJvm)
-    testImplementation(rootProject.libs.kotestProperty)
-    testImplementation("io.mockk:mockk:1.13.10")
-    
-    testRuntimeOnly(rootProject.libs.slf4jSimple)
-    testRuntimeOnly(rootProject.libs.junitEngine)
+  api(project(":lib"))
+  
+  implementation(libs.guice)
+  implementation(libs.reflections)
+  implementation(libs.kotlinLoggingJvm)
+  implementation(libs.slf4jSimple)
+  
+  testImplementation(libs.bundles.kotest)
+  testImplementation(libs.mockk)
 }
 
-tasks.test {
-    useJUnitPlatform()
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
 }
 
-// Configure Java compatibility
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
-        allWarningsAsErrors = true
+tasks.jar {
+  archiveBaseName.set("kfsm-guice")
+}
+
+java {
+  withSourcesJar()
+  withJavadocJar()
+}
+
+publishing {
+  publications {
+    create<MavenPublication>("maven") {
+      from(components["java"])
+      
+      groupId = "app.cash.kfsm"
+      artifactId = "kfsm-guice"
+      version = project.version.toString()
+      
+      pom {
+        name.set("kFSM Guice Integration")
+        description.set("Guice integration for kFSM")
+        url.set("https://github.com/cashapp/kfsm")
+        
+        licenses {
+          license {
+            name.set("The Apache License, Version 2.0")
+            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+          }
+        }
+        
+        developers {
+          developer {
+            id.set("cashapp")
+            name.set("Cash App")
+            organization.set("Block, Inc.")
+            organizationUrl.set("https://block.xyz")
+          }
+        }
+        
+        scm {
+          connection.set("scm:git:git://github.com/cashapp/kfsm.git")
+          developerConnection.set("scm:git:ssh://github.com/cashapp/kfsm.git")
+          url.set("https://github.com/cashapp/kfsm")
+        }
+      }
     }
+  }
+}
+
+signing {
+  val signingKey = providers.gradleProperty("signingInMemoryKey").orNull
+  val signingPassword = providers.gradleProperty("signingInMemoryKeyPassword").orNull
+  
+  if (signingKey != null && signingPassword != null) {
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["maven"])
+  }
 }
