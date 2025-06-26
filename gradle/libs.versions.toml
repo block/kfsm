@@ -20,6 +20,7 @@ kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = 
 kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinLoggingJvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
