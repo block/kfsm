@@ -6,7 +6,7 @@ kotest = "5.8.0"
 kotlin = "1.9.0"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 kotlinLogging = "3.0.5"
-mavenPublishGradlePlugin = "0.27.0"
+mavenPublishGradlePlugin = "0.33.0"
 mockk = "1.13.10"
 reflections = "0.10.2"
 slf4j = "2.0.11"
@@ -21,6 +21,7 @@ kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = 
 kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinLoggingJvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+mavenPublishGradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublishGradlePlugin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
@@ -37,6 +38,5 @@ dokka = "org.jetbrains.dokka:1.9.10"
 gradleDocker = "com.bmuschko.docker-remote-api:9.4.0"
 kotlinBinaryCompatibilityPlugin = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinBinaryCompatibilityPlugin" }
 kotlinGradlePlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-mavenPublishGradlePlugin = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublishGradlePlugin" }
 versionCatalogUpdateGradlePlugin = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdateGradlePlugin" }
 versionsGradlePlugin = { id = "com.github.ben-manes.versions", version.ref = "versionsGradlePlugin" }
