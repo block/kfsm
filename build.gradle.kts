@@ -8,7 +8,7 @@ plugins {
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
   alias(libs.plugins.dokka)
-  id("com.vanniktech.maven.publish.base") version libs.versions.mavenPublishGradlePlugin.get() apply false
+  id("com.vanniktech.maven.publish.base") version "0.25.3" apply false
 }
 
 repositories {
