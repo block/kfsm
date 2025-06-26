@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.10.2]
+
+Modified maven publishing configuration.
+
 ## [0.10.1]
 
 ### Added

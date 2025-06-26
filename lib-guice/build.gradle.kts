@@ -1,6 +1,8 @@
 plugins {
     kotlin("jvm")
     `java-library`
+    `maven-publish`
+    id("com.vanniktech.maven.publish.base") version "0.25.3"
 }
 
 dependencies {
@@ -37,5 +39,21 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = "11"
         allWarningsAsErrors = true
+    }
+}
+
+// Configure publishing
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            
+            // Optional: customize POM
+            pom {
+                name.set("Kotlin FSM Guice")
+                description.set("Guice integration for Kotlin FSM")
+                url.set("https://github.com/block/kfsm/")
+            }
+        }
     }
 }
