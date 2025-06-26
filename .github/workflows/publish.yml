@@ -1,0 +1,41 @@
+name: Publish to Maven Central
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Check if tag is on main branch
+        id: check-branch
+        run: |
+          if git branch -r --contains ${{ github.ref }} | grep -q "origin/main"; then
+            echo "tag_on_main=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag_on_main=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Set up JDK
+        if: steps.check-branch.outputs.tag_on_main == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          
+      - name: Publish to Maven Central
+        if: steps.check-branch.outputs.tag_on_main == 'true'
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SECRET_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SECRET_PASSPHRASE }}
+        run: bin/gradle publishAllPublicationsToMavenCentralRepository -s --no-configuration-cache 
