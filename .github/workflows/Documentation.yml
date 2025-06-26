@@ -16,7 +16,7 @@ jobs:
   build-documentation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build html
         run: bin/gradle dokkaHtml --no-daemon --stacktrace
       - name: Upload GitHub Pages artifact
