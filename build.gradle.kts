@@ -1,6 +1,8 @@
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URI
 
 plugins {
   alias(libs.plugins.kotlinGradlePlugin) apply false
@@ -8,7 +10,7 @@ plugins {
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
   alias(libs.plugins.dokka)
-  id("com.vanniktech.maven.publish.base") version libs.versions.mavenPublishGradlePlugin.get() apply false
+  id("com.vanniktech.maven.publish.base") version "0.25.3" apply false
 }
 
 repositories {
@@ -37,23 +39,41 @@ subprojects {
   apply(plugin = "java")
   apply(plugin = "kotlin")
   apply(plugin = rootProject.project.libs.plugins.kotlinBinaryCompatibilityPlugin.get().pluginId)
+  apply(plugin = "com.vanniktech.maven.publish.base")
+  plugins.withId("com.vanniktech.maven.publish.base") {
+    configure<MavenPublishBaseExtension> {
+      publishToMavenCentral(automaticRelease = true)
+      signAllPublications()
+      pom {
+        description.set("Finite State Machinery for Kotlin")
+        name.set(project.name)
+        url.set("https://github.com/block/kfsm/")
+        licenses {
+          license {
+            name.set("The Apache Software License, Version 2.0")
+            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+            distribution.set("repo")
+          }
+        }
+        developers {
+          developer {
+            id.set("cashapp")
+            name.set("Cash App")
+          }
+        }
+        scm {
+          url.set("https://github.com/block/kfsm/")
+          connection.set("scm:git:https://github.com/block/kfsm.git")
+          developerConnection.set("scm:git:ssh://git@github.com/block/kfsm.git")
+        }
+      }
+    }
+  }
+
 
   configure<JavaPluginExtension> {
     withSourcesJar()
     withJavadocJar()
-  }
-
-  plugins.withId("com.vanniktech.maven.publish.base") {
-    val publishingExtension = extensions.getByType(PublishingExtension::class.java)
-    configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-      pomFromGradleProperties()
-      publishToMavenCentral()
-      signAllPublications()
-    }
-
-    publishingExtension.publications.create<MavenPublication>("maven") {
-      from(components["java"])
-    }
   }
 
   apply(plugin = "version-catalog")
