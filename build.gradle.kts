@@ -12,6 +12,7 @@ version = providers.gradleProperty("VERSION_NAME").get()
 
 allprojects {
   group = "app.cash.kfsm"
+  version = rootProject.version
   
   repositories {
     mavenCentral()

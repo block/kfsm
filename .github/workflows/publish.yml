@@ -31,6 +31,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
           
+      - name: Extract version from tag
+        if: steps.check-branch.outputs.tag_on_main == 'true'
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        
       - name: Publish to Maven Central
         if: steps.check-branch.outputs.tag_on_main == 'true'
         env:
@@ -38,4 +43,5 @@ jobs:
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SECRET_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SECRET_PASSPHRASE }}
+          ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
         run: bin/gradle publishAllPublicationsToMavenCentralRepository -s 
