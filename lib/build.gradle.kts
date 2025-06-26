@@ -4,6 +4,7 @@ import java.net.URL
 plugins {
   `java-library`
   id("com.bmuschko.docker-remote-api") version "9.3.0"
+  id("com.vanniktech.maven.publish.base") version "0.25.3"
 }
 
 dependencies {
