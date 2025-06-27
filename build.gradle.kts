@@ -12,10 +12,8 @@ allprojects {
 }
 
 subprojects {
-  // Temporarily commented out until plugin resolution is fixed
-  // apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")
   apply(plugin = "org.jetbrains.dokka")
-  
+
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
       jvmTarget = "11"
