@@ -29,3 +29,11 @@ subprojects {
 tasks.dokkaHtmlMultiModule {
   outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
 }
+
+task("publishToMavenCentral") {
+  group = "publishing"
+  dependsOn(
+    ":lib:publishToMavenCentral",
+    ":lib-guice:publishToMavenCentral",
+  )
+}
