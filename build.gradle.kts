@@ -4,7 +4,6 @@ plugins {
   alias(libs.plugins.dokka)
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
-  alias(libs.plugins.mavenPublish)
   signing
 }
 
@@ -23,7 +22,6 @@ subprojects {
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")
   apply(plugin = "org.jetbrains.dokka")
-  apply(plugin = "com.vanniktech.maven.publish.base")
   apply(plugin = "signing")
   
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

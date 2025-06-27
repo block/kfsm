@@ -1,3 +1,7 @@
+plugins {
+  id("com.vanniktech.maven.publish.base") version "0.33.0"
+}
+
 dependencies {
   implementation(libs.kotlinReflect)
   testImplementation(libs.bundles.kotest)
@@ -20,8 +24,11 @@ java {
 }
 
 configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-  publishToMavenCentral(automaticRelease = true)
+  publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
   signAllPublications()
+  
+  coordinates("app.cash.kfsm", "kfsm", project.version.toString())
+  
   pom {
     name.set("kFSM")
     description.set("Finite State Machinery for Kotlin")

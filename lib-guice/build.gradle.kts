@@ -1,3 +1,7 @@
+plugins {
+  id("com.vanniktech.maven.publish.base") version "0.33.0"
+}
+
 dependencies {
   api(project(":lib"))
   
@@ -26,8 +30,11 @@ java {
 }
 
 configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-  publishToMavenCentral(automaticRelease = true)
+  publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
   signAllPublications()
+  
+  coordinates("app.cash.kfsm", "kfsm-guice", project.version.toString())
+  
   pom {
     name.set("kFSM Guice Integration")
     description.set("Guice integration for kFSM")
