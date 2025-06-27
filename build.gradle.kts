@@ -4,7 +4,7 @@ plugins {
   alias(libs.plugins.dokka)
   alias(libs.plugins.versionsGradlePlugin)
   alias(libs.plugins.versionCatalogUpdateGradlePlugin)
-  `maven-publish`
+  alias(libs.plugins.mavenPublish)
   signing
 }
 
@@ -23,7 +23,7 @@ subprojects {
   apply(plugin = "org.jetbrains.kotlin.jvm")
   apply(plugin = "org.jetbrains.kotlinx.binary-compatibility-validator")
   apply(plugin = "org.jetbrains.dokka")
-  apply(plugin = "maven-publish")
+  apply(plugin = "com.vanniktech.maven.publish.base")
   apply(plugin = "signing")
   
   tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -36,22 +36,9 @@ subprojects {
     useJUnitPlatform()
   }
   
-  publishing {
-    repositories {
-      val ossrhUsername = providers.gradleProperty("ossrhUsername").orNull
-      val ossrhPassword = providers.gradleProperty("ossrhPassword").orNull
-      
-      if (ossrhUsername != null && ossrhPassword != null) {
-        maven {
-          name = "OSSRH"
-          url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-          credentials {
-            username = ossrhUsername
-            password = ossrhPassword
-          }
-        }
-      }
-    }
+  // Don't attempt to sign anything if we don't have an in-memory key
+  tasks.withType<Sign>().configureEach {
+    enabled = project.findProperty("signingInMemoryKey") != null
   }
 }
 

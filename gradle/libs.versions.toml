@@ -3,7 +3,7 @@ guice = "7.0.0"
 junit = "5.10.1"
 kotest = "5.8.0"
 # @pin
-kotlin = "1.9.0"
+kotlin = "1.9.20"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 kotlinLogging = "3.0.5"
 mockk = "1.13.10"
@@ -11,6 +11,7 @@ reflections = "0.10.2"
 slf4j = "2.0.11"
 versionCatalogUpdateGradlePlugin = "0.8.3"
 versionsGradlePlugin = "0.50.0"
+mavenPublish = "0.33.0"
 
 [libraries]
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
@@ -24,6 +25,7 @@ kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = 
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+mavenPublishGradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
 
 [bundles]
 kotest = [
@@ -37,5 +39,6 @@ dokka = "org.jetbrains.dokka:1.9.10"
 gradleDocker = "com.bmuschko.docker-remote-api:9.4.0"
 kotlinBinaryCompatibilityPlugin = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinBinaryCompatibilityPlugin" }
 kotlinGradlePlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+mavenPublish = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublish" }
 versionCatalogUpdateGradlePlugin = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdateGradlePlugin" }
 versionsGradlePlugin = { id = "com.github.ben-manes.versions", version.ref = "versionsGradlePlugin" }
