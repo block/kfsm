@@ -69,8 +69,8 @@ publishing {
       name = "OSSRH"
       url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
       credentials {
-        username = providers.gradleProperty("ossrhUsername").get()
-        password = providers.gradleProperty("ossrhPassword").get()
+        username = providers.gradleProperty("ossrhUsername").orNull ?: ""
+        password = providers.gradleProperty("ossrhPassword").orNull ?: ""
       }
     }
   }
