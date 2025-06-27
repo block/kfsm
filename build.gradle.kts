@@ -36,18 +36,18 @@ subprojects {
     useJUnitPlatform()
   }
   
-  publishing {
-    repositories {
-      maven {
-        name = "MavenCentral"
-        url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-        credentials {
-          username = providers.gradleProperty("mavenCentralUsername").orNull
-          password = providers.gradleProperty("mavenCentralPassword").orNull
-        }
-      }
-    }
-  }
+  // publishing {
+  //   repositories {
+  //     maven {
+  //       name = "MavenCentral"
+  //       url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+  //       credentials {
+  //         username = providers.gradleProperty("mavenCentralUsername").orNull
+  //         password = providers.gradleProperty("mavenCentralPassword").orNull
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 // Configure Dokka multi-module task
