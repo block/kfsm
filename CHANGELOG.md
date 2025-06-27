@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.10.3]
+
+Modified maven publishing configuration again. It now works with the new maven central portal.
+
 ## [0.10.2]
 
 Modified maven publishing configuration.
