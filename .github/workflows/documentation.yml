@@ -1,9 +1,10 @@
-name: Build and deploy documentation to GitHub Pages
+name: Documentation
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["publish"]
+    types:
+      - completed
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
