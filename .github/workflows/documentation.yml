@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   workflow_run:
-    workflows: ["publish"]
+    workflows: ["Publish to Maven Central"]
     types:
       - completed
 
