@@ -6,10 +6,10 @@ plugins {
   alias(libs.plugins.kotlinBinaryCompatibilityPlugin) apply false
 }
 
-allprojects {
-  group = providers.gradleProperty("GROUP").get()
-  version = providers.gradleProperty("VERSION").get()
-}
+// allprojects {
+//   group = providers.gradleProperty("GROUP").get()
+//   version = providers.gradleProperty("VERSION").get()
+// }
 
 subprojects {
   apply(plugin = "org.jetbrains.dokka")
