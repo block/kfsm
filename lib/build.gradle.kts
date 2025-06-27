@@ -59,12 +59,17 @@ publishing {
   }
   
   repositories {
-    maven {
-      name = "OSSRH"
-      url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-      credentials {
-        username = providers.gradleProperty("ossrhUsername").orNull ?: ""
-        password = providers.gradleProperty("ossrhPassword").orNull ?: ""
+    val ossrhUsername = providers.gradleProperty("ossrhUsername").orNull
+    val ossrhPassword = providers.gradleProperty("ossrhPassword").orNull
+    
+    if (ossrhUsername != null && ossrhPassword != null) {
+      maven {
+        name = "OSSRH"
+        url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+        credentials {
+          username = ossrhUsername
+          password = ossrhPassword
+        }
       }
     }
   }
