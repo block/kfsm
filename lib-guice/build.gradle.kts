@@ -1,43 +1,39 @@
 plugins {
-  id("com.vanniktech.maven.publish.base") version "0.33.0"
+  id("java-library")
+  id("org.jetbrains.kotlin.jvm") version "1.9.20"
+  id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
-dependencies {
-  api(project(":lib"))
-  
-  implementation(libs.guice)
-  implementation(libs.reflections)
-  implementation(libs.kotlinLoggingJvm)
-  implementation(libs.slf4jSimple)
-  
-  testImplementation(libs.bundles.kotest)
-  testImplementation(libs.mockk)
+repositories {
+  mavenCentral()
 }
 
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(11))
   }
-}
-
-tasks.jar {
-  archiveBaseName.set("kfsm-guice")
-}
-
-java {
   withSourcesJar()
   withJavadocJar()
 }
 
+dependencies {
+  api(project(":lib"))
+  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
+  implementation("com.google.inject:guice:5.1.0")
+  implementation("org.reflections:reflections:0.10.2")
+  
+  // Test dependencies
+  testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+  testImplementation("io.kotest:kotest-runner-junit5-jvm:5.8.0")
+  testImplementation("io.kotest:kotest-property:5.8.0")
+  testImplementation("io.mockk:mockk:1.13.10")
+  testImplementation("jakarta.inject:jakarta.inject-api:2.0.1")
+}
+
 configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-  publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
-  signAllPublications()
-  
-  coordinates("app.cash.kfsm", "kfsm-guice", project.version.toString())
-  
   pom {
-    name.set("kFSM Guice Integration")
-    description.set("Guice integration for kFSM")
+    name.set("kfsm-guice")
+    description.set("Guice integration for kfsm")
     url.set("https://github.com/cashapp/kfsm")
     licenses {
       license {
@@ -49,14 +45,12 @@ configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
       developer {
         id.set("cashapp")
         name.set("Cash App")
-        organization.set("Block, Inc.")
-        organizationUrl.set("https://block.xyz")
       }
     }
     scm {
-      connection.set("scm:git:git://github.com/cashapp/kfsm.git")
-      developerConnection.set("scm:git:ssh://github.com/cashapp/kfsm.git")
       url.set("https://github.com/cashapp/kfsm")
+      connection.set("scm:git:https://github.com/cashapp/kfsm.git")
+      developerConnection.set("scm:git:ssh://git@github.com/cashapp/kfsm.git")
     }
   }
 }

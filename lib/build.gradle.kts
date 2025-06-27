@@ -1,37 +1,38 @@
 plugins {
-  id("com.vanniktech.maven.publish.base") version "0.33.0"
+  id("java-library")
+  id("org.jetbrains.kotlin.jvm") version "1.9.20"
+  id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
-dependencies {
-  implementation(libs.kotlinReflect)
-  testImplementation(libs.bundles.kotest)
-  testImplementation(libs.mockk)
+repositories {
+  mavenCentral()
 }
 
 java {
   toolchain {
     languageVersion.set(JavaLanguageVersion.of(11))
   }
-}
-
-tasks.jar {
-  archiveBaseName.set("kfsm")
-}
-
-java {
   withSourcesJar()
   withJavadocJar()
 }
 
+dependencies {
+  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
+  implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.20")
+  
+  // Test dependencies
+  testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+  testImplementation("io.kotest:kotest-runner-junit5-jvm:5.8.0")
+  testImplementation("io.kotest:kotest-property:5.8.0")
+  testImplementation("io.mockk:mockk:1.13.10")
+}
+
 configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
-  publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
-  signAllPublications()
-  
-  coordinates("app.cash.kfsm", "kfsm", project.version.toString())
-  
+  // publishToMavenCentral()
+  // signAllPublications()
   pom {
-    name.set("kFSM")
-    description.set("Finite State Machinery for Kotlin")
+    name.set("kfsm")
+    description.set("A Kotlin Finite State Machine library")
     url.set("https://github.com/cashapp/kfsm")
     licenses {
       license {
@@ -43,14 +44,12 @@ configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
       developer {
         id.set("cashapp")
         name.set("Cash App")
-        organization.set("Block, Inc.")
-        organizationUrl.set("https://block.xyz")
       }
     }
     scm {
-      connection.set("scm:git:git://github.com/cashapp/kfsm.git")
-      developerConnection.set("scm:git:ssh://github.com/cashapp/kfsm.git")
       url.set("https://github.com/cashapp/kfsm")
+      connection.set("scm:git:https://github.com/cashapp/kfsm.git")
+      developerConnection.set("scm:git:ssh://git@github.com/cashapp/kfsm.git")
     }
   }
 }
