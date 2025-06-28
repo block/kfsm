@@ -1,28 +1,67 @@
 package app.cash.kfsm
 
+/**
+ * Base class for defining states in a finite state machine.
+ *
+ * States are the foundation of kFSM. Each state:
+ * - Knows which states it can transition to directly
+ * - Can validate invariants that must hold while in this state
+ * - Can determine paths to other reachable states
+ *
+ * Example:
+ * ```kotlin
+ * sealed class TrafficLightState : State<String, TrafficLight, TrafficLightState>
+ * object Red : TrafficLightState(() -> setOf(Green))
+ * object Yellow : TrafficLightState(() -> setOf(Red))
+ * object Green : TrafficLightState(() -> setOf(Yellow))
+ * ```
+ *
+ * @param ID The type used to identify values (often String or Long)
+ * @param V The type of values that can be in this state
+ * @param S The sealed class type representing all possible states
+ * @property transitionsFn Function that returns the set of states this state can transition to
+ * @property invariants List of conditions that must hold true while in this state
+ */
 open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   transitionsFn: () -> Set<S>,
   private val invariants: List<Invariant<ID, V, S>> = emptyList(),
 ) {
 
-  /** all states that can be transitioned to directly from this state */
+  /**
+   * The set of states that can be reached directly from this state through a single transition.
+   */
   val subsequentStates: Set<S> by lazy { transitionsFn() }
 
-  /** all states that are reachable from this state */
+  /**
+   * The set of all states that can eventually be reached from this state through any number of transitions.
+   */
   val reachableStates: Set<S> by lazy { expand() }
 
   /**
-   * Whether this state can transition to the given other state.
+   * Checks if this state can transition directly to another state in a single step.
+   *
+   * @param other The state to check if we can transition to
+   * @return true if a direct transition is possible, false otherwise
    */
   open fun canDirectlyTransitionTo(other: S): Boolean = subsequentStates.contains(other)
 
   /**
-   * Whether this state could directly or indirectly transition to the given state.
+   * Checks if this state can eventually reach another state through any number of transitions.
+   *
+   * @param other The state to check if we can eventually reach
+   * @return true if the state is reachable, false otherwise
    */
   open fun canEventuallyTransitionTo(other: S): Boolean = reachableStates.contains(other)
 
   /**
-   * Ensure that the provided value meets all the declared invariants for this state.
+   * Validates that a value meets all invariants defined for this state.
+   *
+   * Invariants are conditions that must hold true while a value is in this state.
+   * This method checks all invariants and returns the first failure encountered,
+   * or success if all invariants pass.
+   *
+   * @param value The value to validate against this state's invariants
+   * @return A Result containing the value if valid, or the first failure encountered
    */
   fun validate(value: V): Result<V> =
     invariants.map { it.validate(value) }
@@ -30,18 +69,20 @@ open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
       ?: Result.success(value)
 
   /**
-   * Finds the shortest path to a given state using a naive recursive algorithm.
+   * Finds the shortest path to reach a target state from this state.
    *
-   * Note: includes this state by default.
+   * Uses a breadth-first search algorithm to find the shortest sequence of states
+   * that leads from this state to the target state. The path includes both the
+   * starting and ending states.
    *
+   * Example:
    * ```kotlin
-   * // Given a simple state machine: [A] -> [B] -> [C]
-   * A.shortestPathTo(C) // listOf(A, B, C)
-   * A.shortestPathTo(A) // listOf(A)
+   * // Given states A -> B -> C
+   * val path = A.shortestPathTo(C) // Returns [A, B, C]
    * ```
    *
-   * @param to The state to find a path to.
-   * @return a list of states making up the shortest path.
+   * @param to The target state to reach
+   * @return A list of states representing the shortest path, or empty if no path exists
    */
   @Suppress("UNCHECKED_CAST")
   fun shortestPathTo(to: S): List<S> {

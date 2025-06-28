@@ -23,11 +23,29 @@ subprojects {
   tasks.withType<Test> {
     useJUnitPlatform()
   }
+
+  // Configure Dokka for each subproject
+  tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+    dokkaSourceSets {
+      named("main") {
+        includes.from("module.md")
+        moduleName.set(project.name)
+        sourceLink {
+          localDirectory.set(file("src/main/kotlin"))
+          remoteUrl.set(uri("https://github.com/block/kfsm/tree/main/${project.name}/src/main/kotlin").toURL())
+          remoteLineSuffix.set("#L")
+        }
+      }
+    }
+  }
 }
 
 // Configure Dokka multi-module task
 tasks.dokkaHtmlMultiModule {
   outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+  includes.from("dokka-docs/module.md")
+  moduleName.set("kfsm")
+  moduleVersion.set(project.version.toString())
 }
 
 task("publishToMavenCentral") {
