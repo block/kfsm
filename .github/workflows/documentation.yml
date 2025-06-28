@@ -1,5 +1,8 @@
 name: Upload documentation
 
+on:
+  workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
