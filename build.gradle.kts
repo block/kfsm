@@ -1,3 +1,8 @@
+repositories {
+  mavenCentral()
+  google()
+}
+
 plugins {
   alias(libs.plugins.kotlinGradlePlugin) apply false
   alias(libs.plugins.dokka)
