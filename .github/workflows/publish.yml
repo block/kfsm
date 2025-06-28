@@ -8,13 +8,13 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Check if tag is on main branch
         id: check-branch
         run: |
@@ -23,19 +23,19 @@ jobs:
           else
             echo "tag_on_main=false" >> $GITHUB_OUTPUT
           fi
-          
+
       - name: Set up JDK
         if: steps.check-branch.outputs.tag_on_main == 'true'
         uses: actions/setup-java@v4
         with:
           java-version: '11'
           distribution: 'temurin'
-          
+
       - name: Extract version from tag
         if: steps.check-branch.outputs.tag_on_main == 'true'
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-        
+
       - name: Publish to Maven Central
         if: steps.check-branch.outputs.tag_on_main == 'true'
         env:
@@ -45,3 +45,20 @@ jobs:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SECRET_PASSPHRASE }}
           ORG_GRADLE_PROJECT_VERSION_NAME: ${{ steps.version.outputs.version }}
         run: bin/gradle publishToMavenCentral
+
+      - name: Build HTML
+        if: steps.check-branch.outputs.tag_on_main == 'true'
+        run: bin/gradle dokkaHtmlMultiModule --no-daemon --stacktrace
+
+      - name: Upload HTML
+        if: steps.check-branch.outputs.tag_on_main == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/dokka/html
+          name: 'github-pages'
+
+      - name: Deploy GitHub Pages site
+        if: steps.check-branch.outputs.tag_on_main == 'true'
+        uses: actions/deploy-pages@v3
+        with:
+          artifact_name: github-pages
