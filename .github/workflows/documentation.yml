@@ -26,12 +26,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build html
+
+      - name: Build HTML
         run: bin/gradle dokkaHtmlMultiModule --no-daemon --stacktrace
-      - name: Upload GitHub Pages artifact
+
+      - name: Upload HTML
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/dokka/html
+          name: 'github-pages'
+
   # Publish job
   publish-documentation:
     needs: build-documentation
@@ -39,3 +43,5 @@ jobs:
     steps:
       - name: Deploy GitHub Pages site
         uses: actions/deploy-pages@v3
+        with:
+          artifact_name: github-pages
