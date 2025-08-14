@@ -15,13 +15,13 @@ import kotlin.reflect.full.superclasses
  * Example usage:
  * ```kotlin
  * // Verify your state machine
- * StateMachine.verify(initialState).getOrThrow()
+ * StateMachineUtils.verify(initialState).getOrThrow()
  *
  * // Generate a Mermaid diagram
- * val diagram = StateMachine.mermaid(initialState).getOrThrow()
+ * val diagram = StateMachineUtils.mermaid(initialState).getOrThrow()
  * ```
  */
-object StateMachine {
+object StateMachineUtils {
 
   /**
    * Verifies that a state machine covers all possible states.

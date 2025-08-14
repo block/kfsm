@@ -1,6 +1,6 @@
 package app.cash.kfsm.exemplar
 
-import app.cash.kfsm.StateMachine
+import app.cash.kfsm.StateMachineUtils
 import app.cash.kfsm.exemplar.Hamster.Asleep
 import app.cash.kfsm.exemplar.Hamster.Awake
 import app.cash.kfsm.exemplar.Hamster.Eating
@@ -90,13 +90,13 @@ class PenelopesPerfectDayTest : StringSpec({
 
   // Add a test like this to ensure you don't have states that cannot be reached
   "the state machine is hunky dory" {
-    StateMachine.verify(Awake).shouldBeSuccess()
+    StateMachineUtils.verify(Awake).shouldBeSuccess()
   }
 
   // Use this method to create mermaid diagrams in your markdown.
   // TODO(jem) - add a custom kotest matcher for ensuring the markdown is in a specific project file.
   "the mermaid diagram should be correct" {
-    StateMachine.mermaid(Awake).shouldBeSuccess(
+    StateMachineUtils.mermaid(Awake).shouldBeSuccess(
       """stateDiagram-v2
     [*] --> Awake
     Asleep --> Awake
