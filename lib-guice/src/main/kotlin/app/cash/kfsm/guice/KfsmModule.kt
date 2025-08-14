@@ -10,9 +10,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.TypeLiteral
 import com.google.inject.multibindings.Multibinder
 import com.google.inject.util.Types
-import org.reflections.Reflections
-import org.reflections.scanners.Scanners
-import org.reflections.util.ConfigurationBuilder
 
 /**
  * Base Guice module for KFSM integration that automatically discovers and binds transitions.
@@ -54,28 +51,18 @@ abstract class KfsmModule<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
     // Create a multibinder for the transition set
     val transitionBinder = Multibinder.newSetBinder(binder(), types.transition)
 
-    // Configure and create the reflections instance for scanning
-    val reflections = Reflections(
-      ConfigurationBuilder()
-        .forPackages(packageToScan)
-        .setScanners(Scanners.TypesAnnotated)
-    )
-
-    // Find and bind all transitions
-    reflections
-      .getTypesAnnotatedWith(TransitionDefinition::class.java)
-      .asSequence()
-      .filter { clazz -> Transition::class.java.isAssignableFrom(clazz) }
-      .map { it as Class<out Transition<ID, V, S>> }
+    // Find and bind all transitions using Java reflection
+    findClassesInPackage(packageToScan)
+      .filter { it.isAnnotationPresent(TransitionDefinition::class.java) }
+      .filter { Transition::class.java.isAssignableFrom(it) }
       .forEach { transitionClass ->
-        transitionBinder.addBinding().to(transitionClass)
+        transitionBinder.addBinding().to(transitionClass as Class<out Transition<ID, V, S>>)
       }
 
-    // Find and bind the transitioner
-    reflections.getTypesAnnotatedWith(TransitionerDefinition::class.java)
-      .asSequence()
-      .filter { clazz -> Transitioner::class.java.isAssignableFrom(clazz) }
-      .map { it as Class<out Transitioner<*, *, *, *>> }
+    // Find and bind the transitioner using Java reflection
+    findClassesInPackage(packageToScan)
+      .filter { it.isAnnotationPresent(TransitionerDefinition::class.java) }
+      .filter { Transitioner::class.java.isAssignableFrom(it) }
       .forEach { transitionerClass ->
         bind(types.transitioner)
           .to(transitionerClass as Class<out Transitioner<ID, Transition<ID, V, S>, V, S>>)
@@ -83,6 +70,76 @@ abstract class KfsmModule<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
 
     // Bind the state machine
     bind(types.stateMachine)
+  }
+
+  /**
+   * Finds all classes in the specified package using the class loader.
+   * This replaces the org.reflections library functionality.
+   */
+  private fun findClassesInPackage(packageName: String): List<Class<*>> {
+    val classLoader = this::class.java.classLoader
+    val packagePath = packageName.replace('.', '/')
+    
+    try {
+      val packageUrl = classLoader.getResource(packagePath)
+      if (packageUrl == null) return emptyList()
+      
+      return when (packageUrl.protocol) {
+        "file" -> findClassesInFileSystem(packageUrl.path, packageName, classLoader)
+        "jar" -> findClassesInJar(packageUrl.path, packageName, classLoader)
+        else -> emptyList()
+      }
+    } catch (e: Exception) {
+      // Log warning or handle gracefully
+      return emptyList()
+    }
+  }
+
+  /**
+   * Finds classes in the file system (for development/testing).
+   */
+  private fun findClassesInFileSystem(packagePath: String, packageName: String, classLoader: ClassLoader): List<Class<*>> {
+    val directory = java.io.File(packagePath)
+    if (!directory.exists() || !directory.isDirectory) return emptyList()
+    
+    return directory.walkTopDown()
+      .filter { it.isFile && it.extension == "class" }
+      .mapNotNull { file ->
+        val relativePath = file.relativeTo(directory).path
+        val className = packageName + "." + relativePath.removeSuffix(".class").replace('/', '.')
+        try {
+          Class.forName(className, false, classLoader)
+        } catch (e: ClassNotFoundException) {
+          null
+        }
+      }
+      .toList()
+  }
+
+  /**
+   * Finds classes in a JAR file (for production).
+   */
+  private fun findClassesInJar(jarPath: String, packageName: String, classLoader: ClassLoader): List<Class<*>> {
+    val packagePath = packageName.replace('.', '/')
+    val jarFile = jarPath.removePrefix("file:").removePrefix("jar:file:").removeSuffix("!/$packagePath")
+    
+    return try {
+      java.util.jar.JarFile(jarFile).use { jar ->
+        jar.entries().asSequence()
+          .filter { it.name.startsWith(packagePath) && it.name.endsWith(".class") }
+          .mapNotNull { entry ->
+            val className = entry.name.removeSuffix(".class").replace('/', '.')
+            try {
+              Class.forName(className, false, classLoader)
+            } catch (e: ClassNotFoundException) {
+              null
+            }
+          }
+          .toList()
+      }
+    } catch (e: Exception) {
+      emptyList()
+    }
   }
 
   companion object {

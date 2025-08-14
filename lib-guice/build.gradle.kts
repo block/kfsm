@@ -23,7 +23,6 @@ dependencies {
   api(project(":lib"))
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.20")
   implementation("com.google.inject:guice:5.1.0")
-  implementation("org.reflections:reflections:0.10.2")
   
   // Test dependencies
   testImplementation("io.kotest:kotest-assertions-core:5.8.0")

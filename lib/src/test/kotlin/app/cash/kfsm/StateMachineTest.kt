@@ -3,6 +3,7 @@ package app.cash.kfsm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.result.shouldBeSuccess
+import app.cash.kfsm.StateMachineUtils
 
 data class ValidValue(override val state: ValidState, override val id: String) : Value<String, ValidValue, ValidState> {
   override fun update(newState: ValidState): ValidValue = copy(state = newState)
@@ -23,7 +24,7 @@ data class TriCycleValue(override val state: TriCycleState, override val id: Str
 class StateMachineTest : StringSpec({
 
   "Returns the states when the machine is valid" {
-    StateMachine.verify(Valid1) shouldBeSuccess setOf(
+    StateMachineUtils.verify(Valid1) shouldBeSuccess setOf(
       Valid1,
       Valid2,
       Valid3,
@@ -33,23 +34,23 @@ class StateMachineTest : StringSpec({
   }
 
   "Can verify machines with self-loops" {
-    StateMachine.verify(UniCycle1).shouldBeSuccess()
+    StateMachineUtils.verify(UniCycle1).shouldBeSuccess()
   }
 
   "Can verify machines with 2 party loops" {
-    StateMachine.verify(BiCycle1).shouldBeSuccess()
+    StateMachineUtils.verify(BiCycle1).shouldBeSuccess()
   }
 
   "Can verify machines with 3+ party loops" {
-    StateMachine.verify(TriCycle1).shouldBeSuccess()
+    StateMachineUtils.verify(TriCycle1).shouldBeSuccess()
   }
 
   "Returns failure when not all states are encountered" {
-    StateMachine.verify(Valid3) shouldBeFailure InvalidStateMachine("Did not encounter [Valid1, Valid2]")
+    StateMachineUtils.verify(Valid3) shouldBeFailure InvalidStateMachine("Did not encounter [Valid1, Valid2]")
   }
 
   "produces mermaid diagram source for non-cyclical state machine" {
-    StateMachine.mermaid(Valid1) shouldBeSuccess """
+    StateMachineUtils.mermaid(Valid1) shouldBeSuccess """
       |stateDiagram-v2
       |    [*] --> Valid1
       |    Valid1 --> Valid2
@@ -61,7 +62,7 @@ class StateMachineTest : StringSpec({
   }
 
   "produces mermaid diagram source for cyclical state machine" {
-    StateMachine.mermaid(TriCycle3) shouldBeSuccess """
+    StateMachineUtils.mermaid(TriCycle3) shouldBeSuccess """
       |stateDiagram-v2
       |    [*] --> TriCycle3
       |    TriCycle1 --> TriCycle2

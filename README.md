@@ -225,20 +225,20 @@ This ensures that target state's invariants are satisfied during the transition.
 
 ### Testing your state machine
 
-The utility `StateMachine.verify` will assert that a defined state machine is valid - i.e. that all states are visited
+The utility `StateMachineUtils.verify` will assert that a defined state machine is valid - i.e. that all states are visited
 from a given starting state.
 
 ```kotlin
-StateMachine.verify(Green) shouldBeRight true
+StateMachineUtils.verify(Green) shouldBeRight true
 ```
 
 ### Document your state machine
 
-The utility `StateMachine.mermaid` will generate a mermaid diagram of your state machine. This can be rendered in markdown.
+The utility `StateMachineUtils.mermaid` will generate a mermaid diagram of your state machine. This can be rendered in markdown.
 The diagram of `Color` above was created using this utility.
 
 ```kotlin
-StateMachine.mermaid(Green) shouldBeRight """stateDiagram-v2
+StateMachineUtils.mermaid(Green) shouldBeRight """stateDiagram-v2
     [*] --> Green
     Amber --> Red
     Green --> Amber
