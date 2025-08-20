@@ -33,8 +33,12 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
      * Defines a transition to a target state with a given effect.
      *
      * @param effect The effect to apply during the transition
+     * @throws IllegalStateException if a transition to this state is already defined
      */
     infix fun S.via(effect: Effect<ID, V, S>) {
+      if (this@via in transitions) {
+        throw IllegalStateException("State $this already has a transition defined from $from")
+      }
       transitions[this@via] = effect
     }
 
