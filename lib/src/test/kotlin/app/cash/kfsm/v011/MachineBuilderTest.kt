@@ -10,6 +10,7 @@ import app.cash.kfsm.Letter
 import app.cash.kfsm.Transition
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainOnly
+import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import kotlin.String
@@ -19,6 +20,7 @@ class MachineBuilderTest :
   StringSpec({
     "an empty machine" {
       fsm<String, Letter, Char> {}
+        .getOrThrow()
         .transitionMap shouldBe emptyMap()
     }
 
@@ -27,7 +29,7 @@ class MachineBuilderTest :
         B becomes {
           B via { it }
         }
-      }.transitionMap should {
+      }.getOrThrow().transitionMap should {
         it.keys shouldContainOnly setOf(B)
         it[B]?.keys shouldContainOnly setOf(B)
       }
@@ -41,7 +43,7 @@ class MachineBuilderTest :
           D via
             object : Transition<String, Letter, Char>(B, D) { }
         }
-      }.transitionMap should {
+      }.getOrThrow().transitionMap should {
         it.keys shouldContainOnly setOf(B)
         it[B]?.keys shouldContainOnly setOf(B, C, D)
       }
@@ -64,6 +66,17 @@ class MachineBuilderTest :
           B.via { it }
           E.via { it }
         }
-      }
+      }.getOrThrow()
+    }
+
+    "disallows redeclaration of from state" {
+      fsm<String, Letter, Char> {
+        B.becomes {
+          C.via { it }
+        }
+        B.becomes {
+          D.via { it }
+        }
+      }.shouldBeFailure<IllegalStateException>().message shouldBe "State B has multiple `becomes` blocks defined"
     }
   })
