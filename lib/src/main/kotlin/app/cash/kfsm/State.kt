@@ -21,12 +21,10 @@ package app.cash.kfsm
  * @param S The sealed class type representing all possible states
  * @property transitionsFn Function that returns the set of states this state can transition to
  * @property invariants List of conditions that must hold true while in this state
- * @property canTransitionToSelf whether this state itself is a subsequent state.
  */
 open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   transitionsFn: () -> Set<S>,
-  private val invariants: List<Invariant<ID, V, S>> = emptyList(),
-  val canTransitionToSelf: Boolean = false
+  private val invariants: List<Invariant<ID, V, S>> = emptyList()
 ) {
   /**
    * The set of states that can be reached directly from this state through a single transition.
