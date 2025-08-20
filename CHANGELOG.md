@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+* Introduced MachineBuilder DSL for creating type-safe state machines with a more intuitive syntax
+
 ## [0.10.3]
 
 Modified maven publishing configuration again. It now works with the new maven central portal.
@@ -136,4 +139,3 @@ Modified maven publishing configuration.
 ### Added
 
 * Initial release from internal
-
