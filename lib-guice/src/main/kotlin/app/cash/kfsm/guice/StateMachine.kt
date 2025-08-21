@@ -40,13 +40,15 @@ import kotlin.reflect.KClass
  * ```
  */
 @Singleton
-class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>> @Inject constructor(
+class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>
+  @Inject
+  constructor(
     private val transitions: Set<Transition<ID, V, S>>,
     private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
-) {
+  ) {
     // Cache transitions by their class for faster lookup
     private val transitionsByType: Map<Class<out Transition<ID, V, S>>, Transition<ID, V, S>> =
-        transitions.associateBy { it::class.java }
+      transitions.associateBy { it::class.java }
 
     /**
      * Returns all transitions that are valid for the given state.
@@ -57,8 +59,9 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>> @Inject constru
      * @return Set of valid transitions for the given state
      */
     fun getAvailableTransitions(state: S): Set<Transition<ID, V, S>> =
-      transitions.filter { transition ->
-            transition.from.set.contains(state)
+      transitions
+        .filter { transition ->
+          transition.from.set.contains(state)
         }.toSet()
 
     /**
@@ -68,8 +71,7 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>> @Inject constru
      * @return The requested transition instance
      * @throws IllegalArgumentException if no transition of the specified type is found
      */
-    inline fun <reified T : Transition<ID, V, S>> getTransition(): T =
-        getTransition(T::class)
+    inline fun <reified T : Transition<ID, V, S>> getTransition(): T = getTransition(T::class)
 
     /**
      * Gets a specific transition by its [KClass].
@@ -90,12 +92,14 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>> @Inject constru
      * @param transition The transition to execute
      * @return A [Result] containing either the transitioned value or an error
      */
-    fun execute(value: V, transition: Transition<ID, V, S>): Result<V> =
-        transitioner.transition(value, transition)
+    fun execute(
+      value: V,
+      transition: Transition<ID, V, S>
+    ): Result<V> = transitioner.transition(value, transition)
 
     /**
      * Attempts to transition the given value to the specified state.
-     * 
+     *
      * This function will only succeed if there exists a transition that can take the value
      * from its current state to the target state in a single step.
      *
@@ -103,11 +107,15 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>> @Inject constru
      * @param targetState The state to transition to
      * @return A [Result] containing either the transitioned value or an error
      */
-    fun transitionToState(value: V, targetState: S): Result<V> =
+    fun transitionToState(
+      value: V,
+      targetState: S
+    ): Result<V> =
       when {
-        value.state.canDirectlyTransitionTo(targetState) -> getAvailableTransitions(value.state)
-          .find { it.to == targetState }
-          ?.let { execute(value, it) } ?: Result.failure(NoPathToTargetState(value, targetState))
+        value.state.canDirectlyTransitionTo(targetState) ->
+          getAvailableTransitions(value.state)
+            .find { it.to == targetState }
+            ?.let { execute(value, it) } ?: Result.failure(NoPathToTargetState(value, targetState))
         else -> Result.failure(NoPathToTargetState(value, targetState))
-    }
-}
+      }
+  }

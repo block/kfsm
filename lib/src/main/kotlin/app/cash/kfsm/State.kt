@@ -24,9 +24,8 @@ package app.cash.kfsm
  */
 open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   transitionsFn: () -> Set<S>,
-  private val invariants: List<Invariant<ID, V, S>> = emptyList(),
+  private val invariants: List<Invariant<ID, V, S>> = emptyList()
 ) {
-
   /**
    * The set of states that can be reached directly from this state through a single transition.
    */
@@ -64,7 +63,8 @@ open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
    * @return A Result containing the value if valid, or the first failure encountered
    */
   fun validate(value: V): Result<V> =
-    invariants.map { it.validate(value) }
+    invariants
+      .map { it.validate(value) }
       .firstOrNull { it.isFailure }
       ?: Result.success(value)
 
@@ -100,9 +100,10 @@ open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
       val current = queue.removeFirst()
 
       if (current == to) {
-        val path = generateSequence(to) { predecessor[it] }
-          .toList()
-          .asReversed()
+        val path =
+          generateSequence(to) { predecessor[it] }
+            .toList()
+            .asReversed()
         return path
       }
 
@@ -120,7 +121,10 @@ open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   }
 
   private fun expand(found: Set<S> = emptySet()): Set<S> =
-    subsequentStates.minus(found).flatMap {
-      it.expand(subsequentStates + found) + it
-    }.toSet().plus(found)
+    subsequentStates
+      .minus(found)
+      .flatMap {
+        it.expand(subsequentStates + found) + it
+      }.toSet()
+      .plus(found)
 }
