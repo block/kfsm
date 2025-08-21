@@ -34,10 +34,14 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
      *
      * @param effect The effect to apply during the transition
      * @throws IllegalStateException if a transition to this state is already defined
+     * @throws IllegalStateException if the from state cannot transition to this state
      */
     infix fun S.via(effect: Effect<ID, V, S>) {
       if (this@via in transitions) {
         throw IllegalStateException("State $this already has a transition defined from $from")
+      }
+      if (!from.canDirectlyTransitionTo(this@via)) {
+        throw IllegalStateException("State $from declares that it cannot transition to $this. Either the fsm declaration or the State is incorrect")
       }
       transitions[this@via] = effect
     }

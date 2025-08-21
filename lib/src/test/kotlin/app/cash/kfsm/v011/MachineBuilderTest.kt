@@ -88,4 +88,12 @@ class MachineBuilderTest :
         }
       }.shouldBeFailure<IllegalStateException>().message shouldBe "State C already has a transition defined from B"
     }
+
+    "disallows transitions between states that do not permit them" {
+      fsm<String, Letter, Char> {
+        C.becomes {
+          B.via { it }
+        }
+      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. Either the fsm declaration or the State is incorrect"
+    }
   })
