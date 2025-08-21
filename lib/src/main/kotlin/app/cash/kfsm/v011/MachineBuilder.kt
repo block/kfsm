@@ -41,7 +41,7 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
         throw IllegalStateException("State $this already has a transition defined from $from")
       }
       if (!from.canDirectlyTransitionTo(this@via)) {
-        throw IllegalStateException("State $from cannot transition to $this")
+        throw IllegalStateException("State $from declares that it cannot transition to $this. Either the fsm declaration or the State is incorrect")
       }
       transitions[this@via] = effect
     }

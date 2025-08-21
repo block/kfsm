@@ -94,6 +94,6 @@ class MachineBuilderTest :
         C.becomes {
           B.via { it }
         }
-      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C cannot transition to B"
+      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. Either the fsm declaration or the State is incorrect"
     }
   })
