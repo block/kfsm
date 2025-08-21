@@ -79,4 +79,13 @@ class MachineBuilderTest :
         }
       }.shouldBeFailure<IllegalStateException>().message shouldBe "State B has multiple `becomes` blocks defined"
     }
+
+    "disallows redeclaration of to state" {
+      fsm<String, Letter, Char> {
+        B.becomes {
+          C.via { it }
+          C.via { it }
+        }
+      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C already has a transition defined from B"
+    }
   })
