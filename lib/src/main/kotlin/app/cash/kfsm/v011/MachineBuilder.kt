@@ -66,8 +66,12 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
    * Defines transitions from a given state using a builder block.
    *
    * @param block A builder block that defines the possible transitions from this state
+   * @throws IllegalStateException if transitions for this state have already been defined
    */
   infix fun S.becomes(block: TransitionBuilder<ID, V, S>.() -> Unit) {
+    if (this@becomes in transitionMap) {
+      throw IllegalStateException("State $this has multiple `becomes` blocks defined")
+    }
     transitionMap[this@becomes] = TransitionBuilder<ID, V, S>(this@becomes).apply(block).build()
   }
 
@@ -90,4 +94,4 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
  */
 inline fun <reified ID, V : Value<ID, V, S>, S : State<ID, V, S>> fsm(
   noinline block: MachineBuilder<ID, V, S>.() -> Unit
-): StateMachine<ID, V, S> = MachineBuilder<ID, V, S>().apply(block).build()
+): Result<StateMachine<ID, V, S>> = runCatching { MachineBuilder<ID, V, S>().apply(block).build() }
