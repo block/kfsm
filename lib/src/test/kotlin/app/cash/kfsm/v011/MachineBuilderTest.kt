@@ -8,6 +8,7 @@ import app.cash.kfsm.D
 import app.cash.kfsm.E
 import app.cash.kfsm.Letter
 import app.cash.kfsm.Transition
+import app.cash.kfsm.Transitioner
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.result.shouldBeFailure
@@ -18,14 +19,16 @@ import kotlin.runCatching
 
 class MachineBuilderTest :
   StringSpec({
+    val transitioner = object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {}
+
     "an empty machine" {
-      fsm<String, Letter, Char> {}
+      fsm(transitioner) {}
         .getOrThrow()
         .transitionMap shouldBe emptyMap()
     }
 
     "a self loop" {
-      fsm<String, Letter, Char> {
+      fsm(transitioner) {
         B becomes {
           B via { it }
         }
@@ -36,7 +39,7 @@ class MachineBuilderTest :
     }
 
     "mix of effect, transition and function values" {
-      fsm<String, Letter, Char> {
+      fsm(transitioner) {
         B becomes {
           B via { it }
           C via Effect { runCatching { it } }
@@ -50,7 +53,7 @@ class MachineBuilderTest :
     }
 
     "a full machine" {
-      fsm<String, Letter, Char> {
+      fsm(transitioner) {
         A.becomes {
           B.via { it }
         }
@@ -70,7 +73,7 @@ class MachineBuilderTest :
     }
 
     "disallows redeclaration of from state" {
-      fsm<String, Letter, Char> {
+      fsm(transitioner) {
         B.becomes {
           C.via { it }
         }
@@ -81,7 +84,7 @@ class MachineBuilderTest :
     }
 
     "disallows redeclaration of to state" {
-      fsm<String, Letter, Char> {
+      fsm(transitioner) {
         B.becomes {
           C.via { it }
           C.via { it }
@@ -90,10 +93,11 @@ class MachineBuilderTest :
     }
 
     "disallows transitions between states that do not permit them" {
-      fsm<String, Letter, Char> {
+      fsm(transitioner) {
         C.becomes {
           B.via { it }
         }
-      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. Either the fsm declaration or the State is incorrect"
+      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. " +
+        "Either the fsm declaration or the State is incorrect"
     }
   })
