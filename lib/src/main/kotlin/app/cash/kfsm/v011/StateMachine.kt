@@ -10,6 +10,14 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
 ) {
   /**
+   * Returns all available transitions from a given state.
+   *
+   * @param state The current state
+   * @return Set of all possible transitions from the given state
+   */
+  fun getAvailableTransitions(state: S): Set<Transition<ID, V, S>> =
+    transitionMap[state]?.values?.toSet() ?: emptySet()
+  /**
    * Transitions a value to the target state if a valid transition exists.
    *
    * @param value The current value to transition

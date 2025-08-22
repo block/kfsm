@@ -6,6 +6,12 @@ import app.cash.kfsm.Transitioner
 import app.cash.kfsm.Value
 
 /**
+ * Default do-nothing transitioner that can be used when no special transition behavior is needed.
+ */
+class DefaultTransitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>> :
+  Transitioner<ID, T, V, S>()
+
+/**
  * Builder class for creating state machines with type-safe transitions.
  *
  * @param ID The type of the identifier used in the state machine
@@ -96,12 +102,12 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
  * @param ID The type of the identifier used in the state machine
  * @param V The type of value being transformed
  * @param S The type of state in the state machine
- * @param transitioner The transitioner to use for state transitions
+ * @param transitioner The transitioner to use for state transitions. If not provided, a default do-nothing transitioner will be used.
  * @param block A builder block that defines the state machine's transitions
  * @return A new [StateMachine] instance
  */
 inline fun <reified ID, V : Value<ID, V, S>, S : State<ID, V, S>> fsm(
-  transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>,
+  transitioner: Transitioner<ID, Transition<ID, V, S>, V, S> = DefaultTransitioner(),
   noinline block: MachineBuilder<ID, V, S>.() -> Unit
 ): Result<StateMachine<ID, V, S>> = runCatching { MachineBuilder<ID, V, S>().apply(block).build(transitioner) }
 
