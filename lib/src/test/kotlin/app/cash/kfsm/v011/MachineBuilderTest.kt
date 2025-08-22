@@ -19,16 +19,14 @@ import kotlin.runCatching
 
 class MachineBuilderTest :
   StringSpec({
-    val transitioner = object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {}
-
     "an empty machine" {
-      fsm(transitioner) {}
+      fsm<String, Letter, Char> {}
         .getOrThrow()
         .transitionMap shouldBe emptyMap()
     }
 
     "a self loop" {
-      fsm(transitioner) {
+      fsm<String, Letter, Char> {
         B becomes {
           B via { it }
         }
@@ -39,7 +37,7 @@ class MachineBuilderTest :
     }
 
     "mix of effect, transition and function values" {
-      fsm(transitioner) {
+      fsm<String, Letter, Char> {
         B becomes {
           B via { it }
           C via Effect { runCatching { it } }
@@ -53,7 +51,7 @@ class MachineBuilderTest :
     }
 
     "a full machine" {
-      fsm(transitioner) {
+      fsm<String, Letter, Char> {
         A.becomes {
           B.via { it }
         }
@@ -73,7 +71,7 @@ class MachineBuilderTest :
     }
 
     "disallows redeclaration of from state" {
-      fsm(transitioner) {
+      fsm<String, Letter, Char> {
         B.becomes {
           C.via { it }
         }
@@ -84,7 +82,7 @@ class MachineBuilderTest :
     }
 
     "disallows redeclaration of to state" {
-      fsm(transitioner) {
+      fsm<String, Letter, Char> {
         B.becomes {
           C.via { it }
           C.via { it }
@@ -93,7 +91,7 @@ class MachineBuilderTest :
     }
 
     "disallows transitions between states that do not permit them" {
-      fsm(transitioner) {
+      fsm<String, Letter, Char> {
         C.becomes {
           B.via { it }
         }
