@@ -18,6 +18,48 @@ class StateMachineTest :
   StringSpec({
     val transitioner = object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {}
 
+    "getAvailableTransitions returns all possible transitions from a state" {
+      // Given a machine with multiple transitions from state B
+      val machine = fsm(transitioner) {
+        A.becomes {
+          B.via { it.copy(id = "banana") }
+        }
+        B.becomes {
+          C.via { it.copy(id = "cinnamon") }
+          D.via { it.copy(id = "durian") }
+          B.via { it.copy(id = "berry") }
+        }
+        D.becomes {
+          E.via { it.copy(id = "eggplant") }
+        }
+      }.getOrThrow()
+
+      // When getting available transitions from state B
+      val transitions = machine.getAvailableTransitions(B)
+
+      // Then all transitions from B are returned
+      transitions.size shouldBe 3
+      transitions.map { it.to }.toSet() shouldBe setOf(B, C, D)
+    }
+
+    "getAvailableTransitions returns empty set for state with no transitions" {
+      // Given a machine with no transitions from state E
+      val machine = fsm(transitioner) {
+        A.becomes {
+          B.via { it.copy(id = "banana") }
+        }
+        B.becomes {
+          C.via { it.copy(id = "cinnamon") }
+        }
+      }.getOrThrow()
+
+      // When getting available transitions from state E
+      val transitions = machine.getAvailableTransitions(E)
+
+      // Then an empty set is returned
+      transitions shouldBe emptySet()
+    }
+
     "valid transition succeeds" {
       // Given a machine that allows A -> B
       val machine =
