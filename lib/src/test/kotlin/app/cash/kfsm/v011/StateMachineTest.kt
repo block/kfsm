@@ -18,6 +18,37 @@ class StateMachineTest :
   StringSpec({
     val transitioner = object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {}
 
+    "mermaidStateDiagramMarkdown generates correct diagram" {
+      // Given a machine with multiple transitions
+      val machine = fsm(transitioner) {
+        A.becomes {
+          B.via { it.copy(id = "banana") }
+        }
+        B.becomes {
+          C.via { it.copy(id = "cinnamon") }
+          D.via { it.copy(id = "durian") }
+          B.via { it.copy(id = "berry") }
+        }
+        D.becomes {
+          E.via { it.copy(id = "eggplant") }
+        }
+      }.getOrThrow()
+
+      // When generating a diagram starting from A
+      val diagram = machine.mermaidStateDiagramMarkdown(A)
+
+      // Then the diagram contains all expected elements
+      diagram shouldBe """
+        |stateDiagram-v2
+        |    [*] --> A
+        |    A --> B
+        |    B --> B
+        |    B --> C
+        |    B --> D
+        |    D --> E
+      """.trimMargin()
+    }
+
     "getAvailableTransitions returns all possible transitions from a state" {
       // Given a machine with multiple transitions from state B
       val machine = fsm(transitioner) {
