@@ -8,6 +8,7 @@ import app.cash.kfsm.D
 import app.cash.kfsm.E
 import app.cash.kfsm.Letter
 import app.cash.kfsm.Transition
+import app.cash.kfsm.Transitioner
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.result.shouldBeFailure
@@ -94,6 +95,7 @@ class MachineBuilderTest :
         C.becomes {
           B.via { it }
         }
-      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. Either the fsm declaration or the State is incorrect"
+      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. " +
+        "Either the fsm declaration or the State is incorrect"
     }
   })
