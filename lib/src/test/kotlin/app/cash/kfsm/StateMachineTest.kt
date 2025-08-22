@@ -3,89 +3,263 @@ package app.cash.kfsm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.result.shouldBeSuccess
+import io.kotest.matchers.shouldBe
 
-data class ValidValue(override val state: ValidState, override val id: String) : Value<String, ValidValue, ValidState> {
-  override fun update(newState: ValidState): ValidValue = copy(state = newState)
-}
+class StateMachineTest :
+  StringSpec({
+    val transitioner = object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {}
 
-data class UniCycleValue(override val state: UniCycleState, override val id: String) : Value<String, UniCycleValue, UniCycleState> {
-  override fun update(newState: UniCycleState): UniCycleValue = copy(state = newState)
-}
+    "mermaidStateDiagramMarkdown generates correct diagram" {
+      // Given a machine with multiple transitions
+      val machine = fsm(transitioner) {
+        A.becomes {
+          B.via { it.copy(id = "banana") }
+        }
+        B.becomes {
+          C.via { it.copy(id = "cinnamon") }
+          D.via { it.copy(id = "durian") }
+          B.via { it.copy(id = "berry") }
+        }
+        D.becomes {
+          E.via { it.copy(id = "eggplant") }
+        }
+      }.getOrThrow()
 
-data class BiCycleValue(override val state: BiCycleState, override val id: String) : Value<String, BiCycleValue, BiCycleState> {
-  override fun update(newState: BiCycleState): BiCycleValue = copy(state = newState)
-}
+      // When generating a diagram starting from A
+      val diagram = machine.mermaidStateDiagramMarkdown(A)
 
-data class TriCycleValue(override val state: TriCycleState, override val id: String) : Value<String, TriCycleValue, TriCycleState> {
-  override fun update(newState: TriCycleState): TriCycleValue = copy(state = newState)
-}
+      // Then the diagram contains all expected elements
+      diagram shouldBe """
+        |stateDiagram-v2
+        |    [*] --> A
+        |    A --> B
+        |    B --> B
+        |    B --> C
+        |    B --> D
+        |    D --> E
+      """.trimMargin()
+    }
 
-class StateMachineTest : StringSpec({
+    "getAvailableTransitions returns all possible transitions from a state" {
+      // Given a machine with multiple transitions from state B
+      val machine = fsm(transitioner) {
+        A.becomes {
+          B.via { it.copy(id = "banana") }
+        }
+        B.becomes {
+          C.via { it.copy(id = "cinnamon") }
+          D.via { it.copy(id = "durian") }
+          B.via { it.copy(id = "berry") }
+        }
+        D.becomes {
+          E.via { it.copy(id = "eggplant") }
+        }
+      }.getOrThrow()
 
-  "Returns the states when the machine is valid" {
-    StateMachine.verify(Valid1) shouldBeSuccess setOf(
-      Valid1,
-      Valid2,
-      Valid3,
-      Valid4,
-      Valid5
-    )
-  }
+      // When getting available transitions from state B
+      val transitions = machine.getAvailableTransitions(B)
 
-  "Can verify machines with self-loops" {
-    StateMachine.verify(UniCycle1).shouldBeSuccess()
-  }
+      // Then all transitions from B are returned
+      transitions.size shouldBe 3
+      transitions.map { it.to }.toSet() shouldBe setOf(B, C, D)
+    }
 
-  "Can verify machines with 2 party loops" {
-    StateMachine.verify(BiCycle1).shouldBeSuccess()
-  }
+    "getAvailableTransitions returns empty set for state with no transitions" {
+      // Given a machine with no transitions from state E
+      val machine = fsm(transitioner) {
+        A.becomes {
+          B.via { it.copy(id = "banana") }
+        }
+        B.becomes {
+          C.via { it.copy(id = "cinnamon") }
+        }
+      }.getOrThrow()
 
-  "Can verify machines with 3+ party loops" {
-    StateMachine.verify(TriCycle1).shouldBeSuccess()
-  }
+      // When getting available transitions from state E
+      val transitions = machine.getAvailableTransitions(E)
 
-  "Returns failure when not all states are encountered" {
-    StateMachine.verify(Valid3) shouldBeFailure InvalidStateMachine("Did not encounter [Valid1, Valid2]")
-  }
+      // Then an empty set is returned
+      transitions shouldBe emptySet()
+    }
 
-  "produces mermaid diagram source for non-cyclical state machine" {
-    StateMachine.mermaid(Valid1) shouldBeSuccess """
-      |stateDiagram-v2
-      |    [*] --> Valid1
-      |    Valid1 --> Valid2
-      |    Valid1 --> Valid3
-      |    Valid2 --> Valid3
-      |    Valid3 --> Valid4
-      |    Valid3 --> Valid5
-    """.trimMargin()
-  }
+    "valid transition succeeds" {
+      // Given a machine that allows A -> B
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.copy(id = "beetroot") }
+          }
+        }.getOrThrow()
 
-  "produces mermaid diagram source for cyclical state machine" {
-    StateMachine.mermaid(TriCycle3) shouldBeSuccess """
-      |stateDiagram-v2
-      |    [*] --> TriCycle3
-      |    TriCycle1 --> TriCycle2
-      |    TriCycle2 --> TriCycle3
-      |    TriCycle3 --> TriCycle1
-    """.trimMargin()
-  }
-})
+      // When transitioning from A to B
+      val result = machine.transitionTo(Letter(A, "avocado"), B).getOrThrow()
 
-sealed class ValidState(to: () -> Set<ValidState>) : State<String, ValidValue, ValidState>(to)
-data object Valid1 : ValidState({ setOf(Valid2, Valid3) })
-data object Valid2 : ValidState({ setOf(Valid3) })
-data object Valid3 : ValidState({ setOf(Valid4, Valid5) })
-data object Valid4 : ValidState({ setOf() })
-data object Valid5 : ValidState({ setOf() })
+      // Then the transition succeeds
+      result shouldBe Letter(B, "beetroot")
+    }
 
-sealed class UniCycleState(to: () -> Set<UniCycleState>) : State<String, UniCycleValue, UniCycleState>(to)
-data object UniCycle1 : UniCycleState({ setOf(UniCycle1) })
+    "invalid transition fails" {
+      // Given a machine that allows A -> B
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.update(B) }
+          }
+        }.getOrThrow()
 
-sealed class BiCycleState(to: () -> Set<BiCycleState>) : State<String, BiCycleValue, BiCycleState>(to)
-data object BiCycle1 : BiCycleState({ setOf(BiCycle2) })
-data object BiCycle2 : BiCycleState({ setOf(BiCycle1) })
+      // When attempting an invalid transition A -> C
+      val result = machine.transitionTo(Letter(A, "test"), C)
 
-sealed class TriCycleState(to: () -> Set<TriCycleState>) : State<String, TriCycleValue, TriCycleState>(to)
-data object TriCycle1 : TriCycleState({ setOf(TriCycle2) })
-data object TriCycle2 : TriCycleState({ setOf(TriCycle3) })
-data object TriCycle3 : TriCycleState({ setOf(TriCycle1) })
+      // Then the transition fails
+      result.shouldBeFailure<IllegalStateException>().message shouldBe "No transition defined from A to C"
+    }
+
+    "transition from undefined state fails" {
+      // Given a machine with no transitions from C
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.copy(id = "banana") }
+          }
+        }.getOrThrow()
+
+      // When attempting to transition from C
+      val result = machine.transitionTo(Letter(C, "apple"), D)
+
+      // Then the transition fails
+      result.shouldBeFailure<IllegalStateException>().message shouldBe "No transition defined from C to D"
+    }
+
+    "self-transition succeeds" {
+      // Given a machine that allows B -> B
+      val machine =
+        fsm(transitioner) {
+          B.becomes {
+            B.via { it }
+          }
+        }.getOrThrow()
+
+      // When performing a self-transition
+      val value = Letter(B, "test")
+      val result = machine.transitionTo(value, B)
+
+      // Then the transition succeeds with the same value
+      result.shouldBeSuccess() shouldBe value
+    }
+
+    "complex transition chain works" {
+      // Given a machine with multiple transitions
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.copy(id = "cinnamon") }
+            D.via { it.copy(id = "durian") }
+          }
+          D.becomes {
+            E.via { it.copy(id = "eggplant") }
+          }
+        }.getOrThrow()
+
+      // When performing multiple transitions
+      val startValue = Letter(A, "avocado")
+      val result1 = machine.transitionTo(startValue, B).getOrThrow()
+      val result2 = machine.transitionTo(result1, D).getOrThrow()
+      val result3 = machine.transitionTo(result2, E).getOrThrow()
+
+      // Then each transition succeeds
+      result1 shouldBe Letter(B, "banana")
+      result2 shouldBe Letter(D, "durian")
+      result3 shouldBe Letter(E, "eggplant")
+    }
+
+    "failed effect is propagated" {
+      // Given a machine with a failing effect
+      val expectedError = RuntimeException("Test error")
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { throw expectedError }
+          }
+        }.getOrThrow()
+
+      // When transitioning
+      val result = machine.transitionTo(Letter(A, "test"), B)
+
+      // Then the effect's error is propagated
+      result.shouldBeFailure(expectedError)
+    }
+
+    "hooks are called in order" {
+      var callOrder = mutableListOf<String>()
+      val hookTransitioner =
+        object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {
+          override fun preHook(
+            value: Letter,
+            via: Transition<String, Letter, Char>
+          ): Result<Unit> {
+            callOrder.add("pre")
+            return super.preHook(value, via)
+          }
+
+          override fun persist(
+            from: Char,
+            value: Letter,
+            via: Transition<String, Letter, Char>
+          ): Result<Letter> {
+            callOrder.add("persist")
+            return super.persist(from, value, via)
+          }
+
+          override fun postHook(
+            from: Char,
+            value: Letter,
+            via: Transition<String, Letter, Char>
+          ): Result<Unit> {
+            callOrder.add("post")
+            return super.postHook(from, value, via)
+          }
+        }
+
+      // Given a machine with a transitioner that tracks hook calls
+      val machine =
+        fsm(hookTransitioner) {
+          A.becomes {
+            B.via { it.update(B) }
+          }
+        }.getOrThrow()
+
+      // When transitioning
+      machine.transitionTo(Letter(A, "test"), B)
+
+      // Then hooks are called in the expected order
+      callOrder shouldBe listOf("pre", "persist", "post")
+    }
+
+    "failed hook propagates error" {
+      val hookError = RuntimeException("Hook error")
+      val failingTransitioner =
+        object : Transitioner<String, Transition<String, Letter, Char>, Letter, Char>() {
+          override fun preHook(
+            value: Letter,
+            via: Transition<String, Letter, Char>
+          ): Result<Unit> = Result.failure(hookError)
+        }
+
+      // Given a machine with a failing hook
+      val machine =
+        fsm(failingTransitioner) {
+          A.becomes {
+            B.via { it.update(B) }
+          }
+        }.getOrThrow()
+
+      // When transitioning
+      val result = machine.transitionTo(Letter(A, "test"), B)
+
+      // Then the hook error is propagated
+      result.shouldBeFailure<RuntimeException>() shouldBe hookError
+    }
+  })

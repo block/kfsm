@@ -1,9 +1,4 @@
-package app.cash.kfsm.v011
-
-import app.cash.kfsm.State
-import app.cash.kfsm.Transition
-import app.cash.kfsm.Transitioner
-import app.cash.kfsm.Value
+package app.cash.kfsm
 
 /**
  * Default do-nothing transitioner that can be used when no special transition behavior is needed.
