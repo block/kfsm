@@ -1,14 +1,5 @@
-package app.cash.kfsm.v011
+package app.cash.kfsm
 
-import app.cash.kfsm.A
-import app.cash.kfsm.B
-import app.cash.kfsm.C
-import app.cash.kfsm.Char
-import app.cash.kfsm.D
-import app.cash.kfsm.E
-import app.cash.kfsm.Letter
-import app.cash.kfsm.Transition
-import app.cash.kfsm.Transitioner
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.result.shouldBeFailure

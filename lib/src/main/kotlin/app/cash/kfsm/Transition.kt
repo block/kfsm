@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-import app.cash.kfsm.v011.Effect
+import app.cash.kfsm.Effect
 
 open class Transition<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   val from: States<ID, V, S>,
