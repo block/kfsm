@@ -2,8 +2,14 @@
 
 ## [Unreleased]
 
+## [0.11.0]
+
 ### Added
 * Introduced MachineBuilder DSL for creating type-safe state machines with a more intuitive syntax
+
+### Breaking
+* In order to make room for a new StateMachine type, the existing object StateMachine, which was a short collection of
+  static utilities, has been renamed to StateMachineUtilities.
 
 ## [0.10.3]
 
