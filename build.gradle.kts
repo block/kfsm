@@ -19,39 +19,44 @@ subprojects {
       jvmTarget = "11"
     }
   }
-  
+
   tasks.withType<Test> {
     useJUnitPlatform()
   }
 
-  // Configure Dokka for each subproject
-  tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
-    dokkaSourceSets {
-      named("main") {
-        includes.from("module.md")
-        moduleName.set(project.name)
-        sourceLink {
-          localDirectory.set(file("src/main/kotlin"))
-          remoteUrl.set(uri("https://github.com/block/kfsm/tree/main/${project.name}/src/main/kotlin").toURL())
-          remoteLineSuffix.set("#L")
-        }
+  dokka {
+    moduleName.set(project.name)
+    dokkaPublications.html {
+      suppressInheritedMembers.set(true)
+      failOnWarning.set(true)
+    }
+    dokkaSourceSets.configureEach {
+      includes.from("module.md")
+      sourceLink {
+        localDirectory.set(file("src/main/kotlin"))
+        remoteUrl.set(uri("https://github.com/block/kfsm/tree/main/${project.name}/src/main/kotlin"))
+        remoteLineSuffix.set("#L")
       }
     }
   }
 }
 
 // Configure Dokka multi-module task
-tasks.dokkaHtmlMultiModule {
-  outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
-  includes.from("dokka-docs/module.md")
+dokka {
   moduleName.set("kfsm")
   moduleVersion.set(project.version.toString())
+  dokkaPublications {
+    register("multiModule") {
+      outputDirectory.set(layout.buildDirectory.dir("dokka/html"))
+      includes.from("dokka-docs/module.md")
+    }
+  }
 }
 
 task("publishToMavenCentral") {
   group = "publishing"
   dependsOn(
     ":lib:publishToMavenCentral",
-    ":lib-guice:publishToMavenCentral",
+    ":lib-guice:publishToMavenCentral"
   )
 }
