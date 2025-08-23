@@ -1,10 +1,15 @@
 package app.cash.kfsm
 
 /**
- * Default do-nothing transitioner that can be used when no special transition behavior is needed.
+ * Default transitioner that can be used when no special transition behavior is needed.
+ * Requires a factory function to create new value instances.
  */
-class DefaultTransitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>> :
-  Transitioner<ID, T, V, S>()
+class DefaultTransitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>>(
+  private val factory: (ID, S) -> V
+) : Transitioner<ID, T, V, S>() {
+  override fun instantiate(id: ID, initialState: S): Result<V> =
+    Result.success(factory(id, initialState))
+}
 
 /**
  * Builder class for creating state machines with type-safe transitions.
@@ -97,14 +102,14 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
  * @param ID The type of the identifier used in the state machine
  * @param V The type of value being transformed
  * @param S The type of state in the state machine
- * @param transitioner The transitioner to use for state transitions. If not provided, a default do-nothing transitioner will be used.
+ * @param factory A function that creates new value instances given an ID and state
  * @param block A builder block that defines the state machine's transitions
  * @return A new [StateMachine] instance
  */
 inline fun <reified ID, V : Value<ID, V, S>, S : State<ID, V, S>> fsm(
-  transitioner: Transitioner<ID, Transition<ID, V, S>, V, S> = DefaultTransitioner(),
+  noinline factory: (ID, S) -> V,
   noinline block: MachineBuilder<ID, V, S>.() -> Unit
-): Result<StateMachine<ID, V, S>> = runCatching { MachineBuilder<ID, V, S>().apply(block).build(transitioner) }
+): Result<StateMachine<ID, V, S>> = fsm(factory, DefaultTransitioner(factory), block)
 
 /**
  * A transition between two states with an associated effect. This internal class exists so that it is possible to store

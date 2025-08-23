@@ -5,6 +5,23 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
 ) {
   /**
+   * Creates a new instance of a value using this state machine's transitioner.
+   * The value will be persisted and appropriate events emitted via the transitioner.
+   *
+   * @param id The identifier for the new value
+   * @param initialState The state in which to create the value
+   * @return Result containing the new value if creation succeeds
+   */
+  fun createValue(id: ID, initialState: S): Result<V> {
+    // Verify the initial state is part of this state machine
+    if (!transitionMap.containsKey(initialState)) {
+      return Result.failure(IllegalArgumentException("Initial state $initialState is not part of this state machine"))
+    }
+
+    return transitioner.create(id, initialState)
+  }
+
+  /**
    * Returns all available transitions from a given state.
    *
    * @param state The current state
