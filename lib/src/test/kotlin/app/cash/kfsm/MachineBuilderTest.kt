@@ -42,23 +42,33 @@ class MachineBuilderTest :
     }
 
     "a full machine" {
+      val machine =
+        fsm<String, Letter, Char> {
+          A.becomes {
+            B.via { it }
+          }
+          B.becomes {
+            B.via { it }
+            C.via { it }
+            D.via { it.copy(id = "dave") }
+          }
+          C.becomes {
+            D.via { it }
+          }
+          D.becomes {
+            B.via { it }
+            E.via { it }
+          }
+        }.getOrThrow()
+
+      machine.transitionTo(Letter(B, "barry"), D).getOrThrow() shouldBe Letter(D, "dave")
+    }
+
+    "disallows becomes block with no targets" {
       fsm<String, Letter, Char> {
-        A.becomes {
-          B.via { it }
-        }
-        B.becomes {
-          B.via { it }
-          C.via { it }
-          D.via { it }
-        }
-        C.becomes {
-          D.via { it }
-        }
-        D.becomes {
-          B.via { it }
-          E.via { it }
-        }
-      }.getOrThrow()
+        B.becomes {}
+      }.shouldBeFailure<IllegalStateException>().message shouldBe
+        "State B defines a `becomes` block with no transitions"
     }
 
     "disallows redeclaration of from state" {
@@ -88,5 +98,27 @@ class MachineBuilderTest :
         }
       }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. " +
         "Either the fsm declaration or the State is incorrect"
+    }
+
+    "can optionally define controllers" {
+      fsm<String, Letter, Char> {
+        A.becomes {
+          B.via { it }
+        }
+        B.becomes({ Result.success(C) }) {
+          B.via { it }
+          C.via { it }
+          D.via { it }
+        }
+        C.becomes {
+          D.via { it }
+        }
+        D.becomes {
+          B.via { it }
+          E.via { it }
+        }
+      }.getOrThrow()
+
+      // TODO - exercise the selector
     }
   })
