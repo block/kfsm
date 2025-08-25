@@ -15,6 +15,7 @@ class DefaultTransitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S :
  */
 class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
   private val transitions = mutableMapOf<S, Map<S, Transition<ID, V, S>>>()
+  private val selectors = mutableMapOf<S, NextStateSelector<ID, V, S>>()
 
   /**
    * Builder class for defining transitions from a specific state.
@@ -77,6 +78,29 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
   /**
    * Defines transitions from a given state using a builder block.
    *
+   * @param selector Given a value, select the next appropriate states
+   * @param block A builder block that defines the possible transitions from this state
+   * @throws IllegalStateException if transitions for this state have already been defined
+   */
+  fun S.becomes(
+    selector: NextStateSelector<ID, V, S>,
+    block: TransitionBuilder<ID, V, S>.() -> Unit
+  ) {
+    if (this@becomes in transitions) {
+      throw IllegalStateException("State $this has multiple `becomes` blocks defined")
+    }
+    val transitionMap = TransitionBuilder(this@becomes).apply(block).build()
+    if (transitionMap.isEmpty()) {
+      throw IllegalStateException("State $this defines a `becomes` block with no transitions")
+    }
+
+    transitions[this@becomes] = TransitionBuilder(this@becomes).apply(block).build()
+    selectors[this@becomes] = selector
+  }
+
+  /**
+   * Defines transitions from a given state using a builder block.
+   *
    * @param block A builder block that defines the possible transitions from this state
    * @throws IllegalStateException if transitions for this state have already been defined
    */
@@ -84,11 +108,32 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
     if (this@becomes in transitions) {
       throw IllegalStateException("State $this has multiple `becomes` blocks defined")
     }
-    transitions[this@becomes] = TransitionBuilder<ID, V, S>(this@becomes).apply(block).build()
+    val transitionMap = TransitionBuilder(this@becomes).apply(block).build()
+    val selector: NextStateSelector<ID, V, S> =
+      when (transitionMap.size) {
+        // It's an error to define a becomes block with no subsequent states
+        0 -> throw IllegalStateException("State $this defines a `becomes` block with no transitions")
+        // If there's only one subsequent states, then always select that states if using a selector
+        1 -> NextStateSelector { Result.success(transitionMap.values.first().to) }
+        // If there are multiple subsequent states, then fail if attempting automatic next state selection,
+        // while still allowing direct transitions via `StateMachine::transitionTo`. i.e it's not an error
+        // to define a block with multiple subsequent states and no selector.
+        else ->
+          NextStateSelector {
+            Result.failure(
+              IllegalStateException(
+                "State $this has multiple subsequent states, but no NextStateSelector was provided"
+              )
+            )
+          }
+      }
+
+    transitions[this@becomes] = TransitionBuilder(this@becomes).apply(block).build()
+    selectors[this@becomes] = selector
   }
 
   fun build(transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>): StateMachine<ID, V, S> =
-    StateMachine(transitions, transitioner)
+    StateMachine(transitions, selectors, transitioner)
 }
 
 /**

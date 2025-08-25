@@ -2,6 +2,7 @@ package app.cash.kfsm
 
 class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   val transitionMap: Map<S, Map<S, Transition<ID, V, S>>>,
+  selectors: MutableMap<S, NextStateSelector<ID, V, S>>,
   private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
 ) {
   /**
@@ -10,8 +11,7 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
    * @param state The current state
    * @return Set of all possible transitions from the given state
    */
-  fun getAvailableTransitions(state: S): Set<Transition<ID, V, S>> =
-    transitionMap[state]?.values?.toSet() ?: emptySet()
+  fun getAvailableTransitions(state: S): Set<Transition<ID, V, S>> = transitionMap[state]?.values?.toSet() ?: emptySet()
 
   /**
    * Transitions a value to the target state if a valid transition exists.
@@ -46,11 +46,14 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
    * @return A string containing the Mermaid markdown diagram
    */
   fun mermaidStateDiagramMarkdown(initialState: S): String {
-    val transitions = transitionMap.flatMap { (fromState, targets) ->
-      targets.keys.map { toState ->
-        "${fromState::class.simpleName} --> ${toState::class.simpleName}"
-      }
-    }.distinct().sorted()
+    val transitions =
+      transitionMap
+        .flatMap { (fromState, targets) ->
+          targets.keys.map { toState ->
+            "${fromState::class.simpleName} --> ${toState::class.simpleName}"
+          }
+        }.distinct()
+        .sorted()
 
     return listOf(
       "stateDiagram-v2",
