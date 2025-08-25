@@ -118,6 +118,73 @@ val transitioner = LightTransitioner(database)
 val greenLight: Result<Light> = transitioner.transition(redLight, Go)
 ```
 
+### Dynamic State Selection
+
+Sometimes you need to determine the next state dynamically based on the current value's state and other conditions. The `advance` method allows you to automatically progress to the next state using a state selector, without explicitly specifying the target state.
+
+First, define a state selector for each state that needs dynamic transitions:
+
+```kotlin
+class TrafficStateSelector(private val clock: Clock) : NextStateSelector<String, Light, Color> {
+    override fun apply(value: Light): Result<Color> = when (value.state) {
+        is Green -> Result.success(Amber)
+        is Amber -> Result.success(Red)
+        is Red -> when {
+            timeOfDay.hour in 23..5 -> Result.success(Green) // Less traffic at night
+            else -> Result.failure(IllegalStateException("Too much traffic to change to Green"))
+        }
+    }
+}
+```
+
+Then create your state machine with the selectors using the `fsm` DSL:
+
+```kotlin
+val selector = TrafficStateSelector(clock)
+val stateMachine = fsm<String, Light, Color>(LightTransitioner(database)) {
+    Green.becomes(selector) {
+        Amber via colorChange
+    }
+    Amber.becomes(selector) {
+        Red via colorChange
+    }
+    Red.becomes(selector) {
+        Green via colorChange
+    }
+}
+
+// Advance to the next state automatically
+val nextLight: Result<Light> = stateMachine.advance(currentLight)
+```
+
+In this case, because there are no branching transitions, the selector can be omitted and the only possible transition
+will be invoked on `advance`:
+
+```kotlin
+val stateMachine = fsm<String, Light, Color>(LightTransitioner(database)) {
+    Green.becomes {
+        Amber via Slow
+    }
+    Amber.becomes {
+        Red via stop
+    }
+    Red.becomes {
+        Green via Go
+    }
+}
+```
+
+
+The `advance` method will:
+1. Use the selector for the current state to determine the next state
+2. Automatically transition to that state if a valid transition exists
+3. Return a failure if no selector exists or the transition is invalid
+
+This is particularly useful when:
+- The next state depends on runtime conditions
+- You want to encapsulate transition logic in a single place
+- You need to implement complex state selection rules
+
 ### Putting it all together
 
 ```kotlin

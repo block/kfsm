@@ -3,6 +3,7 @@ package app.cash.kfsm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainOnly
 import io.kotest.matchers.result.shouldBeFailure
+import io.kotest.matchers.result.shouldBeSuccess
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import kotlin.String
@@ -101,24 +102,37 @@ class MachineBuilderTest :
     }
 
     "can optionally define controllers" {
-      fsm<String, Letter, Char> {
-        A.becomes {
-          B.via { it }
-        }
-        B.becomes({ Result.success(C) }) {
-          B.via { it }
-          C.via { it }
-          D.via { it }
-        }
-        C.becomes {
-          D.via { it }
-        }
-        D.becomes {
-          B.via { it }
-          E.via { it }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm<String, Letter, Char> {
+          A.becomes {
+            B.via { it.copy(id = "bedford") }
+          }
+          B.becomes(selector = { Result.success(C) }) {
+            B.via { it }
+            C.via { it.copy(id = "citroën") }
+            D.via { it }
+          }
+          C.becomes {
+            D.via { it.copy(id = "datsun") }
+          }
+          D.becomes {
+            B.via { it.copy(id = "bristol") }
+            E.via { it }
+          }
+        }.getOrThrow()
 
-      // TODO - exercise the selector
+      val a = Letter(A, "audi")
+      val b = Letter(B, "bedford")
+      val c = Letter(C, "citroën")
+      val d = Letter(D, "datsun")
+      val e = Letter(E, "eagle")
+
+      machine.advance(a).shouldBeSuccess(b)
+      machine.advance(b).shouldBeSuccess(c)
+      machine.advance(c).shouldBeSuccess(d)
+      machine.advance(d).shouldBeFailure<IllegalStateException>().message shouldBe
+        "State D has multiple subsequent states, but no NextStateSelector was provided"
+      machine.transitionTo(d, B).shouldBeSuccess(b.copy(id = "bristol"))
+      machine.advance(e).shouldBeFailure<IllegalStateException>().message shouldBe "No selector for state E"
     }
   })
