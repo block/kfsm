@@ -2,7 +2,7 @@ package app.cash.kfsm
 
 class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   val transitionMap: Map<S, Map<S, Transition<ID, V, S>>>,
-  selectors: MutableMap<S, NextStateSelector<ID, V, S>>,
+  private val selectors: Map<S, NextStateSelector<ID, V, S>>,
   private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
 ) {
   /**
@@ -27,6 +27,26 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
     transitionMap[value.state]?.get(targetState)?.let { transition ->
       transitioner.transition(value, transition)
     } ?: Result.failure(IllegalStateException("No transition defined from ${value.state} to $targetState"))
+
+  /**
+   * Advances the state machine to the next state based on the current value.
+   *
+   * This method uses a [NextStateSelector] to determine the next appropriate state and then
+   * performs the transition. The selector must be defined for the current state, and both
+   * the selection and transition must be valid for the operation to succeed.
+   *
+   * @param value The current value to advance to its next state
+   * @return Result containing the new value after transition, or failure if:
+   *         - No selector is defined for the current state
+   *         - The selector fails to determine a valid next state
+   *         - The transition to the selected state is invalid
+   */
+  fun advance(value: V): Result<V> =
+    runCatching {
+      val selector = selectors[value.state] ?: throw IllegalStateException("No selector for state ${value.state}")
+      val to = selector.apply(value).getOrThrow()
+      transitionTo(value, to).getOrThrow()
+    }
 
   /**
    * Generates a Mermaid markdown state diagram representation of this state machine.
