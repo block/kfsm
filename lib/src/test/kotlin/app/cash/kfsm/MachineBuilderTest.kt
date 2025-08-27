@@ -101,7 +101,7 @@ class MachineBuilderTest :
         "Either the fsm declaration or the State is incorrect"
     }
 
-    "can optionally define controllers" {
+    "can optionally define selectors" {
       val machine =
         fsm<String, Letter, Char> {
           A.becomes {
@@ -134,5 +134,16 @@ class MachineBuilderTest :
         "State D has multiple subsequent states, but no NextStateSelector was provided"
       machine.transitionTo(d, B).shouldBeSuccess(b.copy(id = "bristol"))
       machine.advance(e).shouldBeFailure<IllegalStateException>().message shouldBe "No selector for state E"
+    }
+
+    "can access from and to states in inline transitions" {
+      val machine =
+        fsm<String, Letter, Char> {
+          A.becomes {
+            B.via { it.copy(id = "was $from is now $to") }
+          }
+        }.getOrThrow()
+
+      machine.advance(Letter(A, "alice")).getOrThrow() shouldBe Letter(B, "was A is now B")
     }
   })

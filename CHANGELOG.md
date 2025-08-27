@@ -5,6 +5,12 @@
 ### Added
 * Added `StateMachine::advance` method to automatically progress to the next state using a state selector, 
   enabling dynamic state transitions without explicitly specifying the target state.
+* Exposed the state values $to and $from in the inline effect syntax. e.g. 
+  ```kotlin
+  A becomes { 
+    B via { it.copy(message = "from $from to $to" ) } 
+  }
+  ```
 
 ## [0.11.0]
 
