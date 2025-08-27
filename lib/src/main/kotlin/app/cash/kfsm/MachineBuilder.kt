@@ -56,7 +56,7 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
      *
      * @param effect A function that transforms the value during the transition
      */
-    infix fun S.via(effect: (V) -> V): Unit = via(Effect { runCatching { effect(it) } })
+    infix fun S.via(effect: (TransitionContext<ID, V, S>) -> V): Unit = via(Effect { runCatching { effect(it) } })
 
     /**
      * Defines a transition using a predefined [Transition] instance.
@@ -65,7 +65,7 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
      * @throws IllegalArgumentException if the transition's from/to states don't match the current context
      */
     infix fun S.via(transition: Transition<ID, V, S>) {
-      require(transition.from.set.contains(from) && transition.to == this@via) {
+      require(transition.from.a == from && transition.to == this@via) {
         "Expected a transition allowing $from to ${this@via}, but got $transition, " +
           "which allows only ${transition.from.set} to ${transition.to}"
       }
@@ -94,7 +94,7 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
       throw IllegalStateException("State $this defines a `becomes` block with no transitions")
     }
 
-    transitions[this@becomes] = TransitionBuilder(this@becomes).apply(block).build()
+    transitions[this@becomes] = transitionMap
     selectors[this@becomes] = selector
   }
 
@@ -128,7 +128,7 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
           }
       }
 
-    transitions[this@becomes] = TransitionBuilder(this@becomes).apply(block).build()
+    transitions[this@becomes] = transitionMap
     selectors[this@becomes] = selector
   }
 
@@ -156,9 +156,9 @@ inline fun <reified ID, V : Value<ID, V, S>, S : State<ID, V, S>> fsm(
  * a simple Effect as a Transition inside the state machine.
  */
 internal class EffectTransition<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
-  from: S,
-  to: S,
+  private val fromState: S,
+  private val toState: S,
   private val effect: Effect<ID, V, S>
-) : Transition<ID, V, S>(from, to) {
-  override fun effect(value: V): Result<V> = effect.apply(value)
+) : Transition<ID, V, S>(fromState, toState) {
+  override fun effect(value: V): Result<V> = effect.apply(TransitionContext(value, fromState, toState))
 }

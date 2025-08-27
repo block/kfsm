@@ -9,6 +9,8 @@ sealed class Char(to: () -> Set<Char>) : State<String, Letter, Char>(to) {
   fun next(count: Int): List<Char> =
     if (count <= 0) emptyList()
     else subsequentStates.filterNot { it == this }.firstOrNull()?.let { listOf(it) + it.next(count - 1) } ?: emptyList()
+    
+  val name: String get() = this::class.simpleName ?: toString()
 }
 
 data object A : Char(to = { setOf(B) })

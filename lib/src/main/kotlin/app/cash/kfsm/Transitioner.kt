@@ -47,4 +47,3 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
     transition: T
   ): Result<V> = Result.success(value.update(transition.to))
 }
-

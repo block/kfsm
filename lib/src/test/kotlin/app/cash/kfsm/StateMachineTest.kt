@@ -11,25 +11,27 @@ class StateMachineTest :
 
     "mermaidStateDiagramMarkdown generates correct diagram" {
       // Given a machine with multiple transitions
-      val machine = fsm(transitioner) {
-        A.becomes {
-          B.via { it.copy(id = "banana") }
-        }
-        B.becomes {
-          C.via { it.copy(id = "cinnamon") }
-          D.via { it.copy(id = "durian") }
-          B.via { it.copy(id = "berry") }
-        }
-        D.becomes {
-          E.via { it.copy(id = "eggplant") }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.value.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.value.copy(id = "cinnamon") }
+            D.via { it.value.copy(id = "durian") }
+            B.via { it.value.copy(id = "berry") }
+          }
+          D.becomes {
+            E.via { it.value.copy(id = "eggplant") }
+          }
+        }.getOrThrow()
 
       // When generating a diagram starting from A
       val diagram = machine.mermaidStateDiagramMarkdown(A)
 
       // Then the diagram contains all expected elements
-      diagram shouldBe """
+      diagram shouldBe
+        """
         |stateDiagram-v2
         |    [*] --> A
         |    A --> B
@@ -37,24 +39,25 @@ class StateMachineTest :
         |    B --> C
         |    B --> D
         |    D --> E
-      """.trimMargin()
+        """.trimMargin()
     }
 
     "getAvailableTransitions returns all possible transitions from a state" {
       // Given a machine with multiple transitions from state B
-      val machine = fsm(transitioner) {
-        A.becomes {
-          B.via { it.copy(id = "banana") }
-        }
-        B.becomes {
-          C.via { it.copy(id = "cinnamon") }
-          D.via { it.copy(id = "durian") }
-          B.via { it.copy(id = "berry") }
-        }
-        D.becomes {
-          E.via { it.copy(id = "eggplant") }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.value.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.value.copy(id = "cinnamon") }
+            D.via { it.value.copy(id = "durian") }
+            B.via { it.value.copy(id = "berry") }
+          }
+          D.becomes {
+            E.via { it.value.copy(id = "eggplant") }
+          }
+        }.getOrThrow()
 
       // When getting available transitions from state B
       val transitions = machine.getAvailableTransitions(B)
@@ -66,14 +69,15 @@ class StateMachineTest :
 
     "getAvailableTransitions returns empty set for state with no transitions" {
       // Given a machine with no transitions from state E
-      val machine = fsm(transitioner) {
-        A.becomes {
-          B.via { it.copy(id = "banana") }
-        }
-        B.becomes {
-          C.via { it.copy(id = "cinnamon") }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.value.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.value.copy(id = "cinnamon") }
+          }
+        }.getOrThrow()
 
       // When getting available transitions from state E
       val transitions = machine.getAvailableTransitions(E)
@@ -87,7 +91,7 @@ class StateMachineTest :
       val machine =
         fsm(transitioner) {
           A.becomes {
-            B.via { it.copy(id = "beetroot") }
+            B.via { it.value.copy(id = "beetroot") }
           }
         }.getOrThrow()
 
@@ -103,7 +107,7 @@ class StateMachineTest :
       val machine =
         fsm(transitioner) {
           A.becomes {
-            B.via { it.update(B) }
+            B.via { it.value.update(B) }
           }
         }.getOrThrow()
 
@@ -119,7 +123,7 @@ class StateMachineTest :
       val machine =
         fsm(transitioner) {
           A.becomes {
-            B.via { it.copy(id = "banana") }
+            B.via { it.value.copy(id = "banana") }
           }
         }.getOrThrow()
 
@@ -135,7 +139,7 @@ class StateMachineTest :
       val machine =
         fsm(transitioner) {
           B.becomes {
-            B.via { it }
+            B.via { it.value }
           }
         }.getOrThrow()
 
@@ -152,14 +156,14 @@ class StateMachineTest :
       val machine =
         fsm(transitioner) {
           A.becomes {
-            B.via { it.copy(id = "banana") }
+            B.via { it.value.copy(id = "banana") }
           }
           B.becomes {
-            C.via { it.copy(id = "cinnamon") }
-            D.via { it.copy(id = "durian") }
+            C.via { it.value.copy(id = "cinnamon") }
+            D.via { it.value.copy(id = "durian") }
           }
           D.becomes {
-            E.via { it.copy(id = "eggplant") }
+            E.via { it.value.copy(id = "eggplant") }
           }
         }.getOrThrow()
 
@@ -227,7 +231,7 @@ class StateMachineTest :
       val machine =
         fsm(hookTransitioner) {
           A.becomes {
-            B.via { it.update(B) }
+            B.via { it.value.update(B) }
           }
         }.getOrThrow()
 
@@ -252,7 +256,7 @@ class StateMachineTest :
       val machine =
         fsm(failingTransitioner) {
           A.becomes {
-            B.via { it.update(B) }
+            B.via { it.value.update(B) }
           }
         }.getOrThrow()
 

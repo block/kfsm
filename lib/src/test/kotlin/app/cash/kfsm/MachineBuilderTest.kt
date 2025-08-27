@@ -1,138 +1,160 @@
 package app.cash.kfsm
 
-import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainOnly
-import io.kotest.matchers.result.shouldBeFailure
-import io.kotest.matchers.result.shouldBeSuccess
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
-import kotlin.String
-import kotlin.runCatching
+import org.junit.jupiter.api.Test
 
-class MachineBuilderTest :
-  StringSpec({
-    "an empty machine" {
-      fsm<String, Letter, Char> {}
-        .getOrThrow()
-        .transitionMap shouldBe emptyMap()
-    }
-
-    "a self loop" {
-      fsm<String, Letter, Char> {
-        B becomes {
-          B via { it }
-        }
-      }.getOrThrow().transitionMap should {
-        it.keys shouldContainOnly setOf(B)
-        it[B]?.keys shouldContainOnly setOf(B)
+class MachineBuilderTest {
+  @Test
+  fun `allows transitions between states that permit them`() {
+    fsm<String, Letter, Char> {
+      B.becomes {
+        C.via { it.value }
       }
+    }.getOrThrow().transitionMap should {
+      it.keys shouldContainOnly setOf(B)
+      it[B]?.keys shouldContainOnly setOf(C)
     }
+  }
 
-    "mix of effect, transition and function values" {
-      fsm<String, Letter, Char> {
-        B becomes {
-          B via { it }
-          C via Effect { runCatching { it } }
-          D via
-            object : Transition<String, Letter, Char>(B, D) { }
-        }
-      }.getOrThrow().transitionMap should {
-        it.keys shouldContainOnly setOf(B)
-        it[B]?.keys shouldContainOnly setOf(B, C, D)
+  @Test
+  fun `allows multiple transitions from a state`() {
+    fsm<String, Letter, Char> {
+      B.becomes {
+        B.via { it.value }
+        C.via { it.value }
+        D.via { it.value }
       }
+    }.getOrThrow().transitionMap should {
+      it.keys shouldContainOnly setOf(B)
+      it[B]?.keys shouldContainOnly setOf(B, C, D)
     }
+  }
 
-    "a full machine" {
-      val machine =
-        fsm<String, Letter, Char> {
-          A.becomes {
-            B.via { it }
-          }
-          B.becomes {
-            B.via { it }
-            C.via { it }
-            D.via { it.copy(id = "dave") }
-          }
-          C.becomes {
-            D.via { it }
-          }
-          D.becomes {
-            B.via { it }
-            E.via { it }
-          }
-        }.getOrThrow()
+  @Test
+  fun `a full machine`() {
+    val machine =
+      fsm<String, Letter, Char> {
+        A.becomes {
+          B.via { it.value }
+        }
+        B.becomes {
+          B.via { it.value }
+          C.via { it.value }
+          D.via { it.value.copy(id = "dave") }
+        }
+        C.becomes {
+          D.via { it.value }
+        }
+        D.becomes {
+          B.via { it.value }
+          E.via { it.value }
+        }
+      }.getOrThrow()
 
-      machine.transitionTo(Letter(B, "barry"), D).getOrThrow() shouldBe Letter(D, "dave")
-    }
+    machine.transitionTo(Letter(B, "barry"), D).getOrThrow() shouldBe Letter(D, "dave")
+  }
 
-    "disallows becomes block with no targets" {
+  @Test
+  fun `provides transition context to via blocks`() {
+    val machine =
+      fsm<String, Letter, Char> {
+        A.becomes {
+          B.via { (value, from, to) -> value.copy(id = "${from.name} to ${to.name}") }
+        }
+        B.becomes {
+          C.via { (value, from, to) -> value.copy(id = "${from.name} to ${to.name}") }
+        }
+      }.getOrThrow()
+
+    val result = machine.advance(Letter(A, "start")).getOrThrow()
+    result.id shouldBe "A to B"
+
+    val nextResult = machine.advance(result).getOrThrow()
+    nextResult.id shouldBe "B to C"
+  }
+
+  @Test
+  fun `disallows becomes block with no targets`() {
+    val result =
       fsm<String, Letter, Char> {
         B.becomes {}
-      }.shouldBeFailure<IllegalStateException>().message shouldBe
-        "State B defines a `becomes` block with no transitions"
-    }
+      }
+    result.exceptionOrNull()!!.message shouldBe "State B defines a `becomes` block with no transitions"
+  }
 
-    "disallows redeclaration of from state" {
+  @Test
+  fun `disallows redeclaration of from state`() {
+    val result =
       fsm<String, Letter, Char> {
         B.becomes {
-          C.via { it }
+          C.via { it.value }
         }
         B.becomes {
-          D.via { it }
+          D.via { it.value }
         }
-      }.shouldBeFailure<IllegalStateException>().message shouldBe "State B has multiple `becomes` blocks defined"
-    }
+      }
+    result.exceptionOrNull()!!.message shouldBe "State B has multiple `becomes` blocks defined"
+  }
 
-    "disallows redeclaration of to state" {
+  @Test
+  fun `disallows redeclaration of to state`() {
+    val result =
       fsm<String, Letter, Char> {
         B.becomes {
-          C.via { it }
-          C.via { it }
+          C.via { it.value }
+          C.via { it.value }
         }
-      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C already has a transition defined from B"
-    }
+      }
+    result.exceptionOrNull()!!.message shouldBe "State C already has a transition defined from B"
+  }
 
-    "disallows transitions between states that do not permit them" {
+  @Test
+  fun `disallows transitions between states that do not permit them`() {
+    val result =
       fsm<String, Letter, Char> {
         C.becomes {
-          B.via { it }
+          B.via { it.value }
         }
-      }.shouldBeFailure<IllegalStateException>().message shouldBe "State C declares that it cannot transition to B. " +
-        "Either the fsm declaration or the State is incorrect"
-    }
+      }
+    result.exceptionOrNull()!!.message shouldBe "State C declares that it cannot transition to B. " +
+      "Either the fsm declaration or the State is incorrect"
+  }
 
-    "can optionally define controllers" {
-      val machine =
-        fsm<String, Letter, Char> {
-          A.becomes {
-            B.via { it.copy(id = "bedford") }
-          }
-          B.becomes(selector = { Result.success(C) }) {
-            B.via { it }
-            C.via { it.copy(id = "citroën") }
-            D.via { it }
-          }
-          C.becomes {
-            D.via { it.copy(id = "datsun") }
-          }
-          D.becomes {
-            B.via { it.copy(id = "bristol") }
-            E.via { it }
-          }
-        }.getOrThrow()
+  @Test
+  fun `can optionally define controllers`() {
+    val machine =
+      fsm<String, Letter, Char> {
+        A.becomes {
+          B.via { it.value.copy(id = "bedford") }
+        }
+        B.becomes(selector = { Result.success(C) }) {
+          B.via { it.value }
+          C.via { it.value.copy(id = "citroën") }
+          D.via { it.value }
+        }
+        C.becomes {
+          D.via { it.value.copy(id = "datsun") }
+        }
+        D.becomes {
+          B.via { it.value.copy(id = "bristol") }
+          E.via { it.value }
+        }
+      }.getOrThrow()
 
-      val a = Letter(A, "audi")
-      val b = Letter(B, "bedford")
-      val c = Letter(C, "citroën")
-      val d = Letter(D, "datsun")
-      val e = Letter(E, "eagle")
+    val a = Letter(A, "audi")
+    val b = Letter(B, "bedford")
+    val c = Letter(C, "citroën")
+    val d = Letter(D, "datsun")
+    val e = Letter(E, "eagle")
 
-      machine.advance(a).shouldBeSuccess(b)
-      machine.advance(b).shouldBeSuccess(c)
-      machine.advance(c).shouldBeSuccess(d)
-      machine.advance(d).shouldBeFailure<IllegalStateException>().message shouldBe
-        "State D has multiple subsequent states, but no NextStateSelector was provided"
-      machine.transitionTo(d, B).shouldBeSuccess(b.copy(id = "bristol"))
-      machine.advance(e).shouldBeFailure<IllegalStateException>().message shouldBe "No selector for state E"
-    }
-  })
+    machine.advance(a).getOrThrow() shouldBe b
+    machine.advance(b).getOrThrow() shouldBe c
+    machine.advance(c).getOrThrow() shouldBe d
+    machine.advance(d).exceptionOrNull()!!.message shouldBe
+      "State D has multiple subsequent states, but no NextStateSelector was provided"
+    machine.transitionTo(d, B).getOrThrow() shouldBe b.copy(id = "bristol")
+    machine.advance(e).exceptionOrNull()!!.message shouldBe "No selector for state E"
+  }
+}

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Breaking
+* Introduced new effect syntax using DSL for state machine creation. The from and to states are now available in the 
+  effect.
+
 ### Added
 * Added `StateMachine::advance` method to automatically progress to the next state using a state selector, 
   enabling dynamic state transitions without explicitly specifying the target state.

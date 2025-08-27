@@ -1,5 +1,15 @@
 package app.cash.kfsm
 
+/**
+ * A state machine that manages transitions between states, applying effects to transform values during transitions.
+ *
+ * @param ID The type of identifier used in the state machine
+ * @param V The type of value being transformed
+ * @param S The type of state in the state machine
+ * @property transitionMap Maps source states to their possible target states and transitions
+ * @property selectors Maps states to their next state selectors for automatic state advancement
+ * @property transitioner The transitioner that handles the actual state transitions
+ */
 class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   val transitionMap: Map<S, Map<S, Transition<ID, V, S>>>,
   private val selectors: Map<S, NextStateSelector<ID, V, S>>,
