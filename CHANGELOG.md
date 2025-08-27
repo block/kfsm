@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.11.1]
+
 ### Added
 * Added `StateMachine::advance` method to automatically progress to the next state using a state selector, 
   enabling dynamic state transitions without explicitly specifying the target state.
