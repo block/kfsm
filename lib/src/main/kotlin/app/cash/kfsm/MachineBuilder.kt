@@ -26,11 +26,15 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
    * @property from The state from which transitions are being defined
    */
   class TransitionBuilder<ID, V, S> internal constructor(
-    private val from: S
+    val from: S
   )
     where V : Value<ID, V, S>,
           S : State<ID, V, S> {
     private val transitions = mutableMapOf<S, Transition<ID, V, S>>()
+
+    class ToBuilder<ID, V, S> internal constructor(
+      val to: S
+    )
 
     /**
      * Defines a transition to a target state with a given effect.
@@ -56,7 +60,15 @@ class MachineBuilder<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
      *
      * @param effect A function that transforms the value during the transition
      */
-    infix fun S.via(effect: (V) -> V): Unit = via(Effect { runCatching { effect(it) } })
+    infix fun S.via(effect: ToBuilder<ID, V, S>.(V) -> V) {
+      via(
+        Effect {
+          runCatching {
+            effect(ToBuilder<ID, V, S>(this@via), it)
+          }
+        }
+      )
+    }
 
     /**
      * Defines a transition using a predefined [Transition] instance.
