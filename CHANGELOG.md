@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.11.2]
+
 ### Fix
 
 * Restored exception in cases of invalid transition attempts to be NoPathToTargetState
