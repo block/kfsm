@@ -3,6 +3,7 @@ package app.cash.kfsm
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.result.shouldBeFailure
 import io.kotest.matchers.result.shouldBeSuccess
+import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 
 class StateMachineTest :
@@ -11,25 +12,27 @@ class StateMachineTest :
 
     "mermaidStateDiagramMarkdown generates correct diagram" {
       // Given a machine with multiple transitions
-      val machine = fsm(transitioner) {
-        A.becomes {
-          B.via { it.copy(id = "banana") }
-        }
-        B.becomes {
-          C.via { it.copy(id = "cinnamon") }
-          D.via { it.copy(id = "durian") }
-          B.via { it.copy(id = "berry") }
-        }
-        D.becomes {
-          E.via { it.copy(id = "eggplant") }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.copy(id = "cinnamon") }
+            D.via { it.copy(id = "durian") }
+            B.via { it.copy(id = "berry") }
+          }
+          D.becomes {
+            E.via { it.copy(id = "eggplant") }
+          }
+        }.getOrThrow()
 
       // When generating a diagram starting from A
       val diagram = machine.mermaidStateDiagramMarkdown(A)
 
       // Then the diagram contains all expected elements
-      diagram shouldBe """
+      diagram shouldBe
+        """
         |stateDiagram-v2
         |    [*] --> A
         |    A --> B
@@ -37,24 +40,25 @@ class StateMachineTest :
         |    B --> C
         |    B --> D
         |    D --> E
-      """.trimMargin()
+        """.trimMargin()
     }
 
     "getAvailableTransitions returns all possible transitions from a state" {
       // Given a machine with multiple transitions from state B
-      val machine = fsm(transitioner) {
-        A.becomes {
-          B.via { it.copy(id = "banana") }
-        }
-        B.becomes {
-          C.via { it.copy(id = "cinnamon") }
-          D.via { it.copy(id = "durian") }
-          B.via { it.copy(id = "berry") }
-        }
-        D.becomes {
-          E.via { it.copy(id = "eggplant") }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.copy(id = "cinnamon") }
+            D.via { it.copy(id = "durian") }
+            B.via { it.copy(id = "berry") }
+          }
+          D.becomes {
+            E.via { it.copy(id = "eggplant") }
+          }
+        }.getOrThrow()
 
       // When getting available transitions from state B
       val transitions = machine.getAvailableTransitions(B)
@@ -66,14 +70,15 @@ class StateMachineTest :
 
     "getAvailableTransitions returns empty set for state with no transitions" {
       // Given a machine with no transitions from state E
-      val machine = fsm(transitioner) {
-        A.becomes {
-          B.via { it.copy(id = "banana") }
-        }
-        B.becomes {
-          C.via { it.copy(id = "cinnamon") }
-        }
-      }.getOrThrow()
+      val machine =
+        fsm(transitioner) {
+          A.becomes {
+            B.via { it.copy(id = "banana") }
+          }
+          B.becomes {
+            C.via { it.copy(id = "cinnamon") }
+          }
+        }.getOrThrow()
 
       // When getting available transitions from state E
       val transitions = machine.getAvailableTransitions(E)
@@ -111,7 +116,10 @@ class StateMachineTest :
       val result = machine.transitionTo(Letter(A, "test"), C)
 
       // Then the transition fails
-      result.shouldBeFailure<IllegalStateException>().message shouldBe "No transition defined from A to C"
+      result.shouldBeFailure<NoPathToTargetState>() should {
+        it.value shouldBe Letter(A, "test")
+        it.targetState shouldBe C
+      }
     }
 
     "transition from undefined state fails" {
@@ -127,7 +135,10 @@ class StateMachineTest :
       val result = machine.transitionTo(Letter(C, "apple"), D)
 
       // Then the transition fails
-      result.shouldBeFailure<IllegalStateException>().message shouldBe "No transition defined from C to D"
+      result.shouldBeFailure<NoPathToTargetState>() should {
+        it.value shouldBe Letter(C, "apple")
+        it.targetState shouldBe D
+      }
     }
 
     "self-transition succeeds" {

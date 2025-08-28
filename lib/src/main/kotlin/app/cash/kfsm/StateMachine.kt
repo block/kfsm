@@ -26,7 +26,7 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
   ): Result<V> =
     transitionMap[value.state]?.get(targetState)?.let { transition ->
       transitioner.transition(value, transition)
-    } ?: Result.failure(IllegalStateException("No transition defined from ${value.state} to $targetState"))
+    } ?: Result.failure(NoPathToTargetState(value, targetState))
 
   /**
    * Advances the state machine to the next state based on the current value.
