@@ -5,11 +5,43 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
   /** Will be executed prior to the transition effect. Failure here will terminate the transition */
   open fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 
-  /** Will be executed after the transition effect. Use this to persist the value. */
-  open fun persist(from: S, value: V, via: T): Result<V> = Result.success(value)
+  /** 
+   * Will be executed after the transition effect or value creation. Use this to persist the value.
+   * For creation events, both `from` and `via` will be null.
+   */
+  open fun persist(from: S?, value: V, via: T?): Result<V> = Result.success(value)
 
-  /** Will be executed after the transition effect & value persistence. Use this to perform side effects such as notifications. */
-  open fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
+  /** 
+   * Will be executed after the transition effect/creation & value persistence. 
+   * Use this to perform side effects such as notifications.
+   * For creation events, both `from` and `via` will be null.
+   */
+  open fun postHook(from: S?, value: V, via: T?): Result<Unit> = Result.success(Unit)
+
+  /**
+   * Creates the initial instance of a value. This method should handle only the instantiation
+   * logic - persistence and event emission are handled by create().
+   *
+   * @param id The identifier for the new value
+   * @param initialState The state in which to create the value
+   * @return Result containing the new value if creation succeeds
+   */
+  abstract fun instantiate(id: ID, initialState: S): Result<V>
+
+  /**
+   * Orchestrates the creation of a new value instance, ensuring proper persistence
+   * and event emission. This follows the same pattern as transition() to maintain
+   * consistency in the value lifecycle.
+   *
+   * @param id The identifier for the new value
+   * @param initialState The state in which to create the value
+   * @return Result containing the new value if creation succeeds
+   */
+  fun create(id: ID, initialState: S): Result<V> =
+    instantiate(id, initialState)
+      .mapCatching { initialState.validate(it).getOrThrow() }
+      .mapCatching { persist(null, it, null).getOrThrow() }
+      .mapCatching { it.also { postHook(null, it, null).getOrThrow() }}
 
   /**
    * Execute the given transition on the given value.

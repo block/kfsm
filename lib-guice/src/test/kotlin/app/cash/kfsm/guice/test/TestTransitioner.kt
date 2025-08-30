@@ -8,4 +8,7 @@ import jakarta.inject.Singleton
 
 @TransitionerDefinition
 @Singleton
-class TestTransitioner @Inject constructor() : Transitioner<String, Transition<String, TestValue, TestState>, TestValue, TestState>()
+class TestTransitioner @Inject constructor() : Transitioner<String, Transition<String, TestValue, TestState>, TestValue, TestState>() {
+  override fun instantiate(id: String, initialState: TestState): Result<TestValue> =
+    Result.success(TestValue(id = id, state = initialState))
+}
