@@ -53,7 +53,7 @@ jobs:
 
       - name: Build HTML
         if: steps.check-branch.outputs.tag_on_main == 'true'
-        run: bin/gradle dokkaHtmlMultiModule --no-daemon --stacktrace
+        run: bin/gradle dokkaGeneratePublicationHtml --no-daemon --stacktrace
 
       - name: Upload HTML
         if: steps.check-branch.outputs.tag_on_main == 'true'
