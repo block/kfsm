@@ -325,6 +325,8 @@ for a different example of how to use this library.
 
 For details on contributing, see the [CONTRIBUTING](CONTRIBUTING.md) guide.
 
+For more guidance on how to implement state machines see the [implementation guide](docs/implementation_guide.md).
+
 ### Building
 
 > [!NOTE]
