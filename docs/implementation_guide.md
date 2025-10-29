@@ -55,7 +55,7 @@ Example: creating a ledger transaction and receiving a transaction token needed 
 
 #### Fire-and-forget effects (no return value required)
 Example: voiding a transaction, sending a notification.
-- Prefer the transactional outbox pattern to guarantee delivery and leverage existing retry infrastructure.
+- Prefer the transactional outbox pattern to guarantee delivery. kFSM provides the core interfaces (`DeferrableEffect`, `OutboxHandler`) while you implement the message processing logic based on your infrastructure needs.
 
 ### Error handling
 
