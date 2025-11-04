@@ -1,5 +1,7 @@
 package app.cash.kfsm
 
+import app.cash.kfsm.annotations.ExperimentalLibraryApi
+
 /**
  * Represents a message stored in the transactional outbox.
  *
@@ -18,6 +20,7 @@ package app.cash.kfsm
  * @property attemptCount Number of processing attempts (for retry logic)
  * @property lastError Error message from the most recent failed attempt, if any
  */
+@ExperimentalLibraryApi
 data class OutboxMessage<ID>(
     val id: String,
     val valueId: ID,

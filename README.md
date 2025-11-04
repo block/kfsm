@@ -322,9 +322,6 @@ Effects implementing `DeferrableEffect` are captured during the transition and s
 
 For a complete guide including database schema and best practices, see [docs/outbox_pattern.md](docs/outbox_pattern.md).
 
-Example implementation: [lib/src/test/kotlin/app/cash/kfsm/outbox](https://github.com/block/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/outbox)
-
-
 ## Safety
 
 How does kFSM help validate the correctness of your state machine and your values?

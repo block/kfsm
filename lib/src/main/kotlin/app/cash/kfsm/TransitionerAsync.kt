@@ -1,5 +1,7 @@
 package app.cash.kfsm
 
+import app.cash.kfsm.annotations.ExperimentalLibraryApi
+
 abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>> {
 
   /**
@@ -10,6 +12,7 @@ abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, 
    * transactional outbox pattern where effects are persisted in the same transaction
    * as the state change.
    */
+  @ExperimentalLibraryApi
   open val outboxHandler: OutboxHandler<ID, V, S>? = null
 
   open suspend fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
@@ -44,6 +47,7 @@ abstract class TransitionerAsync<ID, T : Transition<ID, V, S>, V : Value<ID, V, 
    * @param outboxMessages List of captured effects to persist in the same transaction
    * @return The persisted value
    */
+  @ExperimentalLibraryApi
   open suspend fun persistWithOutbox(
     from: S,
     value: V,

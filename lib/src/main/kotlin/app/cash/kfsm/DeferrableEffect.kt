@@ -1,5 +1,7 @@
 package app.cash.kfsm
 
+import app.cash.kfsm.annotations.ExperimentalLibraryApi
+
 /**
  * Represents an effect that can be deferred and stored in an outbox for later execution.
  *
@@ -22,7 +24,7 @@ package app.cash.kfsm
  *     }
  *
  *     override fun serialize(): EffectPayload = EffectPayload(
- *         effectType = "send_email",
+ *         effectType,
  *         data = Json.encodeToString(mapOf("recipient" to recipient, "orderId" to value.id))
  *     )
  *
@@ -34,6 +36,7 @@ package app.cash.kfsm
  * @param V The type of value being transitioned
  * @param S The type of state
  */
+@ExperimentalLibraryApi
 interface DeferrableEffect<ID, V : Value<ID, V, S>, S : State<ID, V, S>> : Effect<ID, V, S> {
     /**
      * Serialize this effect for storage in the outbox.

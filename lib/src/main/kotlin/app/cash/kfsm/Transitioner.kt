@@ -1,15 +1,18 @@
 package app.cash.kfsm
 
+import app.cash.kfsm.annotations.ExperimentalLibraryApi
+
 abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S : State<ID, V, S>> {
 
   /**
    * Optional outbox handler for capturing deferrable effects.
    *
    * When set, transitions implementing [DeferrableEffect] will have their effects captured
-   * and stored in the outbox instead of being executed immediately. This enables the
-   * transactional outbox pattern where effects are persisted in the same transaction
-   * as the state change.
+   * and stored in the outbox as part of the same transaction, instead of being executed
+   * immediately. This enables the transactional outbox pattern where the effects are only
+   * executed once all database operations are successful and committed.
    */
+  @ExperimentalLibraryApi
   open val outboxHandler: OutboxHandler<ID, V, S>? = null
 
   /** Will be executed prior to the transition effect. Failure here will terminate the transition */
@@ -46,6 +49,7 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
    * @param outboxMessages List of captured effects to persist in the same transaction
    * @return The persisted value
    */
+  @ExperimentalLibraryApi
   open fun persistWithOutbox(
     from: S,
     value: V,
@@ -90,11 +94,12 @@ abstract class Transitioner<ID, T : Transition<ID, V, S>, V : Value<ID, V, S>, S
   private fun executeOrCaptureEffect(value: V, transition: T): Result<V> {
     val handler = outboxHandler
     return if (handler != null && transition is DeferrableEffect<*, *, *>) {
-      // Capture the effect for later execution
+      // Safe cast: transition is of type T which is bound by Transition<ID, V, S>,
+      // so the DeferrableEffect type parameters must match ID, V, S at runtime
       @Suppress("UNCHECKED_CAST")
-      handler.captureEffect(value, transition as DeferrableEffect<ID, V, S>)
+      val typedEffect = transition as DeferrableEffect<ID, V, S>
+      handler.captureEffect(value, typedEffect)
     } else {
-      // Execute immediately (current behavior)
       transition.effect(value)
     }
   }

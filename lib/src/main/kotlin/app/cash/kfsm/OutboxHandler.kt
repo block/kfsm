@@ -1,5 +1,7 @@
 package app.cash.kfsm
 
+import app.cash.kfsm.annotations.ExperimentalLibraryApi
+
 /**
  * Handles the capture of deferrable effects for storage in the transactional outbox.
  *
@@ -39,6 +41,7 @@ package app.cash.kfsm
  * @param V The type of value being transitioned
  * @param S The type of state
  */
+@ExperimentalLibraryApi
 interface OutboxHandler<ID, V : Value<ID, V, S>, S : State<ID, V, S>> {
     /**
      * Capture an effect for later execution.
