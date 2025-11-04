@@ -234,9 +234,93 @@ for a different example of how to use this library.
 
 ### Coroutine Support
 
-If you are using coroutines and need suspending function support, you can extend `TransitionerAsync` instead of 
+If you are using coroutines and need suspending function support, you can extend `TransitionerAsync` instead of
 `Transitioner` and implement any suspending transition effects via the `Transition.effectAsync` method.
 
+### Transactional Outbox Pattern
+
+kFSM supports the transactional outbox pattern for reliable execution of side effects in distributed systems. This pattern ensures that state changes and their associated effects are persisted atomically, preventing lost updates even in the face of system failures.
+
+**Why use the outbox pattern?**
+- Guarantees that side effects (emails, webhooks, events) are never lost
+- Ensures effects are persisted in the same transaction as state changes
+- Enables asynchronous processing of effects
+- Provides at-least-once delivery semantics
+
+**What kFSM provides:**
+- Core interfaces: `DeferrableEffect`, `OutboxHandler`, `OutboxMessage`
+- Integration with `Transitioner` for atomic persistence
+- You implement the message processing logic based on your requirements
+
+**Quick Example:**
+
+```kotlin
+// 1. Make your transition deferrable
+class SendConfirmation(from: OrderState, to: OrderState, private val email: String)
+    : OrderTransition(from, to), DeferrableEffect<String, Order, OrderState> {
+
+    override fun effect(value: Order): Result<Order> {
+        emailService.send(email, "Order confirmed!")
+        return Result.success(value)
+    }
+
+    override fun serialize(value: Order): Result<EffectPayload> = Result.success(
+        EffectPayload(
+            effectType = "send_email",
+            data = """{"email":"$email"}"""
+        )
+    )
+
+    override val effectType = "send_email"
+}
+
+// 2. Configure your transitioner with an outbox handler
+class OrderTransitioner(database: Database) : Transitioner<...>() {
+    override val outboxHandler = DatabaseOutboxHandler(database)
+
+    override fun persistWithOutbox(
+        from: OrderState,
+        value: Order,
+        via: OrderTransition,
+        outboxMessages: List<OutboxMessage<String>>
+    ): Result<Order> = database.transaction {
+        database.save(value)                    // Save state
+        outboxMessages.forEach { database.saveOutbox(it) }  // Save effects
+        Result.success(value)
+    }
+}
+
+// 3. Implement your own processor to execute effects asynchronously
+class OrderEffectProcessor(private val database: Database, private val emailService: EmailService) {
+    suspend fun processPending() {
+        val pending = database.getPendingOutboxMessages(limit = 100)
+        pending.forEach { message ->
+            try {
+                database.updateMessageStatus(message.id, OutboxStatus.PROCESSING)
+                val data = Json.decodeFromString<Map<String, String>>(message.effectPayload.data)
+                when (message.effectPayload.effectType) {
+                    "send_email" -> emailService.send(data["email"]!!, "Order confirmed!")
+                }
+                database.updateMessageStatus(message.id, OutboxStatus.COMPLETED)
+            } catch (e: Exception) {
+                // Handle retry logic
+            }
+        }
+    }
+}
+
+// In a background job
+scope.launch {
+    while (isActive) {
+        processor.processPending()
+        delay(1000)
+    }
+}
+```
+
+Effects implementing `DeferrableEffect` are captured during the transition and stored in the outbox instead of being executed immediately. Your background processor then executes these effects asynchronously, providing reliable delivery even if the system fails.
+
+For a complete guide including database schema and best practices, see [docs/outbox_pattern.md](docs/outbox_pattern.md).
 
 ## Safety
 
