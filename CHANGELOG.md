@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.12.0]
+
+* Added experimental support for `DefferableEffect`, a type of effect that can be used to implement the transactional outbox pattern directly in KFSM.
+
 ## [0.11.2]
 
 ### Fix
