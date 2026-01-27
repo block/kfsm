@@ -3,53 +3,47 @@ package app.cash.kfsm
 /**
  * Represents a value that can transition between different states in a finite state machine.
  *
- * This interface defines the core behavior for values that can be managed by a state machine.
- * It provides methods to track the current state and update to a new state.
+ * Values are the domain objects that transition between states. They carry:
+ * - A unique identifier
+ * - The current state
+ * - Domain data relevant to the entity
  *
- * @param V The concrete type of the value implementing this interface
- * @param S The type of state that this value can transition between
+ * Values should be immutable. State transitions produce new value instances
+ * with the updated state.
  *
- * @see State
- * @see Transition
- * @see Transitioner
- *
- * Example usage:
+ * Example:
  * ```kotlin
- * enum class Color { RED, YELLOW, GREEN }
- *
- * data class Light(override val state: Color, override val id: String) : Value<String, Light, Color> {
- *     override fun update(newState: Color): Light = copy(state = newState)
+ * data class Order(
+ *   override val id: String,
+ *   override val state: OrderState,
+ *   val customerId: String,
+ *   val items: List<OrderItem>,
+ *   val total: Money
+ * ) : Value<String, Order, OrderState> {
+ *   override fun update(newState: OrderState): Order = copy(state = newState)
  * }
  * ```
+ *
+ * @param ID The type of unique identifier for this value
+ * @param V The concrete value type (for self-referential typing)
+ * @param S The state type
  */
-interface Value<ID, V: Value<ID, V, S>, S : State<ID, V, S>> {
+interface Value<ID, V : Value<ID, V, S>, S : State<S>> {
   /**
-   * The current state of this value in the state machine.
-   *
-   * This property represents the value's current position in the state machine's state graph.
-   * It is used by the state machine to determine valid transitions and track the value's progress.
+   * Unique identifier for this value.
+   */
+  val id: ID
+
+  /**
+   * The current state of this value.
    */
   val state: S
 
   /**
-   * Updates this value to a new state.
+   * Creates a new instance of this value with the given state.
    *
-   * This method creates a new instance of the value with the specified state.
-   * The implementation should ensure that the new state is valid according to the state machine's rules.
-   *
-   * @param newState The state to transition to
-   * @return A new instance of the value with the updated state
+   * @param newState The new state
+   * @return A new value instance with the updated state
    */
   fun update(newState: S): V
-
-  /**
-   * Returns a unique identifier for this value.
-   *
-   * This method is used to identify the value within the state machine.
-   * By default, it uses the value's string representation, but implementations
-   * should override this to provide a more succinct & specific identifier.
-   *
-   * @return A string that uniquely identifies this value
-   */
-  val id: ID
 }
