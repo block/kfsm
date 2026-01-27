@@ -15,10 +15,10 @@ import kotlin.reflect.full.superclasses
  * Example usage:
  * ```kotlin
  * // Verify your state machine
- * StateMachine.verify(initialState).getOrThrow()
+ * StateMachineUtilities.verify(initialState).getOrThrow()
  *
  * // Generate a Mermaid diagram
- * val diagram = StateMachine.mermaid(initialState).getOrThrow()
+ * val diagram = StateMachineUtilities.mermaid(initialState).getOrThrow()
  * ```
  */
 object StateMachineUtilities {
@@ -33,7 +33,7 @@ object StateMachineUtilities {
    * @return A Result containing the set of all reachable states if verification succeeds
    * @throws InvalidStateMachine if any states are unreachable
    */
-  fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> verify(head: S): Result<Set<State<ID, V, S>>> =
+  fun <S : State<S>> verify(head: S): Result<Set<State<S>>> =
     verify(head, baseType(head))
 
   /**
@@ -53,7 +53,7 @@ object StateMachineUtilities {
    * @param head The initial state to start diagram generation from
    * @return A Result containing the Mermaid markdown string
    */
-  fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> mermaid(head: S): Result<String> =
+  fun <S : State<S>> mermaid(head: S): Result<String> =
     walkTree(head).map { states ->
       listOf("stateDiagram-v2", "[*] --> ${head::class.simpleName}")
         .plus(
@@ -66,10 +66,10 @@ object StateMachineUtilities {
         ).joinToString("\n")
     }
 
-  private fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> verify(
+  private fun <S : State<S>> verify(
     head: S,
     type: KClass<out S>
-  ): Result<Set<State<ID, V, S>>> =
+  ): Result<Set<State<S>>> =
     walkTree(head).mapCatching { seen ->
       val notSeen =
         type.sealedSubclasses
@@ -84,7 +84,7 @@ object StateMachineUtilities {
       }
     }
 
-  private fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> walkTree(
+  private fun <S : State<S>> walkTree(
     current: S,
     statesSeen: Set<S> = emptySet()
   ): Result<Set<S>> =
@@ -101,7 +101,7 @@ object StateMachineUtilities {
     }
 
   @Suppress("UNCHECKED_CAST")
-  private fun <ID, V : Value<ID, V, S>, S : State<ID, V, S>> baseType(s: S): KClass<out S> =
+  private fun <S : State<S>> baseType(s: S): KClass<out S> =
     s::class
       .allSuperclasses
       .find { it.superclasses.contains(State::class) }!! as KClass<out S>

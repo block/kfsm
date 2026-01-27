@@ -1,83 +1,139 @@
 package app.cash.kfsm
 
-class StateMachine<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
-  val transitionMap: Map<S, Map<S, Transition<ID, V, S>>>,
-  private val selectors: Map<S, NextStateSelector<ID, V, S>>,
-  private val transitioner: Transitioner<ID, Transition<ID, V, S>, V, S>
+/**
+ * Orchestrates state transitions using transitions and a transactional outbox.
+ *
+ * The StateMachine coordinates the flow:
+ * 1. Receive a transition for a value
+ * 2. Verify the transition can apply to the current state
+ * 3. Call the transition's decide function (pure)
+ * 4. Validate the new state's invariants
+ * 5. Persist the new state and effects atomically via the repository
+ * 6. Return the result
+ *
+ * Effect execution happens separately via an [EffectProcessor] that reads
+ * from the outbox after the transaction commits.
+ *
+ * Example:
+ * ```kotlin
+ * val machine = StateMachine(OrderRepository(database))
+ *
+ * val result = machine.transition(order, ConfirmOrder(paymentId))
+ * ```
+ *
+ * @param ID The type of unique identifier for values
+ * @param V The value type
+ * @param S The state type
+ * @param Ef The effect type
+ */
+class StateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
+  private val repository: Repository<ID, V, S, Ef>
 ) {
   /**
-   * Returns all available transitions from a given state.
+   * Apply a transition to a value.
    *
-   * @param state The current state
-   * @return Set of all possible transitions from the given state
+   * This method:
+   * 1. Verifies the transition can apply to the current state
+   * 2. Invokes the transition's decide function
+   * 3. Validates the decision's state matches the transition's target
+   * 4. Validates invariants of the new state
+   * 5. Persists the value and outbox messages atomically
+   *
+   * @param value The current value
+   * @param transition The transition to apply
+   * @return Success with the updated value, or failure with the rejection/error
    */
-  fun getAvailableTransitions(state: S): Set<Transition<ID, V, S>> = transitionMap[state]?.values?.toSet() ?: emptySet()
-
-  /**
-   * Transitions a value to the target state if a valid transition exists.
-   *
-   * @param value The current value to transition
-   * @param targetState The desired target state
-   * @return Result containing the new value after transition, or failure if transition is invalid
-   */
-  fun transitionTo(
-    value: V,
-    targetState: S
-  ): Result<V> =
-    transitionMap[value.state]?.get(targetState)?.let { transition ->
-      transitioner.transition(value, transition)
-    } ?: Result.failure(NoPathToTargetState(value, targetState))
-
-  /**
-   * Advances the state machine to the next state based on the current value.
-   *
-   * This method uses a [NextStateSelector] to determine the next appropriate state and then
-   * performs the transition. The selector must be defined for the current state, and both
-   * the selection and transition must be valid for the operation to succeed.
-   *
-   * @param value The current value to advance to its next state
-   * @return Result containing the new value after transition, or failure if:
-   *         - No selector is defined for the current state
-   *         - The selector fails to determine a valid next state
-   *         - The transition to the selected state is invalid
-   */
-  fun advance(value: V): Result<V> =
-    runCatching {
-      val selector = selectors[value.state] ?: throw IllegalStateException("No selector for state ${value.state}")
-      val to = selector.apply(value).getOrThrow()
-      transitionTo(value, to).getOrThrow()
+  fun transition(value: V, transition: Transition<ID, V, S, Ef>): Result<V> {
+    // Check if transition can apply to current state
+    if (!transition.canApplyTo(value.state)) {
+      // If already at target state, this is a no-op (idempotent)
+      if (value.state == transition.to) {
+        return Result.success(value)
+      }
+      return Result.failure(
+        InvalidStateForTransition(
+          transition = transition,
+          currentState = value.state,
+          valueId = value.id
+        )
+      )
     }
 
-  /**
-   * Generates a Mermaid markdown state diagram representation of this state machine.
-   *
-   * The diagram shows all states and their possible transitions, making it easy to
-   * visualize and document the state machine's structure.
-   *
-   * Example output:
-   * ```mermaid
-   * stateDiagram-v2
-   *     [*] --> InitialState
-   *     InitialState --> NextState
-   *     NextState --> FinalState
-   * ```
-   *
-   * @param initialState The initial state to mark as the entry point
-   * @return A string containing the Mermaid markdown diagram
-   */
-  fun mermaidStateDiagramMarkdown(initialState: S): String {
-    val transitions =
-      transitionMap
-        .flatMap { (fromState, targets) ->
-          targets.keys.map { toState ->
-            "${fromState::class.simpleName} --> ${toState::class.simpleName}"
-          }
-        }.distinct()
-        .sorted()
+    // Get the decision from the transition
+    return when (val decision = transition.decide(value)) {
+      is Decision.Accept -> {
+        // Validate the decision's state matches the transition's declared target
+        if (decision.state != transition.to) {
+          return Result.failure(
+            DecisionStateMismatch(
+              expected = transition.to,
+              actual = decision.state,
+              transition = transition
+            )
+          )
+        }
 
-    return listOf(
-      "stateDiagram-v2",
-      "[*] --> ${initialState::class.simpleName}"
-    ).plus(transitions).joinToString("\n    ")
+        val updatedValue = value.update(decision.state)
+
+        // Validate invariants of the new state
+        val invariantResult = decision.state.validateInvariants(updatedValue)
+        if (invariantResult.isFailure) {
+          return Result.failure(invariantResult.exceptionOrNull()!!)
+        }
+
+        val outboxMessages = decision.effects.map { effect ->
+          OutboxMessage(valueId = value.id, effect = effect)
+        }
+
+        repository.saveWithOutbox(updatedValue, outboxMessages)
+      }
+
+      is Decision.Reject -> Result.failure(RejectedTransition(decision.reason))
+    }
   }
 }
+
+/**
+ * Repository for persisting values and outbox messages atomically.
+ *
+ * Implementations must ensure that the value state change and outbox messages
+ * are persisted in the same transaction (or with equivalent atomicity guarantees).
+ *
+ * @param ID The type of unique identifier for values
+ * @param V The value type
+ * @param S The state type
+ * @param Ef The effect type
+ */
+interface Repository<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect> {
+  /**
+   * Persist the value and outbox messages atomically.
+   *
+   * @param value The value with updated state
+   * @param outboxMessages Effects to store in the outbox
+   * @return The persisted value
+   */
+  fun saveWithOutbox(value: V, outboxMessages: List<OutboxMessage<ID, Ef>>): Result<V>
+}
+
+/**
+ * Exception thrown when a transition is rejected by its decide function.
+ */
+class RejectedTransition(val reason: String) : Exception(reason)
+
+/**
+ * Exception thrown when a transition cannot be applied to the current state.
+ */
+class InvalidStateForTransition(
+  val transition: Transition<*, *, *, *>,
+  val currentState: State<*>,
+  val valueId: Any?
+) : Exception("Cannot apply ${transition::class.simpleName} to state $currentState for value $valueId")
+
+/**
+ * Exception thrown when a decision's state doesn't match the transition's declared target.
+ */
+class DecisionStateMismatch(
+  val expected: State<*>,
+  val actual: State<*>,
+  val transition: Transition<*, *, *, *>
+) : Exception("${transition::class.simpleName} declared target $expected but decided $actual")

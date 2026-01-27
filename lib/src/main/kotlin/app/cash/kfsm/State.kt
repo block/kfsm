@@ -3,128 +3,86 @@ package app.cash.kfsm
 /**
  * Base class for defining states in a finite state machine.
  *
- * States are the foundation of kFSM. Each state:
- * - Knows which states it can transition to directly
- * - Can validate invariants that must hold while in this state
- * - Can determine paths to other reachable states
+ * States define the allowed transitions in the state graph. Each state knows
+ * which states it can transition to directly and can define invariants that
+ * must hold true while a value is in that state.
  *
  * Example:
  * ```kotlin
- * sealed class TrafficLightState : State<String, TrafficLight, TrafficLightState>
- * object Red : TrafficLightState(() -> setOf(Green))
- * object Yellow : TrafficLightState(() -> setOf(Red))
- * object Green : TrafficLightState(() -> setOf(Yellow))
+ * sealed class OrderState : State<OrderState>() {
+ *   data object Pending : OrderState() {
+ *     override fun transitions() = setOf(Confirmed, Cancelled)
+ *   }
+ *   data object Confirmed : OrderState() {
+ *     override fun transitions() = setOf(Shipped, Cancelled)
+ *     override fun <V> invariants() = listOf(
+ *       invariant("Order must have payment reference") { v: V ->
+ *         (v as? Order)?.paymentReference != null
+ *       }
+ *     )
+ *   }
+ *   data object Shipped : OrderState() {
+ *     override fun transitions() = setOf(Delivered)
+ *     override fun <V> invariants() = listOf(
+ *       invariant("Shipped orders must have tracking number") { v: V ->
+ *         (v as? Order)?.trackingNumber != null
+ *       }
+ *     )
+ *   }
+ *   data object Delivered : OrderState() {
+ *     override fun transitions() = emptySet()
+ *   }
+ *   data object Cancelled : OrderState() {
+ *     override fun transitions() = emptySet()
+ *   }
+ * }
  * ```
  *
- * @param ID The type used to identify values (often String or Long)
- * @param V The type of values that can be in this state
  * @param S The sealed class type representing all possible states
- * @property transitionsFn Function that returns the set of states this state can transition to
- * @property invariants List of conditions that must hold true while in this state
  */
-open class State<ID, V : Value<ID, V, S>, S : State<ID, V, S>>(
-  transitionsFn: () -> Set<S>,
-  private val invariants: List<Invariant<ID, V, S>> = emptyList()
-) {
+abstract class State<S : State<S>> {
+  /**
+   * Returns the set of states that can be reached directly from this state.
+   */
+  abstract fun transitions(): Set<S>
+
+  /**
+   * Returns the list of invariants that must hold true while a value is in this state.
+   *
+   * Override this method to define state-specific invariants. Invariants are validated
+   * after a transition completes, and if any invariant fails, the transition is rejected.
+   *
+   * @return List of invariants for this state (empty by default)
+   */
+  open fun <V> invariants(): List<Invariant<V>> = emptyList()
+
   /**
    * The set of states that can be reached directly from this state through a single transition.
    */
-  val subsequentStates: Set<S> by lazy { transitionsFn() }
+  val subsequentStates: Set<S> by lazy { transitions() }
 
   /**
-   * The set of all states that can eventually be reached from this state through any number of transitions.
+   * Checks if this state can transition directly to another state.
+   *
+   * Override this method to allow transitions to states that cannot be
+   * represented in [transitions] (e.g., data classes with parameters).
    */
-  val reachableStates: Set<S> by lazy { expand() }
+  open fun canTransitionTo(other: S): Boolean = subsequentStates.contains(other)
 
   /**
-   * Checks if this state can transition directly to another state in a single step.
+   * Validates that a value satisfies all invariants defined for this state.
    *
-   * @param other The state to check if we can transition to
-   * @return true if a direct transition is possible, false otherwise
+   * @param value The value to validate
+   * @return Success with Unit if all invariants pass, or failure with the first violation
    */
-  open fun canDirectlyTransitionTo(other: S): Boolean = subsequentStates.contains(other)
-
-  /**
-   * Checks if this state can eventually reach another state through any number of transitions.
-   *
-   * @param other The state to check if we can eventually reach
-   * @return true if the state is reachable, false otherwise
-   */
-  open fun canEventuallyTransitionTo(other: S): Boolean = reachableStates.contains(other)
-
-  /**
-   * Validates that a value meets all invariants defined for this state.
-   *
-   * Invariants are conditions that must hold true while a value is in this state.
-   * This method checks all invariants and returns the first failure encountered,
-   * or success if all invariants pass.
-   *
-   * @param value The value to validate against this state's invariants
-   * @return A Result containing the value if valid, or the first failure encountered
-   */
-  fun validate(value: V): Result<V> =
-    invariants
-      .map { it.validate(value) }
-      .firstOrNull { it.isFailure }
-      ?: Result.success(value)
-
-  /**
-   * Finds the shortest path to reach a target state from this state.
-   *
-   * Uses a breadth-first search algorithm to find the shortest sequence of states
-   * that leads from this state to the target state. The path includes both the
-   * starting and ending states.
-   *
-   * Example:
-   * ```kotlin
-   * // Given states A -> B -> C
-   * val path = A.shortestPathTo(C) // Returns [A, B, C]
-   * ```
-   *
-   * @param to The target state to reach
-   * @return A list of states representing the shortest path, or empty if no path exists
-   */
-  @Suppress("UNCHECKED_CAST")
-  fun shortestPathTo(to: S): List<S> {
-    val start = this as S
-
-    if (this == to) return listOf(start)
-    if (!canEventuallyTransitionTo(to)) return emptyList()
-
-    val initialQueue = ArrayDeque(listOf(start))
-    val predecessor = mutableMapOf<S, S?>(start to null)
-
-    tailrec fun bfs(queue: ArrayDeque<S>): List<S> {
-      if (queue.isEmpty()) return emptyList()
-
-      val current = queue.removeFirst()
-
-      if (current == to) {
-        val path =
-          generateSequence(to) { predecessor[it] }
-            .toList()
-            .asReversed()
-        return path
+  fun <V> validateInvariants(value: V): Result<Unit> {
+    val stateInvariants: List<Invariant<V>> = invariants()
+    for (invariant in stateInvariants) {
+      val result = invariant.validate(value)
+      if (result.isFailure) {
+        return result
       }
-
-      current.subsequentStates.forEach { next ->
-        if (next !in predecessor) {
-          predecessor[next] = current
-          queue += next
-        }
-      }
-
-      return bfs(queue)
     }
-
-    return bfs(initialQueue)
+    return Result.success(Unit)
   }
-
-  private fun expand(found: Set<S> = emptySet()): Set<S> =
-    subsequentStates
-      .minus(found)
-      .flatMap {
-        it.expand(subsequentStates + found) + it
-      }.toSet()
-      .plus(found)
 }
