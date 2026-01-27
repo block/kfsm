@@ -7,6 +7,7 @@ jooq = "3.16.23"
 kotest = "5.8.0"
 # @pin
 kotlin = "1.9.20"
+moshi = "1.15.1"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 mockk = "1.13.10"
 mysql = "8.3.0"
@@ -30,6 +31,9 @@ kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
+moshiKotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
+moshiAdapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
 mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
 testcontainersCore = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }

@@ -171,7 +171,7 @@ dependencies {
 Provides:
 - **JooqOutbox** - `SELECT ... FOR UPDATE SKIP LOCKED` for concurrent processing
 - **PollingEffectProcessor** - Background processor with exponential backoff
-- **JacksonOutboxSerializer** - Serialization for sealed class effects
+- **MoshiOutboxSerializer** - Serialization for sealed class effects
 - **OutboxSchema** - DDL for MySQL and PostgreSQL
 
 ## Key Features

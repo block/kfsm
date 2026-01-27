@@ -21,9 +21,8 @@ dependencies {
   implementation(libs.mysql)
   implementation(libs.jooq)
   implementation(libs.jooqKotlin)
-  implementation(libs.jacksonCore)
-  implementation(libs.jacksonKotlin)
-  implementation(libs.jacksonJsr310)
+  implementation(libs.moshi)
+  implementation(libs.moshiKotlin)
 
   testImplementation(libs.kotestProperty)
   testImplementation(libs.kotestAssertions)

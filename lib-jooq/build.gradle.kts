@@ -23,9 +23,9 @@ dependencies {
   api(project(":lib"))
   api(libs.jooq)
   implementation(libs.jooqKotlin)
-  implementation(libs.jacksonCore)
-  implementation(libs.jacksonKotlin)
-  implementation(libs.jacksonJsr310)
+  implementation(libs.moshi)
+  implementation(libs.moshiKotlin)
+  implementation(libs.moshiAdapters)
 
   testImplementation(libs.kotestAssertions)
   testImplementation(libs.kotestJunitRunnerJvm)

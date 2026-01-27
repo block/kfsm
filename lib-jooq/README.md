@@ -7,7 +7,7 @@ This module provides production-ready utilities for the kFSM v2 transactional ou
 - **`JooqOutbox`**: A jOOQ-based `Outbox` implementation using `SELECT ... FOR UPDATE SKIP LOCKED`
 - **`PollingEffectProcessor`**: Background processor with exponential backoff
 - **`OutboxSchema`**: DDL for MySQL and PostgreSQL
-- **`JacksonOutboxSerializer`**: Jackson-based effect serialization for sealed classes
+- **`MoshiOutboxSerializer`**: Moshi-based effect serialization for sealed classes
 
 ## Installation
 
@@ -51,10 +51,10 @@ CREATE TABLE outbox (
 
 ```kotlin
 // For sealed class effects with String IDs
-val serializer = JacksonOutboxSerializer.forSealedClassWithStringId(OrderEffect::class)
+val serializer = MoshiOutboxSerializer.forSealedClassWithStringId(OrderEffect::class)
 
 // For custom ID types
-val serializer = JacksonOutboxSerializer.forSealedClass(
+val serializer = MoshiOutboxSerializer.forSealedClass(
   sealedClass = OrderEffect::class,
   idSerializer = { it.toString() },
   idDeserializer = { UUID.fromString(it) }
