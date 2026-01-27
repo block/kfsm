@@ -45,6 +45,30 @@ class DocumentUploadTest : StringSpec({
     decision.effects[0].shouldBeInstanceOf<DocumentEffect.UploadFile>()
   }
 
+  "transition: RequestUpload rejects files that exceed max size" {
+    val doc = DocumentUpload(id = "doc-1", state = DocumentState.Idle)
+    val largeContent = ByteArray(1000) // 1000 bytes
+    val transition = RequestUpload("large.pdf", largeContent, maxFileSize = 100) // max 100 bytes
+
+    val decision = transition.decide(doc)
+
+    decision.shouldBeInstanceOf<Decision.Reject<DocumentState, DocumentEffect>>()
+    decision.reason shouldBe "File size 1000 exceeds maximum allowed size of 100 bytes"
+  }
+
+  "state machine: Decision.reject returns RejectedTransition failure without state change" {
+    val doc = DocumentUpload(id = "doc-1", state = DocumentState.Idle)
+    val largeContent = ByteArray(1000)
+    val transition = RequestUpload("large.pdf", largeContent, maxFileSize = 100)
+
+    val result = stateMachine.transition(doc, transition)
+
+    result.shouldBeFailure()
+    result.exceptionOrNull().shouldBeInstanceOf<app.cash.kfsm.RejectedTransition>()
+    savedValues.size shouldBe 0
+    savedOutboxMessages.size shouldBe 0
+  }
+
   "transition: UploadCompleted from Uploading transitions to Scanning with ScanFile effect" {
     val doc = DocumentUpload(id = "doc-1", state = DocumentState.Uploading, fileName = "test.pdf")
     val transition = UploadCompleted("file-123")

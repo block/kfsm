@@ -17,17 +17,25 @@ abstract class DocumentTransition(
 
 /**
  * Request to upload a document.
+ *
+ * Demonstrates Decision.reject: files larger than maxFileSize are rejected
+ * without transitioning to a new state.
  */
 class RequestUpload(
   private val fileName: String,
-  private val fileContent: ByteArray
+  private val fileContent: ByteArray,
+  private val maxFileSize: Long = 10 * 1024 * 1024 // 10MB default
 ) : DocumentTransition(from = DocumentState.Idle, to = DocumentState.Uploading) {
 
   override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
-    Decision.accept(
-      state = DocumentState.Uploading,
-      effects = listOf(DocumentEffect.UploadFile(fileName, fileContent))
-    )
+    if (fileContent.size > maxFileSize) {
+      Decision.reject("File size ${fileContent.size} exceeds maximum allowed size of $maxFileSize bytes")
+    } else {
+      Decision.accept(
+        state = DocumentState.Uploading,
+        effects = listOf(DocumentEffect.UploadFile(fileName, fileContent))
+      )
+    }
 }
 
 /**
