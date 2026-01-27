@@ -1,23 +1,40 @@
 [versions]
+coroutines = "1.7.3"
 guice = "7.0.0"
+hikari = "5.1.0"
+jackson = "2.16.1"
+jooq = "3.16.23"
 kotest = "5.8.0"
 # @pin
 kotlin = "1.9.20"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 mockk = "1.13.10"
+mysql = "8.3.0"
 reflections = "0.10.2"
+testcontainers = "1.19.3"
 versionCatalogUpdateGradlePlugin = "0.8.3"
 versionsGradlePlugin = "0.50.0"
 mavenPublish = "0.33.0"
 
 [libraries]
+coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
+hikariCp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
+jacksonCore = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jacksonKotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jacksonJsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
+jooqKotlin = { module = "org.jooq:jooq-kotlin", version.ref = "jooq" }
 kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
+testcontainersCore = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainersJunit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainersMysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
 mavenPublishGradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
 
 [bundles]

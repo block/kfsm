@@ -8,4 +8,5 @@ pluginManagement {
 rootProject.name = "kfsm"
 
 include(":lib")
-include(":lib-guice")
+include(":lib-jooq")
+include(":example")

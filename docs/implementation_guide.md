@@ -46,17 +46,6 @@ should be modelled as async calls that publish a completion/failure event.
 
 ## Implementation Notes
 
-### Effect types
-
-#### Request/response effects (need a return value)
-Example: creating a ledger transaction and receiving a transaction token needed later to confirm/void.
-- Implement as RPC; make it idempotent (idempotency key) so the transition can be retried safely.
-- Persist any returned identifiers in the machine’s context.
-
-#### Fire-and-forget effects (no return value required)
-Example: voiding a transaction, sending a notification.
-- Prefer the transactional outbox pattern to guarantee delivery. kFSM provides the core interfaces (`DeferrableEffect`, `OutboxHandler`) while you implement the message processing logic based on your infrastructure needs.
-
 ### Error handling
 
 Aim for a balance between safety and customer experience:

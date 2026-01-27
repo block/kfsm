@@ -2,6 +2,7 @@ plugins {
   id("java-library")
   id("org.jetbrains.kotlin.jvm")
   id("com.vanniktech.maven.publish") version "0.33.0"
+  alias(libs.plugins.kotlinBinaryCompatibilityPlugin)
 }
 
 repositories {
@@ -20,6 +21,7 @@ mavenPublishing {
 }
 
 dependencies {
+  implementation(libs.coroutinesCore)
   implementation(libs.kotlinReflect)
 
   testImplementation(libs.kotestProperty)
