@@ -83,13 +83,13 @@ The jOOQ module provides production-ready outbox utilities:
 
 * **JooqOutbox** - `Outbox` implementation using `SELECT ... FOR UPDATE SKIP LOCKED`
 * **PollingEffectProcessor** - Background processor with exponential backoff
-* **JacksonOutboxSerializer** - Jackson-based serialization for sealed class effects
+* **MoshiOutboxSerializer** - Moshi-based serialization for sealed class effects
 * **OutboxSchema** - DDL for MySQL and PostgreSQL
 
 Example usage:
 ```kotlin
 // Create the outbox with a serializer
-val serializer = JacksonOutboxSerializer.forSealedClassWithStringId(OrderEffect::class)
+val serializer = MoshiOutboxSerializer.forSealedClassWithStringId(OrderEffect::class)
 val outbox = JooqOutbox(dsl, serializer)
 
 // Start background processing
