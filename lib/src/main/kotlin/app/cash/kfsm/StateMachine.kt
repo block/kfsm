@@ -81,15 +81,42 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
           return Result.failure(invariantResult.exceptionOrNull()!!)
         }
 
-        val outboxMessages = decision.effects.map { effect ->
-          OutboxMessage(valueId = value.id, effect = effect)
-        }
+        val outboxMessages = createOutboxMessages(value.id, decision.emittedEffects)
 
         repository.saveWithOutbox(updatedValue, outboxMessages)
       }
 
       is Decision.Reject -> Result.failure(RejectedTransition(decision.reason))
     }
+  }
+
+  private fun createOutboxMessages(
+    valueId: ID,
+    emittedEffects: List<Effects<Ef>>
+  ): List<OutboxMessage<ID, Ef>> {
+    val messages = mutableListOf<OutboxMessage<ID, Ef>>()
+
+    for (effects in emittedEffects) {
+      when (effects) {
+        is Effects.Parallel -> {
+          messages.add(OutboxMessage(valueId = valueId, effect = effects.effect))
+        }
+        is Effects.Ordered -> {
+          var previousMessageId: String? = null
+          for (effect in effects.effects) {
+            val message = OutboxMessage(
+              valueId = valueId,
+              effect = effect,
+              dependsOnEffectId = previousMessageId
+            )
+            messages.add(message)
+            previousMessageId = message.id
+          }
+        }
+      }
+    }
+
+    return messages
   }
 }
 

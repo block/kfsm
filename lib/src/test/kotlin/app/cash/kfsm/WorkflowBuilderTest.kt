@@ -149,4 +149,80 @@ class WorkflowBuilderTest : StringSpec({
         result.isFailure shouldBe true
         result.exceptionOrNull()?.message shouldBe "Upload service unavailable"
     }
+
+    "ordered effects create messages with dependencies" {
+        val savedOutboxMessages = mutableListOf<OutboxMessage<String, DocumentEffect>>()
+
+        val repository = object : Repository<String, DocumentUpload, DocumentState, DocumentEffect> {
+            override fun saveWithOutbox(
+                value: DocumentUpload,
+                outboxMessages: List<OutboxMessage<String, DocumentEffect>>
+            ): Result<DocumentUpload> {
+                savedOutboxMessages.addAll(outboxMessages)
+                return Result.success(value)
+            }
+        }
+
+        val stateMachine = StateMachine(repository)
+        val doc = DocumentUpload(id = "doc-1", state = DocumentState.Idle)
+
+        // Create a transition that uses ordered effects
+        val transition = object : Transition<String, DocumentUpload, DocumentState, DocumentEffect>(
+            from = setOf(DocumentState.Idle),
+            to = DocumentState.Uploading
+        ) {
+            override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> {
+                return Decision.accept(
+                    state = DocumentState.Uploading,
+                    Effects.ordered(
+                        DocumentEffect.UploadFile("test.pdf", byteArrayOf()),
+                        DocumentEffect.NotifyUser(value.id, "Upload started")
+                    )
+                )
+            }
+        }
+
+        val result = stateMachine.transition(doc, transition)
+
+        result.shouldBeSuccess()
+        savedOutboxMessages.size shouldBe 2
+
+        // First message should have no dependency
+        savedOutboxMessages[0].dependsOnEffectId shouldBe null
+        savedOutboxMessages[0].effect.shouldBeInstanceOf<DocumentEffect.UploadFile>()
+
+        // Second message should depend on the first
+        savedOutboxMessages[1].dependsOnEffectId shouldBe savedOutboxMessages[0].id
+        savedOutboxMessages[1].effect.shouldBeInstanceOf<DocumentEffect.NotifyUser>()
+    }
+
+    "in-memory outbox respects effect dependencies" {
+        val outbox = InMemoryOutbox<String, DocumentEffect>()
+
+        val firstMessage: OutboxMessage<String, DocumentEffect> = OutboxMessage(
+            id = "msg-1",
+            valueId = "doc-1",
+            effect = DocumentEffect.UploadFile("test.pdf", byteArrayOf())
+        )
+        val secondMessage: OutboxMessage<String, DocumentEffect> = OutboxMessage(
+            id = "msg-2",
+            valueId = "doc-1",
+            effect = DocumentEffect.NotifyUser("doc-1", "Done"),
+            dependsOnEffectId = "msg-1"
+        )
+
+        outbox.add(firstMessage)
+        outbox.add(secondMessage)
+
+        // Initially only the first message should be pending (second is blocked)
+        val pending1 = outbox.fetchPending(10)
+        pending1.size shouldBe 1
+        pending1[0].id shouldBe "msg-1"
+
+        // After processing the first, the second should become available
+        outbox.markProcessed("msg-1")
+        val pending2 = outbox.fetchPending(10)
+        pending2.size shouldBe 1
+        pending2[0].id shouldBe "msg-2"
+    }
 })
