@@ -62,12 +62,40 @@ abstract class State<S : State<S>> {
   val subsequentStates: Set<S> by lazy { transitions() }
 
   /**
+   * The set of all states that can eventually be reached from this state through any number of transitions.
+   */
+  val reachableStates: Set<S> by lazy { computeReachableStates() }
+
+  /**
    * Checks if this state can transition directly to another state.
    *
    * Override this method to allow transitions to states that cannot be
    * represented in [transitions] (e.g., data classes with parameters).
    */
   open fun canTransitionTo(other: S): Boolean = subsequentStates.contains(other)
+
+  /**
+   * Checks if this state can eventually reach another state through any number of transitions.
+   *
+   * @param other The state to check if we can eventually reach
+   * @return true if the state is reachable, false otherwise
+   */
+  open fun canEventuallyTransitionTo(other: S): Boolean = reachableStates.contains(other)
+
+  private fun computeReachableStates(): Set<S> {
+    val visited = mutableSetOf<S>()
+    val queue = ArrayDeque(subsequentStates)
+
+    while (queue.isNotEmpty()) {
+      val current = queue.removeFirst()
+      if (current !in visited) {
+        visited.add(current)
+        queue.addAll(current.subsequentStates.filterNot { it in visited })
+      }
+    }
+
+    return visited
+  }
 
   /**
    * Validates that a value satisfies all invariants defined for this state.
