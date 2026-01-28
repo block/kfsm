@@ -337,7 +337,9 @@ public abstract interface class app/cash/kfsm/Repository {
 
 public abstract class app/cash/kfsm/State {
 	public fun <init> ()V
+	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/State;)Z
 	public fun canTransitionTo (Lapp/cash/kfsm/State;)Z
+	public final fun getReachableStates ()Ljava/util/Set;
 	public final fun getSubsequentStates ()Ljava/util/Set;
 	public fun invariants ()Ljava/util/List;
 	public abstract fun transitions ()Ljava/util/Set;
