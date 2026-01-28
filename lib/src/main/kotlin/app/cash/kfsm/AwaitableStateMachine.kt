@@ -2,7 +2,6 @@ package app.cash.kfsm
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeout
-import java.time.Instant
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -239,17 +238,6 @@ sealed class PendingRequestStatus<out V> {
   data class Failed(val error: String) : PendingRequestStatus<Nothing>()
   data object NotFound : PendingRequestStatus<Nothing>()
 }
-
-/**
- * A pending request record for database storage.
- */
-data class PendingRequest<ID, V>(
-  val id: String,
-  val valueId: ID,
-  val status: PendingRequestStatus<V>,
-  val createdAt: Instant,
-  val completedAt: Instant? = null
-)
 
 /**
  * Exception thrown when a workflow times out waiting for completion.

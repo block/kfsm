@@ -59,6 +59,12 @@ public abstract interface class app/cash/kfsm/EffectHandler {
 	public abstract fun handle-gIAlu-s (Ljava/lang/Object;Lapp/cash/kfsm/Effect;)Ljava/lang/Object;
 }
 
+public final class app/cash/kfsm/EffectHandlerBuilder {
+	public fun <init> ()V
+	public final fun build ()Lapp/cash/kfsm/EffectHandler;
+	public final fun getHandlers ()Ljava/util/Map;
+}
+
 public abstract class app/cash/kfsm/EffectOutcome {
 }
 
@@ -200,26 +206,6 @@ public final class app/cash/kfsm/OutboxStatus : java/lang/Enum {
 	public static fun values ()[Lapp/cash/kfsm/OutboxStatus;
 }
 
-public final class app/cash/kfsm/PendingRequest {
-	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/PendingRequestStatus;Ljava/time/Instant;Ljava/time/Instant;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/PendingRequestStatus;Ljava/time/Instant;Ljava/time/Instant;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun component1 ()Ljava/lang/String;
-	public final fun component2 ()Ljava/lang/Object;
-	public final fun component3 ()Lapp/cash/kfsm/PendingRequestStatus;
-	public final fun component4 ()Ljava/time/Instant;
-	public final fun component5 ()Ljava/time/Instant;
-	public final fun copy (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/PendingRequestStatus;Ljava/time/Instant;Ljava/time/Instant;)Lapp/cash/kfsm/PendingRequest;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/PendingRequest;Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/PendingRequestStatus;Ljava/time/Instant;Ljava/time/Instant;ILjava/lang/Object;)Lapp/cash/kfsm/PendingRequest;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCompletedAt ()Ljava/time/Instant;
-	public final fun getCreatedAt ()Ljava/time/Instant;
-	public final fun getId ()Ljava/lang/String;
-	public final fun getStatus ()Lapp/cash/kfsm/PendingRequestStatus;
-	public final fun getValueId ()Ljava/lang/Object;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
 public abstract class app/cash/kfsm/PendingRequestStatus {
 }
 
@@ -349,6 +335,41 @@ public abstract interface class app/cash/kfsm/Value {
 public final class app/cash/kfsm/ValueNotFound : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getValueId ()Ljava/lang/String;
+}
+
+public final class app/cash/kfsm/Workflow {
+	public fun <init> (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/AwaitableStateMachine;Lapp/cash/kfsm/EffectProcessor;)V
+	public final fun component1 ()Lapp/cash/kfsm/StateMachine;
+	public final fun component2 ()Lapp/cash/kfsm/AwaitableStateMachine;
+	public final fun component3 ()Lapp/cash/kfsm/EffectProcessor;
+	public final fun copy (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/AwaitableStateMachine;Lapp/cash/kfsm/EffectProcessor;)Lapp/cash/kfsm/Workflow;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/Workflow;Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/AwaitableStateMachine;Lapp/cash/kfsm/EffectProcessor;ILjava/lang/Object;)Lapp/cash/kfsm/Workflow;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAwaitable ()Lapp/cash/kfsm/AwaitableStateMachine;
+	public final fun getProcessor ()Lapp/cash/kfsm/EffectProcessor;
+	public final fun getStateMachine ()Lapp/cash/kfsm/StateMachine;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/cash/kfsm/WorkflowBuilder {
+	public fun <init> ()V
+	public final fun build ()Lapp/cash/kfsm/Workflow;
+	public final fun effectHandler (Lapp/cash/kfsm/EffectHandler;)V
+	public final fun effectTypes ([Ljava/lang/String;)V
+	public final fun effects (Lkotlin/jvm/functions/Function1;)V
+	public final fun maxAttempts (I)V
+	public final fun outbox (Lapp/cash/kfsm/Outbox;)V
+	public final fun pendingRequestStore (Lapp/cash/kfsm/PendingRequestStore;)V
+	public final fun pollInterval-LRDsOJo (J)V
+	public final fun repository (Lapp/cash/kfsm/Repository;)V
+	public final fun settledStates ([Lapp/cash/kfsm/State;)V
+	public final fun settledWhen (Lkotlin/jvm/functions/Function1;)V
+	public final fun valueLoader (Lkotlin/jvm/functions/Function1;)V
+}
+
+public final class app/cash/kfsm/WorkflowBuilderKt {
+	public static final fun workflow (Lkotlin/jvm/functions/Function1;)Lapp/cash/kfsm/Workflow;
 }
 
 public final class app/cash/kfsm/WorkflowFailedException : java/lang/Exception {
