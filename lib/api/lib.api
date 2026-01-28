@@ -22,6 +22,7 @@ public final class app/cash/kfsm/Decision$Accept : app/cash/kfsm/Decision {
 	public static synthetic fun copy$default (Lapp/cash/kfsm/Decision$Accept;Lapp/cash/kfsm/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/Decision$Accept;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEffects ()Ljava/util/List;
+	public final fun getEmittedEffects ()Ljava/util/List;
 	public final fun getState ()Lapp/cash/kfsm/State;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -30,6 +31,7 @@ public final class app/cash/kfsm/Decision$Accept : app/cash/kfsm/Decision {
 public final class app/cash/kfsm/Decision$Companion {
 	public final fun accept (Lapp/cash/kfsm/State;Ljava/util/List;)Lapp/cash/kfsm/Decision;
 	public final fun accept (Lapp/cash/kfsm/State;[Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Decision;
+	public final fun accept (Lapp/cash/kfsm/State;[Lapp/cash/kfsm/Effects;)Lapp/cash/kfsm/Decision;
 	public static synthetic fun accept$default (Lapp/cash/kfsm/Decision$Companion;Lapp/cash/kfsm/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/Decision;
 	public final fun reject (Ljava/lang/String;)Lapp/cash/kfsm/Decision;
 }
@@ -111,6 +113,41 @@ public final class app/cash/kfsm/EffectProcessor {
 	public final fun processOne-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
 }
 
+public abstract class app/cash/kfsm/Effects {
+	public static final field Companion Lapp/cash/kfsm/Effects$Companion;
+	public abstract fun allEffects ()Ljava/util/List;
+}
+
+public final class app/cash/kfsm/Effects$Companion {
+	public final fun ordered (Lapp/cash/kfsm/Effect;[Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Effects;
+	public final fun ordered (Ljava/util/List;)Lapp/cash/kfsm/Effects;
+	public final fun parallel (Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Effects;
+}
+
+public final class app/cash/kfsm/Effects$Ordered : app/cash/kfsm/Effects {
+	public fun <init> (Ljava/util/List;)V
+	public fun allEffects ()Ljava/util/List;
+	public final fun component1 ()Ljava/util/List;
+	public final fun copy (Ljava/util/List;)Lapp/cash/kfsm/Effects$Ordered;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/Effects$Ordered;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/Effects$Ordered;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEffects ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class app/cash/kfsm/Effects$Parallel : app/cash/kfsm/Effects {
+	public fun <init> (Lapp/cash/kfsm/Effect;)V
+	public fun allEffects ()Ljava/util/List;
+	public final fun component1 ()Lapp/cash/kfsm/Effect;
+	public final fun copy (Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Effects$Parallel;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/Effects$Parallel;Lapp/cash/kfsm/Effect;ILjava/lang/Object;)Lapp/cash/kfsm/Effects$Parallel;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getEffect ()Lapp/cash/kfsm/Effect;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class app/cash/kfsm/InvalidStateForTransition : java/lang/Exception {
 	public fun <init> (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/State;Ljava/lang/Object;)V
 	public final fun getCurrentState ()Lapp/cash/kfsm/State;
@@ -151,6 +188,7 @@ public abstract interface class app/cash/kfsm/Outbox {
 	public abstract fun fetchDeadLetters (ILjava/util/Set;)Ljava/util/List;
 	public abstract fun fetchPending (ILjava/util/Set;)Ljava/util/List;
 	public abstract fun findById (Ljava/lang/String;)Lapp/cash/kfsm/OutboxMessage;
+	public abstract fun isProcessed (Ljava/lang/String;)Z
 	public abstract fun markDeadLetter (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun markFailed (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)V
 	public abstract fun markProcessed (Ljava/lang/String;)V

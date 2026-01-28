@@ -175,11 +175,24 @@ interface Outbox<ID, Ef : Effect> {
   /**
    * Fetch pending messages up to the batch size.
    *
+   * Messages with [OutboxMessage.dependsOnEffectId] set should only be returned
+   * if the dependency has been processed (use [isProcessed] to check).
+   *
    * @param batchSize Maximum number of messages to return
    * @param effectTypes If provided, only fetch messages with these effect types.
    *                    If null or empty, fetch all types.
    */
   fun fetchPending(batchSize: Int, effectTypes: Set<String>? = null): List<OutboxMessage<ID, Ef>>
+
+  /**
+   * Check if a message has been processed.
+   *
+   * Used to determine if dependent effects can be executed.
+   *
+   * @param id The message ID to check
+   * @return true if the message has been processed, false otherwise
+   */
+  fun isProcessed(id: String): Boolean
 
   /**
    * Find a message by ID.

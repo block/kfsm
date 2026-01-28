@@ -130,6 +130,14 @@ class JooqOutbox<ID : Any, Ef : Effect>(
     )
   )
 
+  override fun isProcessed(id: String): Boolean {
+    return (dsl.selectCount()
+      .from(table)
+      .where(idField.eq(id))
+      .and(statusField.eq(OutboxStatus.PROCESSED.name))
+      .fetchOne(0, Int::class.java) ?: 0) > 0
+  }
+
   override fun findById(id: String): OutboxMessage<ID, Ef>? {
     return dsl.selectFrom(table)
       .where(idField.eq(id))
@@ -208,58 +216,40 @@ class JooqOutbox<ID : Any, Ef : Effect>(
    * Should be executed within the same transaction as the state change.
    */
   fun insert(messages: List<OutboxMessage<ID, Ef>>) {
-    if (messages.isNotEmpty()) {
-      val insert = dsl.insertInto(
-        table,
-        idField, valueIdField, effectTypeField, effectPayloadField,
-        dedupKeyField, dependsOnField, statusField, attemptCountField,
-        lastErrorField, createdAtField
-      )
-
-      messages.fold(insert) { acc, msg ->
-        acc.values(
-          msg.id,
-          serializer.serializeId(msg.valueId),
-          msg.type,
-          serializer.serializeEffect(msg.effect),
-          msg.dedupKey,
-          msg.dependsOnEffectId,
-          msg.status.name,
-          msg.attemptCount,
-          msg.lastError,
-          msg.createdAt
-        )
-      }.execute()
-    }
+    insertWithContext(dsl, messages)
   }
 
   /**
    * Insert outbox messages within a provided transaction context.
    */
   fun insert(tx: DSLContext, messages: List<OutboxMessage<ID, Ef>>) {
-    if (messages.isNotEmpty()) {
-      val insert = tx.insertInto(
-        table,
-        idField, valueIdField, effectTypeField, effectPayloadField,
-        dedupKeyField, dependsOnField, statusField, attemptCountField,
-        lastErrorField, createdAtField
-      )
+    insertWithContext(tx, messages)
+  }
 
-      messages.fold(insert) { acc, msg ->
-        acc.values(
-          msg.id,
-          serializer.serializeId(msg.valueId),
-          msg.type,
-          serializer.serializeEffect(msg.effect),
-          msg.dedupKey,
-          msg.dependsOnEffectId,
-          msg.status.name,
-          msg.attemptCount,
-          msg.lastError,
-          msg.createdAt
-        )
-      }.execute()
-    }
+  private fun insertWithContext(ctx: DSLContext, messages: List<OutboxMessage<ID, Ef>>) {
+    if (messages.isEmpty()) return
+
+    val insert = ctx.insertInto(
+      table,
+      idField, valueIdField, effectTypeField, effectPayloadField,
+      dedupKeyField, dependsOnField, statusField, attemptCountField,
+      lastErrorField, createdAtField
+    )
+
+    messages.fold(insert) { acc, msg ->
+      acc.values(
+        msg.id,
+        serializer.serializeId(msg.valueId),
+        msg.type,
+        serializer.serializeEffect(msg.effect),
+        msg.dedupKey,
+        msg.dependsOnEffectId,
+        msg.status.name,
+        msg.attemptCount,
+        msg.lastError,
+        msg.createdAt
+      )
+    }.execute()
   }
 
   /**

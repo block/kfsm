@@ -54,11 +54,14 @@ class InMemoryOutbox<ID, Ef : Effect> : Outbox<ID, Ef> {
     override fun fetchPending(batchSize: Int, effectTypes: Set<String>?): List<OutboxMessage<ID, Ef>> =
         messages
             .filter { it.id !in processed && it.id !in deadLetters }
+            .filter { it.dependsOnEffectId == null || it.dependsOnEffectId in processed }
             .let { pending ->
                 if (effectTypes.isNullOrEmpty()) pending
                 else pending.filter { it.effect::class.simpleName in effectTypes }
             }
             .take(batchSize)
+
+    override fun isProcessed(id: String): Boolean = id in processed
 
     override fun findById(id: String): OutboxMessage<ID, Ef>? =
         messages.find { it.id == id }
