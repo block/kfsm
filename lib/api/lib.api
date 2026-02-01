@@ -1,193 +1,193 @@
-public final class app/cash/kfsm/AwaitableStateMachine {
-	public synthetic fun <init> (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/PendingRequestStore;Ljava/util/Set;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/PendingRequestStore;Ljava/util/Set;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/PendingRequestStore;Lkotlin/jvm/functions/Function1;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public synthetic fun <init> (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/PendingRequestStore;Lkotlin/jvm/functions/Function1;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun markCompleted (Ljava/lang/Object;Lapp/cash/kfsm/Value;)V
+public final class app/cash/kfsm/v2/AwaitableStateMachine {
+	public synthetic fun <init> (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/PendingRequestStore;Ljava/util/Set;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/PendingRequestStore;Ljava/util/Set;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/PendingRequestStore;Lkotlin/jvm/functions/Function1;JILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/PendingRequestStore;Lkotlin/jvm/functions/Function1;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun markCompleted (Ljava/lang/Object;Lapp/cash/kfsm/v2/Value;)V
 	public final fun markFailed (Ljava/lang/Object;Ljava/lang/Throwable;)V
-	public final fun transitionAndAwait-E0qYoyE (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun transitionAndAwait-E0qYoyE (Lapp/cash/kfsm/v2/Value;Lapp/cash/kfsm/v2/Transition;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract class app/cash/kfsm/Decision {
-	public static final field Companion Lapp/cash/kfsm/Decision$Companion;
+public abstract class app/cash/kfsm/v2/Decision {
+	public static final field Companion Lapp/cash/kfsm/v2/Decision$Companion;
 }
 
-public final class app/cash/kfsm/Decision$Accept : app/cash/kfsm/Decision {
-	public fun <init> (Lapp/cash/kfsm/State;Ljava/util/List;)V
-	public synthetic fun <init> (Lapp/cash/kfsm/State;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lapp/cash/kfsm/State;[Lapp/cash/kfsm/Effect;)V
-	public final fun component1 ()Lapp/cash/kfsm/State;
+public final class app/cash/kfsm/v2/Decision$Accept : app/cash/kfsm/v2/Decision {
+	public fun <init> (Lapp/cash/kfsm/v2/State;Ljava/util/List;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/v2/State;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Lapp/cash/kfsm/v2/State;[Lapp/cash/kfsm/v2/Effect;)V
+	public final fun component1 ()Lapp/cash/kfsm/v2/State;
 	public final fun component2 ()Ljava/util/List;
-	public final fun copy (Lapp/cash/kfsm/State;Ljava/util/List;)Lapp/cash/kfsm/Decision$Accept;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/Decision$Accept;Lapp/cash/kfsm/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/Decision$Accept;
+	public final fun copy (Lapp/cash/kfsm/v2/State;Ljava/util/List;)Lapp/cash/kfsm/v2/Decision$Accept;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Decision$Accept;Lapp/cash/kfsm/v2/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision$Accept;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEffects ()Ljava/util/List;
 	public final fun getEmittedEffects ()Ljava/util/List;
-	public final fun getState ()Lapp/cash/kfsm/State;
+	public final fun getState ()Lapp/cash/kfsm/v2/State;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/Decision$Companion {
-	public final fun accept (Lapp/cash/kfsm/State;Ljava/util/List;)Lapp/cash/kfsm/Decision;
-	public final fun accept (Lapp/cash/kfsm/State;[Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Decision;
-	public final fun accept (Lapp/cash/kfsm/State;[Lapp/cash/kfsm/Effects;)Lapp/cash/kfsm/Decision;
-	public static synthetic fun accept$default (Lapp/cash/kfsm/Decision$Companion;Lapp/cash/kfsm/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/Decision;
-	public final fun reject (Ljava/lang/String;)Lapp/cash/kfsm/Decision;
+public final class app/cash/kfsm/v2/Decision$Companion {
+	public final fun accept (Lapp/cash/kfsm/v2/State;Ljava/util/List;)Lapp/cash/kfsm/v2/Decision;
+	public final fun accept (Lapp/cash/kfsm/v2/State;[Lapp/cash/kfsm/v2/Effect;)Lapp/cash/kfsm/v2/Decision;
+	public final fun accept (Lapp/cash/kfsm/v2/State;[Lapp/cash/kfsm/v2/Effects;)Lapp/cash/kfsm/v2/Decision;
+	public static synthetic fun accept$default (Lapp/cash/kfsm/v2/Decision$Companion;Lapp/cash/kfsm/v2/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision;
+	public final fun reject (Ljava/lang/String;)Lapp/cash/kfsm/v2/Decision;
 }
 
-public final class app/cash/kfsm/Decision$Reject : app/cash/kfsm/Decision {
+public final class app/cash/kfsm/v2/Decision$Reject : app/cash/kfsm/v2/Decision {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/Decision$Reject;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/Decision$Reject;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/Decision$Reject;
+	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/v2/Decision$Reject;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Decision$Reject;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision$Reject;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getReason ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/DecisionStateMismatch : java/lang/Exception {
-	public fun <init> (Lapp/cash/kfsm/State;Lapp/cash/kfsm/State;Lapp/cash/kfsm/Transition;)V
-	public final fun getActual ()Lapp/cash/kfsm/State;
-	public final fun getExpected ()Lapp/cash/kfsm/State;
-	public final fun getTransition ()Lapp/cash/kfsm/Transition;
+public final class app/cash/kfsm/v2/DecisionStateMismatch : java/lang/Exception {
+	public fun <init> (Lapp/cash/kfsm/v2/State;Lapp/cash/kfsm/v2/State;Lapp/cash/kfsm/v2/Transition;)V
+	public final fun getActual ()Lapp/cash/kfsm/v2/State;
+	public final fun getExpected ()Lapp/cash/kfsm/v2/State;
+	public final fun getTransition ()Lapp/cash/kfsm/v2/Transition;
 }
 
-public abstract interface class app/cash/kfsm/Effect {
+public abstract interface class app/cash/kfsm/v2/Effect {
 }
 
-public abstract interface class app/cash/kfsm/EffectHandler {
-	public abstract fun handle-gIAlu-s (Ljava/lang/Object;Lapp/cash/kfsm/Effect;)Ljava/lang/Object;
+public abstract interface class app/cash/kfsm/v2/EffectHandler {
+	public abstract fun handle-gIAlu-s (Ljava/lang/Object;Lapp/cash/kfsm/v2/Effect;)Ljava/lang/Object;
 }
 
-public final class app/cash/kfsm/EffectHandlerBuilder {
+public final class app/cash/kfsm/v2/EffectHandlerBuilder {
 	public fun <init> ()V
-	public final fun build ()Lapp/cash/kfsm/EffectHandler;
+	public final fun build ()Lapp/cash/kfsm/v2/EffectHandler;
 	public final fun getHandlers ()Ljava/util/Map;
 }
 
-public abstract class app/cash/kfsm/EffectOutcome {
+public abstract class app/cash/kfsm/v2/EffectOutcome {
 }
 
-public final class app/cash/kfsm/EffectOutcome$Completed : app/cash/kfsm/EffectOutcome {
-	public static final field INSTANCE Lapp/cash/kfsm/EffectOutcome$Completed;
+public final class app/cash/kfsm/v2/EffectOutcome$Completed : app/cash/kfsm/v2/EffectOutcome {
+	public static final field INSTANCE Lapp/cash/kfsm/v2/EffectOutcome$Completed;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/EffectOutcome$FailedWithTransition : app/cash/kfsm/EffectOutcome {
-	public fun <init> (Ljava/lang/Object;Lapp/cash/kfsm/Transition;Ljava/lang/String;)V
+public final class app/cash/kfsm/v2/EffectOutcome$FailedWithTransition : app/cash/kfsm/v2/EffectOutcome {
+	public fun <init> (Ljava/lang/Object;Lapp/cash/kfsm/v2/Transition;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Object;
-	public final fun component2 ()Lapp/cash/kfsm/Transition;
+	public final fun component2 ()Lapp/cash/kfsm/v2/Transition;
 	public final fun component3 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Object;Lapp/cash/kfsm/Transition;Ljava/lang/String;)Lapp/cash/kfsm/EffectOutcome$FailedWithTransition;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/EffectOutcome$FailedWithTransition;Ljava/lang/Object;Lapp/cash/kfsm/Transition;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/EffectOutcome$FailedWithTransition;
+	public final fun copy (Ljava/lang/Object;Lapp/cash/kfsm/v2/Transition;Ljava/lang/String;)Lapp/cash/kfsm/v2/EffectOutcome$FailedWithTransition;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/EffectOutcome$FailedWithTransition;Ljava/lang/Object;Lapp/cash/kfsm/v2/Transition;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/v2/EffectOutcome$FailedWithTransition;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getReason ()Ljava/lang/String;
-	public final fun getTransition ()Lapp/cash/kfsm/Transition;
+	public final fun getTransition ()Lapp/cash/kfsm/v2/Transition;
 	public final fun getValueId ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/EffectOutcome$TransitionProduced : app/cash/kfsm/EffectOutcome {
-	public fun <init> (Ljava/lang/Object;Lapp/cash/kfsm/Transition;)V
+public final class app/cash/kfsm/v2/EffectOutcome$TransitionProduced : app/cash/kfsm/v2/EffectOutcome {
+	public fun <init> (Ljava/lang/Object;Lapp/cash/kfsm/v2/Transition;)V
 	public final fun component1 ()Ljava/lang/Object;
-	public final fun component2 ()Lapp/cash/kfsm/Transition;
-	public final fun copy (Ljava/lang/Object;Lapp/cash/kfsm/Transition;)Lapp/cash/kfsm/EffectOutcome$TransitionProduced;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/EffectOutcome$TransitionProduced;Ljava/lang/Object;Lapp/cash/kfsm/Transition;ILjava/lang/Object;)Lapp/cash/kfsm/EffectOutcome$TransitionProduced;
+	public final fun component2 ()Lapp/cash/kfsm/v2/Transition;
+	public final fun copy (Ljava/lang/Object;Lapp/cash/kfsm/v2/Transition;)Lapp/cash/kfsm/v2/EffectOutcome$TransitionProduced;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/EffectOutcome$TransitionProduced;Ljava/lang/Object;Lapp/cash/kfsm/v2/Transition;ILjava/lang/Object;)Lapp/cash/kfsm/v2/EffectOutcome$TransitionProduced;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getTransition ()Lapp/cash/kfsm/Transition;
+	public final fun getTransition ()Lapp/cash/kfsm/v2/Transition;
 	public final fun getValueId ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/EffectProcessor {
-	public fun <init> (Lapp/cash/kfsm/Outbox;Lapp/cash/kfsm/EffectHandler;Lapp/cash/kfsm/StateMachine;Lkotlin/jvm/functions/Function1;Lapp/cash/kfsm/AwaitableStateMachine;Ljava/util/Set;Ljava/lang/Integer;)V
-	public synthetic fun <init> (Lapp/cash/kfsm/Outbox;Lapp/cash/kfsm/EffectHandler;Lapp/cash/kfsm/StateMachine;Lkotlin/jvm/functions/Function1;Lapp/cash/kfsm/AwaitableStateMachine;Ljava/util/Set;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class app/cash/kfsm/v2/EffectProcessor {
+	public fun <init> (Lapp/cash/kfsm/v2/Outbox;Lapp/cash/kfsm/v2/EffectHandler;Lapp/cash/kfsm/v2/StateMachine;Lkotlin/jvm/functions/Function1;Lapp/cash/kfsm/v2/AwaitableStateMachine;Ljava/util/Set;Ljava/lang/Integer;)V
+	public synthetic fun <init> (Lapp/cash/kfsm/v2/Outbox;Lapp/cash/kfsm/v2/EffectHandler;Lapp/cash/kfsm/v2/StateMachine;Lkotlin/jvm/functions/Function1;Lapp/cash/kfsm/v2/AwaitableStateMachine;Ljava/util/Set;Ljava/lang/Integer;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun processAll (I)I
-	public static synthetic fun processAll$default (Lapp/cash/kfsm/EffectProcessor;IILjava/lang/Object;)I
+	public static synthetic fun processAll$default (Lapp/cash/kfsm/v2/EffectProcessor;IILjava/lang/Object;)I
 	public final fun processOne-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
 }
 
-public abstract class app/cash/kfsm/Effects {
-	public static final field Companion Lapp/cash/kfsm/Effects$Companion;
+public abstract class app/cash/kfsm/v2/Effects {
+	public static final field Companion Lapp/cash/kfsm/v2/Effects$Companion;
 	public abstract fun allEffects ()Ljava/util/List;
 }
 
-public final class app/cash/kfsm/Effects$Companion {
-	public final fun ordered (Lapp/cash/kfsm/Effect;[Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Effects;
-	public final fun ordered (Ljava/util/List;)Lapp/cash/kfsm/Effects;
-	public final fun parallel (Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Effects;
+public final class app/cash/kfsm/v2/Effects$Companion {
+	public final fun ordered (Lapp/cash/kfsm/v2/Effect;[Lapp/cash/kfsm/v2/Effect;)Lapp/cash/kfsm/v2/Effects;
+	public final fun ordered (Ljava/util/List;)Lapp/cash/kfsm/v2/Effects;
+	public final fun parallel (Lapp/cash/kfsm/v2/Effect;)Lapp/cash/kfsm/v2/Effects;
 }
 
-public final class app/cash/kfsm/Effects$Ordered : app/cash/kfsm/Effects {
+public final class app/cash/kfsm/v2/Effects$Ordered : app/cash/kfsm/v2/Effects {
 	public fun <init> (Ljava/util/List;)V
 	public fun allEffects ()Ljava/util/List;
 	public final fun component1 ()Ljava/util/List;
-	public final fun copy (Ljava/util/List;)Lapp/cash/kfsm/Effects$Ordered;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/Effects$Ordered;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/Effects$Ordered;
+	public final fun copy (Ljava/util/List;)Lapp/cash/kfsm/v2/Effects$Ordered;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Effects$Ordered;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Effects$Ordered;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEffects ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/Effects$Parallel : app/cash/kfsm/Effects {
-	public fun <init> (Lapp/cash/kfsm/Effect;)V
+public final class app/cash/kfsm/v2/Effects$Parallel : app/cash/kfsm/v2/Effects {
+	public fun <init> (Lapp/cash/kfsm/v2/Effect;)V
 	public fun allEffects ()Ljava/util/List;
-	public final fun component1 ()Lapp/cash/kfsm/Effect;
-	public final fun copy (Lapp/cash/kfsm/Effect;)Lapp/cash/kfsm/Effects$Parallel;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/Effects$Parallel;Lapp/cash/kfsm/Effect;ILjava/lang/Object;)Lapp/cash/kfsm/Effects$Parallel;
+	public final fun component1 ()Lapp/cash/kfsm/v2/Effect;
+	public final fun copy (Lapp/cash/kfsm/v2/Effect;)Lapp/cash/kfsm/v2/Effects$Parallel;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Effects$Parallel;Lapp/cash/kfsm/v2/Effect;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Effects$Parallel;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getEffect ()Lapp/cash/kfsm/Effect;
+	public final fun getEffect ()Lapp/cash/kfsm/v2/Effect;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/InvalidStateForTransition : java/lang/Exception {
-	public fun <init> (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/State;Ljava/lang/Object;)V
-	public final fun getCurrentState ()Lapp/cash/kfsm/State;
-	public final fun getTransition ()Lapp/cash/kfsm/Transition;
+public final class app/cash/kfsm/v2/InvalidStateForTransition : java/lang/Exception {
+	public fun <init> (Lapp/cash/kfsm/v2/Transition;Lapp/cash/kfsm/v2/State;Ljava/lang/Object;)V
+	public final fun getCurrentState ()Lapp/cash/kfsm/v2/State;
+	public final fun getTransition ()Lapp/cash/kfsm/v2/Transition;
 	public final fun getValueId ()Ljava/lang/Object;
 }
 
-public final class app/cash/kfsm/InvalidStateMachine : java/lang/Exception {
+public final class app/cash/kfsm/v2/InvalidStateMachine : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/InvalidStateMachine;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/InvalidStateMachine;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/InvalidStateMachine;
+	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/v2/InvalidStateMachine;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/InvalidStateMachine;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/v2/InvalidStateMachine;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getMessage ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class app/cash/kfsm/Invariant {
+public abstract interface class app/cash/kfsm/v2/Invariant {
 	public abstract fun validate-IoAF18A (Ljava/lang/Object;)Ljava/lang/Object;
 }
 
-public final class app/cash/kfsm/InvariantKt {
-	public static final fun invariant (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lapp/cash/kfsm/Invariant;
+public final class app/cash/kfsm/v2/InvariantKt {
+	public static final fun invariant (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lapp/cash/kfsm/v2/Invariant;
 }
 
-public final class app/cash/kfsm/InvariantViolation : java/lang/Exception {
+public final class app/cash/kfsm/v2/InvariantViolation : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getInvariantMessage ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/MessageNotFound : java/lang/Exception {
+public final class app/cash/kfsm/v2/MessageNotFound : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getMessageId ()Ljava/lang/String;
 }
 
-public abstract interface class app/cash/kfsm/Outbox {
+public abstract interface class app/cash/kfsm/v2/Outbox {
 	public abstract fun fetchDeadLetters (ILjava/util/Set;)Ljava/util/List;
 	public abstract fun fetchPending (ILjava/util/Set;)Ljava/util/List;
-	public abstract fun findById (Ljava/lang/String;)Lapp/cash/kfsm/OutboxMessage;
+	public abstract fun findById (Ljava/lang/String;)Lapp/cash/kfsm/v2/OutboxMessage;
 	public abstract fun isProcessed (Ljava/lang/String;)Z
 	public abstract fun markDeadLetter (Ljava/lang/String;Ljava/lang/String;)V
 	public abstract fun markFailed (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)V
@@ -195,119 +195,119 @@ public abstract interface class app/cash/kfsm/Outbox {
 	public abstract fun retryDeadLetter (Ljava/lang/String;)Z
 }
 
-public final class app/cash/kfsm/Outbox$DefaultImpls {
-	public static synthetic fun fetchDeadLetters$default (Lapp/cash/kfsm/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
-	public static synthetic fun fetchPending$default (Lapp/cash/kfsm/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
-	public static synthetic fun markFailed$default (Lapp/cash/kfsm/Outbox;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)V
+public final class app/cash/kfsm/v2/Outbox$DefaultImpls {
+	public static synthetic fun fetchDeadLetters$default (Lapp/cash/kfsm/v2/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun fetchPending$default (Lapp/cash/kfsm/v2/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
+	public static synthetic fun markFailed$default (Lapp/cash/kfsm/v2/Outbox;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)V
 }
 
-public final class app/cash/kfsm/OutboxMessage {
-	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/OutboxStatus;ILjava/lang/String;)V
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/OutboxStatus;ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+public final class app/cash/kfsm/v2/OutboxMessage {
+	public fun <init> (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/v2/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/v2/OutboxStatus;ILjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/v2/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/v2/OutboxStatus;ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun canProcess (Lkotlin/jvm/functions/Function1;)Z
 	public final fun component1 ()Ljava/lang/String;
 	public final fun component10 ()Ljava/lang/String;
 	public final fun component2 ()Ljava/lang/Object;
-	public final fun component3 ()Lapp/cash/kfsm/Effect;
+	public final fun component3 ()Lapp/cash/kfsm/v2/Effect;
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()Ljava/lang/String;
 	public final fun component6 ()Ljava/lang/String;
 	public final fun component7 ()Ljava/time/Instant;
-	public final fun component8 ()Lapp/cash/kfsm/OutboxStatus;
+	public final fun component8 ()Lapp/cash/kfsm/v2/OutboxStatus;
 	public final fun component9 ()I
-	public final fun copy (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/OutboxStatus;ILjava/lang/String;)Lapp/cash/kfsm/OutboxMessage;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/OutboxMessage;Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/OutboxStatus;ILjava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/OutboxMessage;
+	public final fun copy (Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/v2/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/v2/OutboxStatus;ILjava/lang/String;)Lapp/cash/kfsm/v2/OutboxMessage;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/OutboxMessage;Ljava/lang/String;Ljava/lang/Object;Lapp/cash/kfsm/v2/Effect;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/time/Instant;Lapp/cash/kfsm/v2/OutboxStatus;ILjava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/v2/OutboxMessage;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAttemptCount ()I
 	public final fun getCreatedAt ()Ljava/time/Instant;
 	public final fun getDedupKey ()Ljava/lang/String;
 	public final fun getDependsOnEffectId ()Ljava/lang/String;
-	public final fun getEffect ()Lapp/cash/kfsm/Effect;
+	public final fun getEffect ()Lapp/cash/kfsm/v2/Effect;
 	public final fun getId ()Ljava/lang/String;
 	public final fun getLastError ()Ljava/lang/String;
-	public final fun getStatus ()Lapp/cash/kfsm/OutboxStatus;
+	public final fun getStatus ()Lapp/cash/kfsm/v2/OutboxStatus;
 	public final fun getType ()Ljava/lang/String;
 	public final fun getValueId ()Ljava/lang/Object;
 	public fun hashCode ()I
-	public final fun markFailed (Ljava/lang/String;)Lapp/cash/kfsm/OutboxMessage;
-	public final fun markProcessed ()Lapp/cash/kfsm/OutboxMessage;
+	public final fun markFailed (Ljava/lang/String;)Lapp/cash/kfsm/v2/OutboxMessage;
+	public final fun markProcessed ()Lapp/cash/kfsm/v2/OutboxMessage;
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/OutboxStatus : java/lang/Enum {
-	public static final field DEAD_LETTER Lapp/cash/kfsm/OutboxStatus;
-	public static final field FAILED Lapp/cash/kfsm/OutboxStatus;
-	public static final field PENDING Lapp/cash/kfsm/OutboxStatus;
-	public static final field PROCESSED Lapp/cash/kfsm/OutboxStatus;
+public final class app/cash/kfsm/v2/OutboxStatus : java/lang/Enum {
+	public static final field DEAD_LETTER Lapp/cash/kfsm/v2/OutboxStatus;
+	public static final field FAILED Lapp/cash/kfsm/v2/OutboxStatus;
+	public static final field PENDING Lapp/cash/kfsm/v2/OutboxStatus;
+	public static final field PROCESSED Lapp/cash/kfsm/v2/OutboxStatus;
 	public static fun getEntries ()Lkotlin/enums/EnumEntries;
-	public static fun valueOf (Ljava/lang/String;)Lapp/cash/kfsm/OutboxStatus;
-	public static fun values ()[Lapp/cash/kfsm/OutboxStatus;
+	public static fun valueOf (Ljava/lang/String;)Lapp/cash/kfsm/v2/OutboxStatus;
+	public static fun values ()[Lapp/cash/kfsm/v2/OutboxStatus;
 }
 
-public abstract class app/cash/kfsm/PendingRequestStatus {
+public abstract class app/cash/kfsm/v2/PendingRequestStatus {
 }
 
-public final class app/cash/kfsm/PendingRequestStatus$Completed : app/cash/kfsm/PendingRequestStatus {
+public final class app/cash/kfsm/v2/PendingRequestStatus$Completed : app/cash/kfsm/v2/PendingRequestStatus {
 	public fun <init> (Ljava/lang/Object;)V
 	public final fun component1 ()Ljava/lang/Object;
-	public final fun copy (Ljava/lang/Object;)Lapp/cash/kfsm/PendingRequestStatus$Completed;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/PendingRequestStatus$Completed;Ljava/lang/Object;ILjava/lang/Object;)Lapp/cash/kfsm/PendingRequestStatus$Completed;
+	public final fun copy (Ljava/lang/Object;)Lapp/cash/kfsm/v2/PendingRequestStatus$Completed;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/PendingRequestStatus$Completed;Ljava/lang/Object;ILjava/lang/Object;)Lapp/cash/kfsm/v2/PendingRequestStatus$Completed;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getValue ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/PendingRequestStatus$Failed : app/cash/kfsm/PendingRequestStatus {
+public final class app/cash/kfsm/v2/PendingRequestStatus$Failed : app/cash/kfsm/v2/PendingRequestStatus {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/PendingRequestStatus$Failed;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/PendingRequestStatus$Failed;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/PendingRequestStatus$Failed;
+	public final fun copy (Ljava/lang/String;)Lapp/cash/kfsm/v2/PendingRequestStatus$Failed;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/PendingRequestStatus$Failed;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/v2/PendingRequestStatus$Failed;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getError ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/PendingRequestStatus$NotFound : app/cash/kfsm/PendingRequestStatus {
-	public static final field INSTANCE Lapp/cash/kfsm/PendingRequestStatus$NotFound;
+public final class app/cash/kfsm/v2/PendingRequestStatus$NotFound : app/cash/kfsm/v2/PendingRequestStatus {
+	public static final field INSTANCE Lapp/cash/kfsm/v2/PendingRequestStatus$NotFound;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/PendingRequestStatus$Waiting : app/cash/kfsm/PendingRequestStatus {
-	public static final field INSTANCE Lapp/cash/kfsm/PendingRequestStatus$Waiting;
+public final class app/cash/kfsm/v2/PendingRequestStatus$Waiting : app/cash/kfsm/v2/PendingRequestStatus {
+	public static final field INSTANCE Lapp/cash/kfsm/v2/PendingRequestStatus$Waiting;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public abstract interface class app/cash/kfsm/PendingRequestStore {
+public abstract interface class app/cash/kfsm/v2/PendingRequestStore {
 	public abstract fun complete (Ljava/lang/Object;Ljava/lang/Object;)V
 	public abstract fun create (Ljava/lang/Object;)Ljava/lang/String;
 	public abstract fun delete (Ljava/lang/String;)V
 	public abstract fun fail (Ljava/lang/Object;Ljava/lang/String;)V
-	public abstract fun getStatus (Ljava/lang/String;)Lapp/cash/kfsm/PendingRequestStatus;
+	public abstract fun getStatus (Ljava/lang/String;)Lapp/cash/kfsm/v2/PendingRequestStatus;
 	public abstract fun markTimedOut (Ljava/lang/String;)V
 }
 
-public abstract class app/cash/kfsm/ProcessingResult {
+public abstract class app/cash/kfsm/v2/ProcessingResult {
 }
 
-public final class app/cash/kfsm/ProcessingResult$EffectCompleted : app/cash/kfsm/ProcessingResult {
-	public static final field INSTANCE Lapp/cash/kfsm/ProcessingResult$EffectCompleted;
+public final class app/cash/kfsm/v2/ProcessingResult$EffectCompleted : app/cash/kfsm/v2/ProcessingResult {
+	public static final field INSTANCE Lapp/cash/kfsm/v2/ProcessingResult$EffectCompleted;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/ProcessingResult$FailedWithTransition : app/cash/kfsm/ProcessingResult {
+public final class app/cash/kfsm/v2/ProcessingResult$FailedWithTransition : app/cash/kfsm/v2/ProcessingResult {
 	public fun <init> (Ljava/lang/Object;Ljava/lang/String;)V
 	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Ljava/lang/String;
-	public final fun copy (Ljava/lang/Object;Ljava/lang/String;)Lapp/cash/kfsm/ProcessingResult$FailedWithTransition;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/ProcessingResult$FailedWithTransition;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/ProcessingResult$FailedWithTransition;
+	public final fun copy (Ljava/lang/Object;Ljava/lang/String;)Lapp/cash/kfsm/v2/ProcessingResult$FailedWithTransition;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/ProcessingResult$FailedWithTransition;Ljava/lang/Object;Ljava/lang/String;ILjava/lang/Object;)Lapp/cash/kfsm/v2/ProcessingResult$FailedWithTransition;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getReason ()Ljava/lang/String;
 	public final fun getValue ()Ljava/lang/Object;
@@ -315,115 +315,115 @@ public final class app/cash/kfsm/ProcessingResult$FailedWithTransition : app/cas
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/ProcessingResult$StateTransitioned : app/cash/kfsm/ProcessingResult {
+public final class app/cash/kfsm/v2/ProcessingResult$StateTransitioned : app/cash/kfsm/v2/ProcessingResult {
 	public fun <init> (Ljava/lang/Object;)V
 	public final fun component1 ()Ljava/lang/Object;
-	public final fun copy (Ljava/lang/Object;)Lapp/cash/kfsm/ProcessingResult$StateTransitioned;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/ProcessingResult$StateTransitioned;Ljava/lang/Object;ILjava/lang/Object;)Lapp/cash/kfsm/ProcessingResult$StateTransitioned;
+	public final fun copy (Ljava/lang/Object;)Lapp/cash/kfsm/v2/ProcessingResult$StateTransitioned;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/ProcessingResult$StateTransitioned;Ljava/lang/Object;ILjava/lang/Object;)Lapp/cash/kfsm/v2/ProcessingResult$StateTransitioned;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getValue ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/RejectedTransition : java/lang/Exception {
+public final class app/cash/kfsm/v2/RejectedTransition : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getReason ()Ljava/lang/String;
 }
 
-public abstract interface class app/cash/kfsm/Repository {
-	public abstract fun saveWithOutbox-gIAlu-s (Lapp/cash/kfsm/Value;Ljava/util/List;)Ljava/lang/Object;
+public abstract interface class app/cash/kfsm/v2/Repository {
+	public abstract fun saveWithOutbox-gIAlu-s (Lapp/cash/kfsm/v2/Value;Ljava/util/List;)Ljava/lang/Object;
 }
 
-public abstract class app/cash/kfsm/State {
+public abstract class app/cash/kfsm/v2/State {
 	public fun <init> ()V
-	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/State;)Z
-	public fun canTransitionTo (Lapp/cash/kfsm/State;)Z
+	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/v2/State;)Z
+	public fun canTransitionTo (Lapp/cash/kfsm/v2/State;)Z
 	public final fun getReachableStates ()Ljava/util/Set;
 	public final fun getSubsequentStates ()Ljava/util/Set;
 	public abstract fun transitions ()Ljava/util/Set;
 }
 
-public final class app/cash/kfsm/StateMachine {
-	public fun <init> (Lapp/cash/kfsm/Repository;)V
-	public final fun transition-gIAlu-s (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Ljava/lang/Object;
+public final class app/cash/kfsm/v2/StateMachine {
+	public fun <init> (Lapp/cash/kfsm/v2/Repository;)V
+	public final fun transition-gIAlu-s (Lapp/cash/kfsm/v2/Value;Lapp/cash/kfsm/v2/Transition;)Ljava/lang/Object;
 }
 
-public final class app/cash/kfsm/StateMachineUtilities {
-	public static final field INSTANCE Lapp/cash/kfsm/StateMachineUtilities;
-	public final fun mermaid-IoAF18A (Lapp/cash/kfsm/State;)Ljava/lang/Object;
-	public final fun verify-IoAF18A (Lapp/cash/kfsm/State;)Ljava/lang/Object;
+public final class app/cash/kfsm/v2/StateMachineUtilities {
+	public static final field INSTANCE Lapp/cash/kfsm/v2/StateMachineUtilities;
+	public final fun mermaid-IoAF18A (Lapp/cash/kfsm/v2/State;)Ljava/lang/Object;
+	public final fun verify-IoAF18A (Lapp/cash/kfsm/v2/State;)Ljava/lang/Object;
 }
 
-public abstract interface class app/cash/kfsm/StateWithInvariants {
+public abstract interface class app/cash/kfsm/v2/StateWithInvariants {
 	public abstract fun invariants ()Ljava/util/List;
 }
 
-public final class app/cash/kfsm/StateWithInvariantsKt {
+public final class app/cash/kfsm/v2/StateWithInvariantsKt {
 	public static final fun validateTypedInvariants (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 }
 
-public abstract class app/cash/kfsm/Transition {
-	public fun <init> (Lapp/cash/kfsm/State;Lapp/cash/kfsm/State;)V
-	public fun <init> (Ljava/util/Set;Lapp/cash/kfsm/State;)V
-	public final fun canApplyTo (Lapp/cash/kfsm/State;)Z
-	public abstract fun decide (Lapp/cash/kfsm/Value;)Lapp/cash/kfsm/Decision;
+public abstract class app/cash/kfsm/v2/Transition {
+	public fun <init> (Lapp/cash/kfsm/v2/State;Lapp/cash/kfsm/v2/State;)V
+	public fun <init> (Ljava/util/Set;Lapp/cash/kfsm/v2/State;)V
+	public final fun canApplyTo (Lapp/cash/kfsm/v2/State;)Z
+	public abstract fun decide (Lapp/cash/kfsm/v2/Value;)Lapp/cash/kfsm/v2/Decision;
 	public final fun getFrom ()Ljava/util/Set;
-	public final fun getTo ()Lapp/cash/kfsm/State;
+	public final fun getTo ()Lapp/cash/kfsm/v2/State;
 }
 
-public abstract interface class app/cash/kfsm/Value {
+public abstract interface class app/cash/kfsm/v2/Value {
 	public abstract fun getId ()Ljava/lang/Object;
-	public abstract fun getState ()Lapp/cash/kfsm/State;
-	public abstract fun update (Lapp/cash/kfsm/State;)Lapp/cash/kfsm/Value;
+	public abstract fun getState ()Lapp/cash/kfsm/v2/State;
+	public abstract fun update (Lapp/cash/kfsm/v2/State;)Lapp/cash/kfsm/v2/Value;
 }
 
-public final class app/cash/kfsm/ValueNotFound : java/lang/Exception {
+public final class app/cash/kfsm/v2/ValueNotFound : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getValueId ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/Workflow {
-	public fun <init> (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/AwaitableStateMachine;Lapp/cash/kfsm/EffectProcessor;)V
-	public final fun component1 ()Lapp/cash/kfsm/StateMachine;
-	public final fun component2 ()Lapp/cash/kfsm/AwaitableStateMachine;
-	public final fun component3 ()Lapp/cash/kfsm/EffectProcessor;
-	public final fun copy (Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/AwaitableStateMachine;Lapp/cash/kfsm/EffectProcessor;)Lapp/cash/kfsm/Workflow;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/Workflow;Lapp/cash/kfsm/StateMachine;Lapp/cash/kfsm/AwaitableStateMachine;Lapp/cash/kfsm/EffectProcessor;ILjava/lang/Object;)Lapp/cash/kfsm/Workflow;
+public final class app/cash/kfsm/v2/Workflow {
+	public fun <init> (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/AwaitableStateMachine;Lapp/cash/kfsm/v2/EffectProcessor;)V
+	public final fun component1 ()Lapp/cash/kfsm/v2/StateMachine;
+	public final fun component2 ()Lapp/cash/kfsm/v2/AwaitableStateMachine;
+	public final fun component3 ()Lapp/cash/kfsm/v2/EffectProcessor;
+	public final fun copy (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/AwaitableStateMachine;Lapp/cash/kfsm/v2/EffectProcessor;)Lapp/cash/kfsm/v2/Workflow;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Workflow;Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/AwaitableStateMachine;Lapp/cash/kfsm/v2/EffectProcessor;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Workflow;
 	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAwaitable ()Lapp/cash/kfsm/AwaitableStateMachine;
-	public final fun getProcessor ()Lapp/cash/kfsm/EffectProcessor;
-	public final fun getStateMachine ()Lapp/cash/kfsm/StateMachine;
+	public final fun getAwaitable ()Lapp/cash/kfsm/v2/AwaitableStateMachine;
+	public final fun getProcessor ()Lapp/cash/kfsm/v2/EffectProcessor;
+	public final fun getStateMachine ()Lapp/cash/kfsm/v2/StateMachine;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/WorkflowBuilder {
+public final class app/cash/kfsm/v2/WorkflowBuilder {
 	public fun <init> ()V
-	public final fun build ()Lapp/cash/kfsm/Workflow;
-	public final fun effectHandler (Lapp/cash/kfsm/EffectHandler;)V
+	public final fun build ()Lapp/cash/kfsm/v2/Workflow;
+	public final fun effectHandler (Lapp/cash/kfsm/v2/EffectHandler;)V
 	public final fun effectTypes ([Ljava/lang/String;)V
 	public final fun effects (Lkotlin/jvm/functions/Function1;)V
 	public final fun maxAttempts (I)V
-	public final fun outbox (Lapp/cash/kfsm/Outbox;)V
-	public final fun pendingRequestStore (Lapp/cash/kfsm/PendingRequestStore;)V
+	public final fun outbox (Lapp/cash/kfsm/v2/Outbox;)V
+	public final fun pendingRequestStore (Lapp/cash/kfsm/v2/PendingRequestStore;)V
 	public final fun pollInterval-LRDsOJo (J)V
-	public final fun repository (Lapp/cash/kfsm/Repository;)V
-	public final fun settledStates ([Lapp/cash/kfsm/State;)V
+	public final fun repository (Lapp/cash/kfsm/v2/Repository;)V
+	public final fun settledStates ([Lapp/cash/kfsm/v2/State;)V
 	public final fun settledWhen (Lkotlin/jvm/functions/Function1;)V
 	public final fun valueLoader (Lkotlin/jvm/functions/Function1;)V
 }
 
-public final class app/cash/kfsm/WorkflowBuilderKt {
-	public static final fun workflow (Lkotlin/jvm/functions/Function1;)Lapp/cash/kfsm/Workflow;
+public final class app/cash/kfsm/v2/WorkflowBuilderKt {
+	public static final fun workflow (Lkotlin/jvm/functions/Function1;)Lapp/cash/kfsm/v2/Workflow;
 }
 
-public final class app/cash/kfsm/WorkflowFailedException : java/lang/Exception {
+public final class app/cash/kfsm/v2/WorkflowFailedException : java/lang/Exception {
 	public fun <init> (Ljava/lang/String;)V
 	public final fun getError ()Ljava/lang/String;
 }
 
-public final class app/cash/kfsm/WorkflowTimeoutException : java/lang/Exception {
+public final class app/cash/kfsm/v2/WorkflowTimeoutException : java/lang/Exception {
 	public synthetic fun <init> (Ljava/lang/Object;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getTimeout-UwyO8pc ()J
 	public final fun getValueId ()Ljava/lang/Object;
