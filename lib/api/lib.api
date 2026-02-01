@@ -341,9 +341,7 @@ public abstract class app/cash/kfsm/State {
 	public fun canTransitionTo (Lapp/cash/kfsm/State;)Z
 	public final fun getReachableStates ()Ljava/util/Set;
 	public final fun getSubsequentStates ()Ljava/util/Set;
-	public fun invariants ()Ljava/util/List;
 	public abstract fun transitions ()Ljava/util/Set;
-	public final fun validateInvariants-IoAF18A (Ljava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class app/cash/kfsm/StateMachine {
@@ -355,6 +353,14 @@ public final class app/cash/kfsm/StateMachineUtilities {
 	public static final field INSTANCE Lapp/cash/kfsm/StateMachineUtilities;
 	public final fun mermaid-IoAF18A (Lapp/cash/kfsm/State;)Ljava/lang/Object;
 	public final fun verify-IoAF18A (Lapp/cash/kfsm/State;)Ljava/lang/Object;
+}
+
+public abstract interface class app/cash/kfsm/StateWithInvariants {
+	public abstract fun invariants ()Ljava/util/List;
+}
+
+public final class app/cash/kfsm/StateWithInvariantsKt {
+	public static final fun validateTypedInvariants (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
 }
 
 public abstract class app/cash/kfsm/Transition {
