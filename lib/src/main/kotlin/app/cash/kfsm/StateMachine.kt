@@ -75,8 +75,8 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
 
         val updatedValue = value.update(decision.state)
 
-        // Validate invariants of the new state
-        val invariantResult = decision.state.validateInvariants(updatedValue)
+        // Validate invariants if the state implements StateWithInvariants
+        val invariantResult = validateTypedInvariants(decision.state, updatedValue)
         if (invariantResult.isFailure) {
           return Result.failure(invariantResult.exceptionOrNull()!!)
         }

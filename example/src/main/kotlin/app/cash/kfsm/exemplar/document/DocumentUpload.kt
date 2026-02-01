@@ -3,6 +3,7 @@ package app.cash.kfsm.exemplar.document
 import app.cash.kfsm.Effect
 import app.cash.kfsm.Invariant
 import app.cash.kfsm.State
+import app.cash.kfsm.StateWithInvariants
 import app.cash.kfsm.Value
 import app.cash.kfsm.invariant
 import java.time.Instant
@@ -34,7 +35,9 @@ data class ScanReport(
 
 // --- States ---
 
-sealed class DocumentState : State<DocumentState>() {
+sealed class DocumentState : State<DocumentState>(), StateWithInvariants<DocumentUpload> {
+
+  override fun invariants(): List<Invariant<DocumentUpload>> = emptyList()
 
   /** Initial state - document metadata created but file not yet uploaded to storage */
   data object Created : DocumentState() {
@@ -54,12 +57,10 @@ sealed class DocumentState : State<DocumentState>() {
     override fun canTransitionTo(other: DocumentState) =
       super.canTransitionTo(other) || other is Failed
 
-    // Invariant: file must have been stored before we can request a scan
-    @Suppress("UNCHECKED_CAST")
-    override fun <V> invariants(): List<Invariant<V>> = listOf(
-      invariant<Any?>("File storage ID must be present when awaiting scan") { value ->
-        (value as? DocumentUpload)?.fileStorageId != null
-      } as Invariant<V>
+    override fun invariants() = listOf(
+      invariant("File storage ID must be present when awaiting scan") { doc: DocumentUpload ->
+        doc.fileStorageId != null
+      }
     )
   }
 
@@ -74,15 +75,13 @@ sealed class DocumentState : State<DocumentState>() {
   data object Accepted : DocumentState() {
     override fun transitions(): Set<DocumentState> = emptySet()
 
-    // Invariant: accepted documents must have a clean scan report
-    @Suppress("UNCHECKED_CAST")
-    override fun <V> invariants(): List<Invariant<V>> = listOf(
-      invariant<Any?>("Accepted documents must have a scan report") { value ->
-        (value as? DocumentUpload)?.scanReport != null
-      } as Invariant<V>,
-      invariant<Any?>("Accepted documents must have passed virus scan") { value ->
-        (value as? DocumentUpload)?.scanReport?.virusFree == true
-      } as Invariant<V>
+    override fun invariants() = listOf(
+      invariant("Accepted documents must have a scan report") { doc: DocumentUpload ->
+        doc.scanReport != null
+      },
+      invariant("Accepted documents must have passed virus scan") { doc: DocumentUpload ->
+        doc.scanReport?.virusFree == true
+      }
     )
   }
 
