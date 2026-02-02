@@ -171,9 +171,9 @@ class WorkflowBuilderTest : StringSpec({
             from = setOf(DocumentState.Idle),
             to = DocumentState.Uploading
         ) {
-            override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> {
+            override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> {
                 return Decision.accept(
-                    state = DocumentState.Uploading,
+                    value = value.update(DocumentState.Uploading),
                     Effects.ordered(
                         DocumentEffect.UploadFile("test.pdf", byteArrayOf()),
                         DocumentEffect.NotifyUser(value.id, "Upload started")

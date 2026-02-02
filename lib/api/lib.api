@@ -13,26 +13,26 @@ public abstract class app/cash/kfsm/v2/Decision {
 }
 
 public final class app/cash/kfsm/v2/Decision$Accept : app/cash/kfsm/v2/Decision {
-	public fun <init> (Lapp/cash/kfsm/v2/State;Ljava/util/List;)V
-	public synthetic fun <init> (Lapp/cash/kfsm/v2/State;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun <init> (Lapp/cash/kfsm/v2/State;[Lapp/cash/kfsm/v2/Effect;)V
-	public final fun component1 ()Lapp/cash/kfsm/v2/State;
+	public fun <init> (Ljava/lang/Object;Ljava/util/List;)V
+	public synthetic fun <init> (Ljava/lang/Object;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun <init> (Ljava/lang/Object;[Lapp/cash/kfsm/v2/Effect;)V
+	public final fun component1 ()Ljava/lang/Object;
 	public final fun component2 ()Ljava/util/List;
-	public final fun copy (Lapp/cash/kfsm/v2/State;Ljava/util/List;)Lapp/cash/kfsm/v2/Decision$Accept;
-	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Decision$Accept;Lapp/cash/kfsm/v2/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision$Accept;
+	public final fun copy (Ljava/lang/Object;Ljava/util/List;)Lapp/cash/kfsm/v2/Decision$Accept;
+	public static synthetic fun copy$default (Lapp/cash/kfsm/v2/Decision$Accept;Ljava/lang/Object;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision$Accept;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getEffects ()Ljava/util/List;
 	public final fun getEmittedEffects ()Ljava/util/List;
-	public final fun getState ()Lapp/cash/kfsm/v2/State;
+	public final fun getValue ()Ljava/lang/Object;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public final class app/cash/kfsm/v2/Decision$Companion {
-	public final fun accept (Lapp/cash/kfsm/v2/State;Ljava/util/List;)Lapp/cash/kfsm/v2/Decision;
-	public final fun accept (Lapp/cash/kfsm/v2/State;[Lapp/cash/kfsm/v2/Effect;)Lapp/cash/kfsm/v2/Decision;
-	public final fun accept (Lapp/cash/kfsm/v2/State;[Lapp/cash/kfsm/v2/Effects;)Lapp/cash/kfsm/v2/Decision;
-	public static synthetic fun accept$default (Lapp/cash/kfsm/v2/Decision$Companion;Lapp/cash/kfsm/v2/State;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision;
+	public final fun accept (Ljava/lang/Object;Ljava/util/List;)Lapp/cash/kfsm/v2/Decision;
+	public final fun accept (Ljava/lang/Object;[Lapp/cash/kfsm/v2/Effect;)Lapp/cash/kfsm/v2/Decision;
+	public final fun accept (Ljava/lang/Object;[Lapp/cash/kfsm/v2/Effects;)Lapp/cash/kfsm/v2/Decision;
+	public static synthetic fun accept$default (Lapp/cash/kfsm/v2/Decision$Companion;Ljava/lang/Object;Ljava/util/List;ILjava/lang/Object;)Lapp/cash/kfsm/v2/Decision;
 	public final fun reject (Ljava/lang/String;)Lapp/cash/kfsm/v2/Decision;
 }
 

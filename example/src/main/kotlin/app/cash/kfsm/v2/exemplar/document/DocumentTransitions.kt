@@ -22,9 +22,9 @@ class StartUpload(
   private val content: ByteArray
 ) : DocumentTransition(from = DocumentState.Created, to = DocumentState.Uploading) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Uploading,
+      value = value.update(DocumentState.Uploading),
       effects = listOf(
         DocumentEffect.UploadToStorage(
           documentId = value.id,
@@ -40,14 +40,17 @@ class StartUpload(
 
 /**
  * Mark upload as completed and request virus scan.
+ *
+ * This transition demonstrates updating value fields beyond just the state:
+ * it stores the fileStorageId returned from the upload effect.
  */
 class UploadCompleted(
   private val fileStorageId: String
 ) : DocumentTransition(from = DocumentState.Uploading, to = DocumentState.AwaitingScan) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.AwaitingScan,
+      value = value.withFileStorageId(fileStorageId).update(DocumentState.AwaitingScan),
       effects = listOf(
         DocumentEffect.RequestVirusScan(
           documentId = value.id,
@@ -64,9 +67,9 @@ class UploadFailed(
   private val reason: String
 ) : DocumentTransition(from = DocumentState.Uploading, to = DocumentState.Failed(reason)) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Failed(reason),
+      value = value.update(DocumentState.Failed(reason)),
       effects = listOf(
         DocumentEffect.NotifyUser(value.id, "Upload failed: $reason")
       )
@@ -78,23 +81,24 @@ class UploadFailed(
  */
 class ScanStarted : DocumentTransition(from = DocumentState.AwaitingScan, to = DocumentState.Scanning) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Scanning,
-      effects = emptyList()
+      value = value.update(DocumentState.Scanning)
     )
 }
 
 /**
  * Virus scan completed - file is clean.
+ *
+ * This transition stores the scan report on the value.
  */
 class ScanPassed(
   private val report: ScanReport
 ) : DocumentTransition(from = DocumentState.Scanning, to = DocumentState.Accepted) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Accepted,
+      value = value.withScanReport(report).update(DocumentState.Accepted),
       effects = listOf(
         DocumentEffect.NotifyUser(value.id, "Document accepted: ${value.fileName}")
       )
@@ -108,9 +112,9 @@ class ScanFailed(
   private val report: ScanReport
 ) : DocumentTransition(from = DocumentState.Scanning, to = DocumentState.Quarantined(report.threatName ?: "Unknown threat")) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Quarantined(report.threatName ?: "Unknown threat"),
+      value = value.withScanReport(report).update(DocumentState.Quarantined(report.threatName ?: "Unknown threat")),
       effects = listOfNotNull(
         value.fileStorageId?.let { DocumentEffect.DeleteFromStorage(it) },
         DocumentEffect.NotifyUser(
@@ -132,9 +136,9 @@ class ErrorOccurred(
   to = DocumentState.Failed(reason)
 ) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Failed(reason),
+      value = value.update(DocumentState.Failed(reason)),
       effects = listOfNotNull(
         value.fileStorageId?.let { DocumentEffect.DeleteFromStorage(it) },
         DocumentEffect.NotifyUser(value.id, "Error: $reason")

@@ -27,12 +27,12 @@ class RequestUpload(
   private val maxFileSize: Long = 10 * 1024 * 1024 // 10MB default
 ) : DocumentTransition(from = DocumentState.Idle, to = DocumentState.Uploading) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     if (fileContent.size > maxFileSize) {
       Decision.reject("File size ${fileContent.size} exceeds maximum allowed size of $maxFileSize bytes")
     } else {
       Decision.accept(
-        state = DocumentState.Uploading,
+        value = value.update(DocumentState.Uploading),
         effects = listOf(DocumentEffect.UploadFile(fileName, fileContent))
       )
     }
@@ -45,9 +45,9 @@ class UploadCompleted(
   private val fileId: String
 ) : DocumentTransition(from = DocumentState.Uploading, to = DocumentState.Scanning) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Scanning,
+      value = value.update(DocumentState.Scanning),
       effects = listOf(DocumentEffect.ScanFile(fileId))
     )
 }
@@ -59,9 +59,9 @@ class UploadFailed(
   private val reason: String
 ) : DocumentTransition(from = DocumentState.Uploading, to = DocumentState.Rejected(reason)) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Rejected(reason),
+      value = value.update(DocumentState.Rejected(reason)),
       effects = listOf(DocumentEffect.NotifyUser(value.id, "Upload failed: $reason"))
     )
 }
@@ -73,9 +73,9 @@ class ScanSucceeded(
   private val report: ScanReport
 ) : DocumentTransition(from = DocumentState.Scanning, to = DocumentState.Accepted) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Accepted,
+      value = value.update(DocumentState.Accepted),
       effects = listOf(DocumentEffect.NotifyUser(value.id, "Document accepted"))
     )
 }
@@ -87,9 +87,9 @@ class ScanFailed(
   private val reason: String
 ) : DocumentTransition(from = DocumentState.Scanning, to = DocumentState.Rejected(reason)) {
 
-  override fun decide(value: DocumentUpload): Decision<DocumentState, DocumentEffect> =
+  override fun decide(value: DocumentUpload): Decision<DocumentUpload, DocumentState, DocumentEffect> =
     Decision.accept(
-      state = DocumentState.Rejected(reason),
+      value = value.update(DocumentState.Rejected(reason)),
       effects = listOf(DocumentEffect.NotifyUser(value.id, "Document rejected: $reason"))
     )
 }

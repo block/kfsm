@@ -39,8 +39,8 @@ class DocumentUploadTest : StringSpec({
 
     val decision = transition.decide(doc)
 
-    decision.shouldBeInstanceOf<Decision.Accept<DocumentState, DocumentEffect>>()
-    decision.state shouldBe DocumentState.Uploading
+    decision.shouldBeInstanceOf<Decision.Accept<DocumentUpload, DocumentState, DocumentEffect>>()
+    decision.value.state shouldBe DocumentState.Uploading
     decision.effects.size shouldBe 1
     decision.effects[0].shouldBeInstanceOf<DocumentEffect.UploadFile>()
   }
@@ -75,8 +75,8 @@ class DocumentUploadTest : StringSpec({
 
     val decision = transition.decide(doc)
 
-    decision.shouldBeInstanceOf<Decision.Accept<DocumentState, DocumentEffect>>()
-    decision.state shouldBe DocumentState.Scanning
+    decision.shouldBeInstanceOf<Decision.Accept<DocumentUpload, DocumentState, DocumentEffect>>()
+    decision.value.state shouldBe DocumentState.Scanning
     decision.effects.size shouldBe 1
     val scanEffect = decision.effects[0].shouldBeInstanceOf<DocumentEffect.ScanFile>()
     scanEffect.fileId shouldBe "file-123"
@@ -89,8 +89,8 @@ class DocumentUploadTest : StringSpec({
 
     val decision = transition.decide(doc)
 
-    decision.shouldBeInstanceOf<Decision.Accept<DocumentState, DocumentEffect>>()
-    decision.state shouldBe DocumentState.Accepted
+    decision.shouldBeInstanceOf<Decision.Accept<DocumentUpload, DocumentState, DocumentEffect>>()
+    decision.value.state shouldBe DocumentState.Accepted
     decision.effects.size shouldBe 1
     decision.effects[0].shouldBeInstanceOf<DocumentEffect.NotifyUser>()
   }
@@ -101,9 +101,9 @@ class DocumentUploadTest : StringSpec({
 
     val decision = transition.decide(doc)
 
-    decision.shouldBeInstanceOf<Decision.Accept<DocumentState, DocumentEffect>>()
-    decision.state.shouldBeInstanceOf<DocumentState.Rejected>()
-    (decision.state as DocumentState.Rejected).reason shouldBe "Virus detected"
+    decision.shouldBeInstanceOf<Decision.Accept<DocumentUpload, DocumentState, DocumentEffect>>()
+    decision.value.state.shouldBeInstanceOf<DocumentState.Rejected>()
+    (decision.value.state as DocumentState.Rejected).reason shouldBe "Virus detected"
   }
 
   "state machine: apply transition persists value and outbox message" {
