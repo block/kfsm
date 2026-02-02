@@ -35,7 +35,7 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    * This method:
    * 1. Verifies the transition can apply to the current state
    * 2. Invokes the transition's decide function
-   * 3. Validates the decision's state matches the transition's target
+   * 3. Validates the decision's value state matches the transition's target
    * 4. Validates invariants of the new state
    * 5. Persists the value and outbox messages atomically
    *
@@ -62,21 +62,21 @@ class StateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
     // Get the decision from the transition
     return when (val decision = transition.decide(value)) {
       is Decision.Accept -> {
-        // Validate the decision's state matches the transition's declared target
-        if (decision.state != transition.to) {
+        val updatedValue = decision.value
+
+        // Validate the updated value's state matches the transition's declared target
+        if (updatedValue.state != transition.to) {
           return Result.failure(
             DecisionStateMismatch(
               expected = transition.to,
-              actual = decision.state,
+              actual = updatedValue.state,
               transition = transition
             )
           )
         }
 
-        val updatedValue = value.update(decision.state)
-
         // Validate invariants if the state implements StateWithInvariants
-        val invariantResult = validateTypedInvariants(decision.state, updatedValue)
+        val invariantResult = validateTypedInvariants(updatedValue.state, updatedValue)
         if (invariantResult.isFailure) {
           return Result.failure(invariantResult.exceptionOrNull()!!)
         }
@@ -157,10 +157,10 @@ class InvalidStateForTransition(
 ) : Exception("Cannot apply ${transition::class.simpleName} to state $currentState for value $valueId")
 
 /**
- * Exception thrown when a decision's state doesn't match the transition's declared target.
+ * Exception thrown when a decision's value state doesn't match the transition's declared target.
  */
 class DecisionStateMismatch(
   val expected: State<*>,
   val actual: State<*>,
   val transition: Transition<*, *, *, *>
-) : Exception("${transition::class.simpleName} declared target $expected but decided $actual")
+) : Exception("${transition::class.simpleName} declared target $expected but decision value has state $actual")

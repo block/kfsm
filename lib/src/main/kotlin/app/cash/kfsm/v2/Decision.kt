@@ -2,7 +2,7 @@ package app.cash.kfsm.v2
 
 /**
  * A Decision represents either:
- * - A successful transition to a new state with optional effects to emit
+ * - A successful transition to a new value (with updated state) and optional effects to emit
  * - A rejection of the event (the event is not valid for the current state)
  *
  * The separation of decision-making (pure) from effect execution (impure) enables:
@@ -10,23 +10,24 @@ package app.cash.kfsm.v2
  * - Transactional outbox pattern for reliable effect processing
  * - Clear audit trail of state changes and their causes
  *
+ * @param V The value type
  * @param S The state type
  * @param E The effect type
  */
-sealed class Decision<S : State<S>, E : Effect> {
+sealed class Decision<out V, S : State<S>, E : Effect> {
   /**
    * The event was accepted and resulted in a state transition.
    *
-   * @param state The new state after the transition
+   * @param value The fully updated value after the transition (including new state and any field changes)
    * @param emittedEffects Effects to be stored in the outbox and processed after commit.
    *                       Use [Effects.parallel] for concurrent execution or [Effects.ordered]
    *                       for sequential execution with dependencies.
    */
-  data class Accept<S : State<S>, E : Effect>(
-    val state: S,
+  data class Accept<V, S : State<S>, E : Effect>(
+    val value: V,
     val emittedEffects: List<Effects<E>> = emptyList()
-  ) : Decision<S, E>() {
-    constructor(state: S, vararg effects: E) : this(state, effects.map { Effects.parallel(it) })
+  ) : Decision<V, S, E>() {
+    constructor(value: V, vararg effects: E) : this(value, effects.map { Effects.parallel(it) })
 
     /**
      * Returns all effects as a flat list (for backward compatibility and simple access).
@@ -40,20 +41,20 @@ sealed class Decision<S : State<S>, E : Effect> {
    *
    * @param reason A description of why the event was rejected
    */
-  data class Reject<S : State<S>, E : Effect>(val reason: String) : Decision<S, E>()
+  data class Reject<S : State<S>, E : Effect>(val reason: String) : Decision<Nothing, S, E>()
 
   companion object {
     /**
      * Accept with effects that can run in parallel (no ordering constraints).
      */
-    fun <S : State<S>, E : Effect> accept(state: S, vararg effects: E): Decision<S, E> =
-      Accept(state, effects.map { Effects.parallel(it) })
+    fun <V, S : State<S>, E : Effect> accept(value: V, vararg effects: E): Decision<V, S, E> =
+      Accept(value, effects.map { Effects.parallel(it) })
 
     /**
      * Accept with effects that can run in parallel (no ordering constraints).
      */
-    fun <S : State<S>, E : Effect> accept(state: S, effects: List<E> = emptyList()): Decision<S, E> =
-      Accept(state, effects.map { Effects.parallel(it) })
+    fun <V, S : State<S>, E : Effect> accept(value: V, effects: List<E> = emptyList()): Decision<V, S, E> =
+      Accept(value, effects.map { Effects.parallel(it) })
 
     /**
      * Accept with effects that may include ordering constraints.
@@ -61,16 +62,16 @@ sealed class Decision<S : State<S>, E : Effect> {
      * Example:
      * ```kotlin
      * Decision.accept(
-     *   state = NewState,
+     *   value = order.copy(state = OrderState.Paid, paymentId = paymentId),
      *   Effects.ordered(ChargeLedger(amount), SendReceipt(email)),  // SendReceipt waits for ChargeLedger
      *   Effects.parallel(SendAnalytics(event))  // Runs independently
      * )
      * ```
      */
-    fun <S : State<S>, E : Effect> accept(state: S, vararg effects: Effects<E>): Decision<S, E> =
-      Accept(state, effects.toList())
+    fun <V, S : State<S>, E : Effect> accept(value: V, vararg effects: Effects<E>): Decision<V, S, E> =
+      Accept(value, effects.toList())
 
-    fun <S : State<S>, E : Effect> reject(reason: String): Decision<S, E> = Reject(reason)
+    fun <S : State<S>, E : Effect> reject(reason: String): Decision<Nothing, S, E> = Reject(reason)
   }
 }
 

@@ -60,14 +60,28 @@ abstract class Transition<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    *
    * This function must be pure: no side effects, only compute the decision.
    * The returned [Decision] describes:
-   * - The new state (should match [to] for Accept)
+   * - The fully updated value (with new state and any additional field changes)
    * - Effects to emit (stored in the transactional outbox)
    * - Or a rejection reason if the transition cannot proceed
+   *
+   * Example:
+   * ```kotlin
+   * class PaymentReceived(private val paymentId: String) : OrderTransition(
+   *   from = OrderState.Pending,
+   *   to = OrderState.Paid
+   * ) {
+   *   override fun decide(value: Order): Decision<Order, OrderState, OrderEffect> =
+   *     Decision.accept(
+   *       value = value.copy(paymentId = paymentId, state = OrderState.Paid),
+   *       effects = listOf(OrderEffect.SendConfirmation(paymentId))
+   *     )
+   * }
+   * ```
    *
    * @param value The current value
    * @return A decision describing the outcome
    */
-  abstract fun decide(value: V): Decision<S, Ef>
+  abstract fun decide(value: V): Decision<V, S, Ef>
 
   /**
    * Check if this transition can be applied to a value in the given state.
