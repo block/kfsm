@@ -1,5 +1,6 @@
 .claude
 .gradle
+.kotlin
 **/out/
 .idea
 build/
