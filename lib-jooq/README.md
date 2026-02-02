@@ -13,9 +13,11 @@ This module provides production-ready utilities for the kFSM v2 transactional ou
 
 ```kotlin
 dependencies {
-  implementation("app.cash.kfsm:lib-jooq:<version>")
+  implementation("app.cash.kfsm:kfsm-jooq-v2:<version>")
 }
 ```
+
+> **Package:** `app.cash.kfsm.v2.jooq`
 
 ## Quick Start
 
