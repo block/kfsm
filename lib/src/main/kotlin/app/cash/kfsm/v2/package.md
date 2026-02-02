@@ -12,7 +12,7 @@ The core kFSM package provides a robust, type-safe implementation of finite stat
 ### Transitions & Decisions
 
 * [Transition] - Defines valid state changes with a pure `decide` function that determines outcomes.
-* [Decision] - Result of a transition: either `Accept` (with new state and effects) or `Reject`.
+* [Decision] - Result of a transition: either `Accept` (with updated value and effects) or `Reject`.
 
 ### State Machine
 
@@ -42,7 +42,7 @@ The core kFSM package provides a robust, type-safe implementation of finite stat
 
 ### Utilities
 
-* [StateMachineUtilities] - Provides `verify()` for state machine completeness checking and `mermaid()` for diagram generation.
+* [StateMachineUtilities] - Provides `verify()` for state machine completeness checking, `mermaid()` for diagram generation.
 
 ## Example Usage
 
@@ -85,8 +85,8 @@ class ConfirmOrder : Transition<String, Order, OrderState, OrderEffect>(
   from = OrderState.Pending,
   to = OrderState.Confirmed
 ) {
-  override fun decide(value: Order) = Decision.accept(
-    state = OrderState.Confirmed,
+  override fun decide(value: Order): Decision<Order, OrderState, OrderEffect> = Decision.accept(
+    value = value.update(OrderState.Confirmed),
     effects = listOf(OrderEffect.SendConfirmationEmail(value.id))
   )
 }

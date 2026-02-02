@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## [2.0.0] - kFSM v2
+
+### Breaking Changes
+
+* **New package namespace**: All classes moved from `app.cash.kfsm` to `app.cash.kfsm.v2` to allow v1 and v2 to coexist.
+
+* **New Maven coordinates**: 
+  - `app.cash.kfsm:kfsm` → `app.cash.kfsm:kfsm-v2`
+  - `app.cash.kfsm:kfsm-jooq` → `app.cash.kfsm:kfsm-jooq-v2`
+
+* **Decision API redesigned**: `Decision.Accept` now carries the full updated value instead of just the state.
+  - Old: `Decision.accept(state = OrderState.Confirmed, effects = listOf(...))`
+  - New: `Decision.accept(value = value.update(OrderState.Confirmed), effects = listOf(...))`
+  - This enables updating value fields beyond just the state (e.g., storing RPC response data).
+
+* **Transition.decide() return type changed**: 
+  - Old: `fun decide(value: V): Decision<S, Ef>`
+  - New: `fun decide(value: V): Decision<V, S, Ef>`
+
+### Added
+
+* **Transactional outbox pattern**: Effects are now stored atomically with state changes and processed asynchronously via `EffectProcessor`.
+
+* **EffectHandler and EffectOutcome**: New abstractions for executing effects and returning outcomes (`TransitionProduced`, `Completed`, `FailedWithTransition`).
+
+* **AwaitableStateMachine**: Wrapper that provides suspending transitions with timeout for synchronous-style APIs over async workflows.
+
+* **lib-jooq module**: Production-ready jOOQ integration with:
+  - `JooqOutbox` - `SELECT ... FOR UPDATE SKIP LOCKED` for concurrent processing
+  - `PollingEffectProcessor` - Background processor with exponential backoff
+  - `MoshiOutboxSerializer` - Serialization for sealed class effects
+  - `OutboxSchema` - DDL for MySQL and PostgreSQL
+
+* **Effects.ordered()**: Specify effect execution order with dependencies between effects.
+
 ## [0.12.0]
 
 * Added experimental support for `DefferableEffect`, a type of effect that can be used to implement the transactional outbox pattern directly in KFSM.

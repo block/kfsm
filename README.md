@@ -1,6 +1,6 @@
 kFSM is Finite State Machinery for Kotlin.
 
-[<img src="https://img.shields.io/maven-central/v/app.cash.kfsm/kfsm"/>](https://central.sonatype.com/namespace/app.cash.kfsm)
+[<img src="https://img.shields.io/maven-central/v/app.cash.kfsm/kfsm-v2"/>](https://central.sonatype.com/namespace/app.cash.kfsm)
 
 ## Overview
 
@@ -83,9 +83,9 @@ class ConfirmOrder(private val paymentId: String) : Transition<String, Order, Or
     from = OrderState.Pending,
     to = OrderState.Confirmed
 ) {
-    override fun decide(value: Order): Decision<OrderState, OrderEffect> =
+    override fun decide(value: Order): Decision<Order, OrderState, OrderEffect> =
         Decision.accept(
-            state = OrderState.Confirmed,
+            value = value.update(OrderState.Confirmed),
             effects = listOf(
                 OrderEffect.SendConfirmationEmail(value.id, value.email),
                 OrderEffect.ChargePayment(value.id, value.total)
@@ -97,9 +97,9 @@ class ShipOrder(private val trackingNumber: String) : Transition<String, Order, 
     from = OrderState.Confirmed,
     to = OrderState.Shipped
 ) {
-    override fun decide(value: Order): Decision<OrderState, OrderEffect> =
+    override fun decide(value: Order): Decision<Order, OrderState, OrderEffect> =
         Decision.accept(
-            state = OrderState.Shipped,
+            value = value.update(OrderState.Shipped),
             effects = listOf(OrderEffect.NotifyWarehouse(value.id))
         )
 }
@@ -154,9 +154,11 @@ The main state machine implementation:
 
 ```kotlin
 dependencies {
-    implementation("app.cash.kfsm:kfsm:<version>")
+    implementation("app.cash.kfsm:kfsm-v2:<version>")
 }
 ```
+
+> **Note:** The v2 API uses the `app.cash.kfsm.v2` package.
 
 ### jOOQ Integration (`lib-jooq`)
 
@@ -164,7 +166,7 @@ Production-ready outbox utilities using jOOQ:
 
 ```kotlin
 dependencies {
-    implementation("app.cash.kfsm:kfsm-jooq:<version>")
+    implementation("app.cash.kfsm:kfsm-jooq-v2:<version>")
 }
 ```
 
@@ -187,8 +189,8 @@ fun `confirm order produces email and payment effects`() {
     
     val decision = ConfirmOrder("pay-456").decide(order)
     
-    decision.shouldBeInstanceOf<Decision.Accept<*, *>>()
-    decision.state shouldBe Confirmed
+    decision.shouldBeInstanceOf<Decision.Accept<*, *, *>>()
+    decision.value.state shouldBe Confirmed
     decision.effects shouldContain OrderEffect.SendConfirmationEmail("123", "test@example.com")
 }
 ```
