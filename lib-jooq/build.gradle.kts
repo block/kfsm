@@ -2,7 +2,6 @@ plugins {
   id("java-library")
   id("org.jetbrains.kotlin.jvm")
   id("com.vanniktech.maven.publish") version "0.33.0"
-  alias(libs.plugins.kotlinBinaryCompatibilityPlugin)
 }
 
 repositories {
@@ -21,11 +20,24 @@ mavenPublishing {
 }
 
 dependencies {
-  implementation(libs.coroutinesCore)
-  implementation(libs.kotlinReflect)
+  api(project(":lib"))
+  api(libs.jooq)
+  implementation(libs.jooqKotlin)
+  implementation(libs.moshi)
+  implementation(libs.moshiKotlin)
+  implementation(libs.moshiAdapters)
 
-  testImplementation(libs.kotestProperty)
   testImplementation(libs.kotestAssertions)
   testImplementation(libs.kotestJunitRunnerJvm)
+  testImplementation(libs.kotestProperty)
   testImplementation(libs.mockk)
+  testImplementation(libs.testcontainersCore)
+  testImplementation(libs.testcontainersJunit)
+  testImplementation(libs.testcontainersMysql)
+  testImplementation(libs.mysql)
+  testImplementation(libs.hikariCp)
+}
+
+tasks.withType<Test> {
+  useJUnitPlatform()
 }

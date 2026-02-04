@@ -1,153 +1,176 @@
 # kFSM: Type-Safe Finite State Machines for Kotlin
 
-kFSM provides a robust, type-safe implementation of finite state machines in Kotlin, with optional Guice integration for dependency injection support.
+kFSM provides a robust, type-safe implementation of finite state machines in Kotlin, designed for reliable distributed workflows with transactional outbox support.
 
 ## Core Concepts
 
-kFSM is built around four fundamental concepts:
+kFSM is built around these fundamental concepts:
 
 1. **States** - Represent the possible conditions of your entity
 2. **Values** - The entities that move between states
-3. **Transitions** - Rules and effects for moving between states
-4. **Transitioners** - Orchestrate and validate state changes
+3. **Transitions** - Pure `decide()` functions that determine state changes and effects
+4. **Effects** - Side effects stored in a transactional outbox for reliable execution
+5. **StateMachine** - Validates and applies state transitions atomically
+6. **EffectProcessor** - Executes effects from the outbox and chains workflows
+
+## Architecture
+
+```
+Transition.decide() → StateMachine.transition() → Repository.saveWithOutbox()
+        │                       │                         │
+        │                       │                         ▼
+   Pure function          Validates &            Atomic save of state
+   (no side effects)      applies decision       + outbox messages
+                                                         │
+                                                         ▼
+                          EffectProcessor.processAll() ──┘
+                                   │
+                                   ▼
+                          EffectHandler.handle() → May trigger more transitions
+```
 
 ## Modules
 
 ### Core Library (`lib`)
 
-The core module provides the fundamental state machine implementation with these key features:
+The core module provides the fundamental state machine implementation:
 
-* Type-safe state transitions with compile-time verification
-* Flexible state validation through invariants
-* Path finding between states
-* Mermaid diagram generation for documentation
-* Both synchronous and asynchronous transition support
-* Comprehensive testing utilities
+* **Pure decision logic** - Transitions return `Decision` objects, not side effects
+* **Transactional outbox** - Effects stored atomically with state changes
+* **Type-safe transitions** with compile-time verification
+* **Flexible validation** through invariants
+* **AwaitableStateMachine** for synchronous-style APIs over async workflows
 
 Key types:
 ```kotlin
-// Define states
-sealed class MyState : State<ID, MyValue, MyState>
-
-// Define values that transition between states
-class MyValue : Value<ID, MyValue, MyState>
-
-// Create transitions
-val transition = Transition(FromState, ToState) { value ->
-    // Validation and effects
-    Result.success(value)
+// Define states with allowed transitions
+sealed class OrderState : State<OrderState>() {
+    data object Pending : OrderState() {
+        override fun transitions() = setOf(Confirmed, Cancelled)
+    }
+    data object Confirmed : OrderState() { ... }
 }
 
-// Use the transitioner
-val transitioner = Transitioner(transitions)
-transitioner.transition(value, fromState, toState)
+// Define effects as a sealed class
+sealed class OrderEffect : Effect {
+    data class SendEmail(val orderId: String, val email: String) : OrderEffect()
+    data class ChargePayment(val orderId: String, val amount: Long) : OrderEffect()
+}
+
+// Define transitions with pure decide() functions
+class ConfirmOrder(private val paymentId: String) : Transition<String, Order, OrderState, OrderEffect>(
+    from = OrderState.Pending,
+    to = OrderState.Confirmed
+) {
+    override fun decide(value: Order): Decision<OrderState, OrderEffect> =
+        Decision.accept(
+            state = OrderState.Confirmed,
+            effects = listOf(
+                OrderEffect.SendEmail(value.id, value.email),
+                OrderEffect.ChargePayment(value.id, value.total)
+            )
+        )
+}
+
+// Use the state machine
+val stateMachine = StateMachine(repository)
+stateMachine.transition(order, ConfirmOrder(paymentId))
 ```
 
-### Guice Integration (`lib-guice`)
+### jOOQ Integration (`lib-jooq`)
 
-The Guice module adds dependency injection support with these features:
+The jOOQ module provides production-ready outbox utilities:
 
-* Automatic discovery of transitions
-* Annotation-based configuration
-* Integration with existing Guice modules
-* Support for multiple state machines
+* **JooqOutbox** - `Outbox` implementation using `SELECT ... FOR UPDATE SKIP LOCKED`
+* **PollingEffectProcessor** - Background processor with exponential backoff
+* **MoshiOutboxSerializer** - Moshi-based serialization for sealed class effects
+* **OutboxSchema** - DDL for MySQL and PostgreSQL
 
 Example usage:
 ```kotlin
-class MyModule : KfsmModule() {
-    override fun configure() {
-        install(KfsmModule())
-        bind<MyTransitions>().asEagerSingleton()
-    }
-}
+// Create the outbox with a serializer
+val serializer = MoshiOutboxSerializer.forSealedClassWithStringId(OrderEffect::class)
+val outbox = JooqOutbox(dsl, serializer)
 
-@TransitionDefinition
-class MyTransitions @Inject constructor(
-    private val service: MyService
-) {
-    fun getTransitions(): Set<Transition<...>> = setOf(
-        // Your transitions here
+// Start background processing
+val processor = PollingEffectProcessor(
+    outbox = outbox,
+    handler = orderEffectHandler,
+    stateMachine = orderStateMachine,
+    valueLoader = { id -> repository.findById(id) },
+    config = PollingConfig(
+        baseInterval = Duration.ofMillis(100),
+        maxInterval = Duration.ofSeconds(5)
     )
-}
+)
+processor.start()
 ```
 
 ## Key Features
 
+### Pure Decision Logic
+
+Transitions use pure `decide()` functions that return a `Decision`:
+* Easy to test without mocking infrastructure
+* Effects are descriptive data, not imperative calls
+* Clear separation between deciding and doing
+
+### Transactional Outbox Pattern
+
+Effects are stored atomically with state changes:
+* At-least-once delivery semantics
+* Survives crashes and deployments
+* Enables reliable multi-step workflows
+
+### Concurrent Processing
+
+The jOOQ module uses `SKIP LOCKED` for efficient parallel processing:
+* Multiple instances can process different entities concurrently
+* Per-entity ordering is preserved
+* No lock contention or blocking
+
 ### Type Safety
 
 kFSM leverages Kotlin's type system to ensure:
-* States are properly defined and sealed
-* Transitions are between compatible states
-* Values match their state machine's type parameters
+* States are properly defined with allowed transitions
+* Transitions match compatible from/to states
+* Effects are type-safe sealed classes
 
-### Validation
+## Testing
 
-Multiple levels of validation ensure correctness:
-* Compile-time type checking
-* Runtime state machine verification
-* Custom state invariants
-* Transition-specific validation
+Pure decision logic makes testing straightforward:
 
-### Documentation
-
-Built-in documentation support:
-* Mermaid diagram generation
-* State reachability analysis
-* Path finding between states
-
-### Testing
-
-Comprehensive testing support:
-* State machine verification
-* Transition testing utilities
-* Path validation
-* Invariant checking
-
-## Best Practices
-
-1. **State Definition**
-   * Use sealed class hierarchies for states
-   * Keep states immutable
-   * Define clear invariants
-
-2. **Transitions**
-   * Make transitions single-purpose
-   * Include proper validation
-   * Handle errors gracefully
-
-3. **Values**
-   * Keep values immutable
-   * Include only essential state
-   * Use proper type parameters
-
-4. **Integration**
-   * Verify state machines at startup
-   * Generate documentation
-   * Use dependency injection when available
+```kotlin
+@Test
+fun `confirm order produces email and payment effects`() {
+    val order = Order(id = "123", state = Pending, email = "test@example.com")
+    val transition = ConfirmOrder(paymentId = "pay-456")
+    
+    val decision = transition.decide(order)
+    
+    decision.shouldBeInstanceOf<Decision.Accept<*, *>>()
+    decision.state shouldBe Confirmed
+    decision.effects shouldContain OrderEffect.SendEmail("123", "test@example.com")
+}
+```
 
 ## Example
 
-A simple traffic light implementation:
+See the `example` module for a complete document upload workflow demonstrating:
+
+* MySQL-backed persistence with jOOQ
+* Transactional outbox using `lib-jooq`
+* Async virus scanning with effect chaining
+* AwaitableStateMachine for sync-style API
 
 ```kotlin
-sealed class TrafficLightState : State<String, TrafficLight, TrafficLightState>
-object Red : TrafficLightState()
-object Yellow : TrafficLightState()
-object Green : TrafficLightState()
-
-class TrafficLight : Value<String, TrafficLight, TrafficLightState>
-
-val redToGreen = Transition(Red, Green) { light ->
-    Result.success(light)
-}
-
-val transitioner = Transitioner(setOf(redToGreen))
-val light = TrafficLight()
-transitioner.transition(light, Red, Green)
+// The workflow: Created → Uploading → AwaitingScan → Scanning → Accepted/Quarantined
+val result = stateMachine.transition(document, StartUpload(fileContent))
+effectProcessor.processAll()  // Executes upload, triggers scan, handles results
 ```
 
 ## Additional Resources
 
-* See the test files for working examples
+* See the `example` module for working integration tests
 * Check the package documentation for detailed API information
-* Review the Mermaid diagrams for visual state machine representations
+* Review the `docs/V2.md` file for migration guidance and background processing options
