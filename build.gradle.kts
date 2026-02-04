@@ -57,6 +57,6 @@ task("publishToMavenCentral") {
   group = "publishing"
   dependsOn(
     ":lib:publishToMavenCentral",
-    ":lib-guice:publishToMavenCentral"
+    ":lib-jooq:publishToMavenCentral"
   )
 }

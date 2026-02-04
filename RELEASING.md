@@ -164,7 +164,7 @@ Each release includes:
   - Javadoc JAR
   - POM file
 
-- **Guice Integration**: `app.cash.kfsm:kfsm-guice:$version`
+- **Jooq Transactional Outbox Implementation**: `app.cash.kfsm:kfsm-jooq:$version`
   - Main JAR with compiled classes
   - Sources JAR
   - Javadoc JAR
