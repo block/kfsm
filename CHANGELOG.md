@@ -4,30 +4,34 @@
 
 ## [2.0.0] - kFSM v2
 
+A complete redesign of kFSM with a new architecture centered around the transactional outbox pattern. v2 can be used alongside v1 in the same project.
+
 ### Breaking Changes
 
-* **New package namespace**: All classes moved from `app.cash.kfsm` to `app.cash.kfsm.v2` to allow v1 and v2 to coexist.
+* **New package namespace**: All v2 classes are in `app.cash.kfsm.v2` (v1 remains in `app.cash.kfsm`).
 
 * **New Maven coordinates**: 
-  - `app.cash.kfsm:kfsm` → `app.cash.kfsm:kfsm-v2`
-  - `app.cash.kfsm:kfsm-jooq` → `app.cash.kfsm:kfsm-jooq-v2`
+  - `app.cash.kfsm:kfsm-v2` (v1 artifact `kfsm` remains available)
+  - `app.cash.kfsm:kfsm-jooq-v2` (new module)
 
-* **Decision API redesigned**: `Decision.Accept` now carries the full updated value instead of just the state.
-  - Old: `Decision.accept(state = OrderState.Confirmed, effects = listOf(...))`
-  - New: `Decision.accept(value = value.update(OrderState.Confirmed), effects = listOf(...))`
-  - This enables updating value fields beyond just the state (e.g., storing RPC response data).
-
-* **Transition.decide() return type changed**: 
-  - Old: `fun decide(value: V): Decision<S, Ef>`
-  - New: `fun decide(value: V): Decision<V, S, Ef>`
+* **New API design**: v2 uses a different approach than v1's `Transitioner`. Key differences:
+  - `Transition` classes with pure `decide()` functions replace `Transitioner` orchestration
+  - `Decision` objects describe state changes and effects to emit
+  - `StateMachine` validates and persists transitions with outbox messages atomically
+  - Effects are executed asynchronously via `EffectProcessor`
 
 ### Added
 
-* **Transactional outbox pattern**: Effects are now stored atomically with state changes and processed asynchronously via `EffectProcessor`.
+* **Transactional outbox pattern**: Effects are stored atomically with state changes and processed asynchronously, ensuring reliable delivery even across crashes and deployments.
 
-* **EffectHandler and EffectOutcome**: New abstractions for executing effects and returning outcomes (`TransitionProduced`, `Completed`, `FailedWithTransition`).
+* **Decision and Transition**: Pure `decide()` functions return `Decision.Accept` (with updated value and effects) or `Decision.Reject`, enabling easy testing of business logic.
 
-* **AwaitableStateMachine**: Wrapper that provides suspending transitions with timeout for synchronous-style APIs over async workflows.
+* **EffectHandler and EffectOutcome**: Execute effects and return outcomes:
+  - `TransitionProduced` - Apply a follow-up transition
+  - `Completed` - Terminal effect, no follow-up needed
+  - `FailedWithTransition` - Transition to error state
+
+* **AwaitableStateMachine**: Suspending transitions with timeout for synchronous-style APIs over async workflows.
 
 * **lib-jooq module**: Production-ready jOOQ integration with:
   - `JooqOutbox` - `SELECT ... FOR UPDATE SKIP LOCKED` for concurrent processing
