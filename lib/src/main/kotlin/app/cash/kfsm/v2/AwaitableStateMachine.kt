@@ -1,12 +1,10 @@
 package app.cash.kfsm.v2
 
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * A wrapper that provides suspending transition with timeout over the async outbox-based state machine.
+ * A wrapper that provides blocking transition with timeout over the async outbox-based state machine.
  *
  * This implementation uses database polling to support multi-instance deployments.
  * When a caller applies a transition and waits, a pending request is stored in the database.
@@ -39,7 +37,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * // In EffectProcessor, call markCompleted on settled states
  * // awaitable.markCompleted(valueId, finalValue)
  *
- * // Caller suspends until settled state or timeout
+ * // Caller blocks until settled state or timeout
  * val result = awaitable.transitionAndAwait(
  *   value = withdrawal,
  *   transition = StartWithdrawal(amount),
@@ -71,8 +69,9 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
     settledStates: Set<S>,
     pollInterval: Duration = 100.milliseconds
   ) : this(stateMachine, pendingRequestStore, { state -> settledStates.contains(state) }, pollInterval)
+
   /**
-   * Apply a transition and suspend until the workflow reaches a settled state.
+   * Apply a transition and block until the workflow reaches a settled state.
    *
    * A settled state is one where automatic effect processing cannot make further progress,
    * including terminal states (completed, failed) and states awaiting external input.
@@ -81,12 +80,15 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    * @param transition The transition to apply
    * @param timeout Maximum time to wait for settlement
    * @return The final value when a settled state is reached
-   * @throws kotlinx.coroutines.TimeoutCancellationException if the timeout expires before settlement
+   * @throws WorkflowTimeoutException if the timeout expires before settlement
    * @throws RejectedTransition if the transition is rejected
    * @throws Exception if the workflow fails
    */
-  suspend fun transitionAndAwait(value: V, transition: Transition<ID, V, S, Ef>, timeout: Duration): Result<V> {
+  fun transitionAndAwait(value: V, transition: Transition<ID, V, S, Ef>, timeout: Duration): Result<V> {
+    require(timeout.isPositive()) { "Timeout must be positive, was: $timeout" }
+
     val requestId = pendingRequestStore.create(value.id)
+    val deadline = System.nanoTime() + timeout.inWholeNanoseconds
 
     return try {
       // Apply the initial transition (persists to outbox)
@@ -106,13 +108,11 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
       }
 
       // Poll for completion
-      val finalValue = withTimeout(timeout) {
-        pollForCompletion(requestId)
-      }
+      val finalValue = pollForCompletion(requestId, deadline, timeout)
       Result.success(finalValue)
-    } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
+    } catch (e: WorkflowTimeoutException) {
       pendingRequestStore.markTimedOut(requestId)
-      Result.failure(WorkflowTimeoutException(value.id, timeout))
+      Result.failure(e)
     } catch (e: WorkflowFailedException) {
       Result.failure(e)
     } catch (e: Exception) {
@@ -121,10 +121,14 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
     }
   }
 
-  private suspend fun pollForCompletion(requestId: String): V {
+  private fun pollForCompletion(requestId: String, deadlineNanos: Long, timeout: Duration): V {
     while (true) {
+      if (System.nanoTime() >= deadlineNanos) {
+        throw WorkflowTimeoutException(requestId, timeout)
+      }
+
       when (val status = pendingRequestStore.getStatus(requestId)) {
-        is PendingRequestStatus.Waiting -> delay(pollInterval)
+        is PendingRequestStatus.Waiting -> Thread.sleep(pollInterval.inWholeMilliseconds)
         is PendingRequestStatus.Completed -> {
           pendingRequestStore.delete(requestId)
           return status.value
