@@ -85,6 +85,8 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    * @throws Exception if the workflow fails
    */
   fun transitionAndAwait(value: V, transition: Transition<ID, V, S, Ef>, timeout: Duration): Result<V> {
+    require(timeout.isPositive()) { "Timeout must be positive, was: $timeout" }
+
     val requestId = pendingRequestStore.create(value.id)
     val deadline = System.nanoTime() + timeout.inWholeNanoseconds
 
