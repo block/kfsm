@@ -21,7 +21,6 @@ mavenPublishing {
 }
 
 dependencies {
-  implementation(libs.coroutinesCore)
   implementation(libs.kotlinReflect)
 
   testImplementation(libs.kotestProperty)

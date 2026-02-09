@@ -5,7 +5,7 @@ public final class app/cash/kfsm/v2/AwaitableStateMachine {
 	public synthetic fun <init> (Lapp/cash/kfsm/v2/StateMachine;Lapp/cash/kfsm/v2/PendingRequestStore;Lkotlin/jvm/functions/Function1;JLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun markCompleted (Ljava/lang/Object;Lapp/cash/kfsm/v2/Value;)V
 	public final fun markFailed (Ljava/lang/Object;Ljava/lang/Throwable;)V
-	public final fun transitionAndAwait-E0qYoyE (Lapp/cash/kfsm/v2/Value;Lapp/cash/kfsm/v2/Transition;JLkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun transitionAndAwait-u6ZFx_Y (Lapp/cash/kfsm/v2/Value;Lapp/cash/kfsm/v2/Transition;J)Ljava/lang/Object;
 }
 
 public abstract class app/cash/kfsm/v2/Decision {
