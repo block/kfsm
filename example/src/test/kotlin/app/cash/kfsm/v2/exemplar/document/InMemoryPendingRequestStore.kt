@@ -48,7 +48,7 @@ class InMemoryPendingRequestStore<ID, V> : PendingRequestStore<ID, V> {
     }
   }
 
-  override fun markTimedOut(requestId: String) {
+  override fun timeout(requestId: String) {
     requests[requestId]?.let { entry ->
       if (entry.status is PendingRequestStatus.Waiting) {
         entry.status = PendingRequestStatus.Failed("Timed out")

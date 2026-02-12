@@ -289,7 +289,7 @@ public abstract interface class app/cash/kfsm/v2/PendingRequestStore {
 	public abstract fun delete (Ljava/lang/String;)V
 	public abstract fun fail (Ljava/lang/Object;Ljava/lang/String;)V
 	public abstract fun getStatus (Ljava/lang/String;)Lapp/cash/kfsm/v2/PendingRequestStatus;
-	public abstract fun markTimedOut (Ljava/lang/String;)V
+	public abstract fun timeout (Ljava/lang/String;)V
 }
 
 public abstract class app/cash/kfsm/v2/ProcessingResult {

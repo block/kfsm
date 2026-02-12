@@ -111,7 +111,7 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
       val finalValue = pollForCompletion(requestId, deadline, timeout)
       Result.success(finalValue)
     } catch (e: WorkflowTimeoutException) {
-      pendingRequestStore.markTimedOut(requestId)
+      pendingRequestStore.timeout(requestId)
       Result.failure(e)
     } catch (e: WorkflowFailedException) {
       Result.failure(e)
@@ -223,7 +223,7 @@ interface PendingRequestStore<ID, V> {
    *
    * @param requestId The request ID
    */
-  fun markTimedOut(requestId: String)
+  fun timeout(requestId: String)
 
   /**
    * Delete a pending request (cleanup).

@@ -31,3 +31,16 @@ CREATE TABLE IF NOT EXISTS outbox_messages (
     INDEX idx_outbox_dedup (dedup_key),
     INDEX idx_outbox_depends (depends_on_effect_id)
 );
+
+-- Pending requests table for awaitable state machine (matches lib-jooq schema)
+CREATE TABLE IF NOT EXISTS pending_requests (
+    id VARCHAR(36) PRIMARY KEY,
+    value_id VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'WAITING',
+    result_payload TEXT,
+    created_at TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at TIMESTAMP(6),
+
+    INDEX idx_pending_requests_value_status (value_id, status),
+    INDEX idx_pending_requests_status_created (status, created_at)
+);
