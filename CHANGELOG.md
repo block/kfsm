@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [2.2.0] - kFSM v2
+
+Add Jooq implementation for `PendingRequestStore`.
+
 ## [2.1.0] - kFSM v2
 
 Replaced the use of coroutines in `AwaitableStateMachine` with Java primitives.
