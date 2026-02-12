@@ -1,11 +1,14 @@
 package app.cash.kfsm.v2.exemplar.document
 
+import app.cash.kfsm.v2.exemplar.document.infra.DocumentPendingRequestSerializer
 import app.cash.kfsm.v2.exemplar.document.infra.JooqDocumentRepository
 import app.cash.kfsm.v2.exemplar.document.infra.MockFileStorage
 import app.cash.kfsm.v2.jooq.JooqOutbox
+import app.cash.kfsm.v2.jooq.JooqPendingRequestStore
 import app.cash.kfsm.v2.exemplar.document.infra.MockVirusScanner
 import app.cash.kfsm.v2.AwaitableStateMachine
 import app.cash.kfsm.v2.EffectProcessor
+import app.cash.kfsm.v2.PendingRequestStore
 import app.cash.kfsm.v2.StateMachine
 import app.cash.kfsm.v2.WorkflowTimeoutException
 import com.zaxxer.hikari.HikariConfig
@@ -45,7 +48,7 @@ class AwaitableDocumentUploadIntegrationTest : FunSpec({
   lateinit var stateMachine: StateMachine<String, DocumentUpload, DocumentState, DocumentEffect>
   lateinit var awaitableStateMachine: AwaitableStateMachine<String, DocumentUpload, DocumentState, DocumentEffect>
   lateinit var effectProcessor: EffectProcessor<String, DocumentUpload, DocumentState, DocumentEffect>
-  lateinit var pendingRequestStore: InMemoryPendingRequestStore<String, DocumentUpload>
+  lateinit var pendingRequestStore: PendingRequestStore<String, DocumentUpload>
 
   fun isSettled(state: DocumentState): Boolean = when (state) {
     is DocumentState.Accepted -> true
@@ -92,7 +95,10 @@ class AwaitableDocumentUploadIntegrationTest : FunSpec({
     outbox = repository.getOutbox()
     fileStorage = MockFileStorage()
     notifications = CopyOnWriteArrayList()
-    pendingRequestStore = InMemoryPendingRequestStore()
+    pendingRequestStore = JooqPendingRequestStore(
+      dsl = dsl,
+      serializer = DocumentPendingRequestSerializer.instance
+    )
 
     virusScanner = MockVirusScanner(scanDelayMs = 50) { result ->
       val transition = when (result) {
@@ -165,13 +171,13 @@ class AwaitableDocumentUploadIntegrationTest : FunSpec({
 
     val dslForCleanup = DSL.using(dataSource, SQLDialect.MYSQL)
     dslForCleanup.deleteFrom(DSL.table("outbox_messages")).execute()
+    dslForCleanup.deleteFrom(DSL.table("pending_requests")).execute()
     dslForCleanup.deleteFrom(DSL.table("document_uploads")).execute()
   }
 
   afterTest {
     virusScanner.close()
     fileStorage.clear()
-    pendingRequestStore.clear()
   }
 
   test("transitionAndAwait - successful document upload workflow awaits terminal state") {

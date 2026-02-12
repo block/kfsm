@@ -64,7 +64,7 @@ class InMemoryPendingRequestStore<ID, V> : PendingRequestStore<ID, V> {
             .forEach { it.value.status = PendingRequestStatus.Failed(error) }
     }
 
-    override fun markTimedOut(requestId: String) {
+    override fun timeout(requestId: String) {
         requests.remove(requestId)
     }
 
