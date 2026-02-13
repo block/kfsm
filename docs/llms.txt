@@ -1,0 +1,60 @@
+# kFSM
+
+> kFSM is a Kotlin library for building type-safe finite state machines with transactional outbox support. It separates pure decision logic from side effect execution, enabling reliable multi-step workflows in distributed systems.
+
+The library uses the `app.cash.kfsm.v2` package. The v2 API is the active API.
+
+There are five core concepts:
+
+- **State** — A sealed class defining the state graph. Each state declares which states it can transition to via `transitions()`. Terminal states return an empty set.
+- **Value** — The domain object that carries state. Immutable data class implementing `Value<ID, V, S>` with an `update(newState)` method.
+- **Transition** — Declares `from`/`to` states and a pure `decide(value)` function that returns a `Decision`. Transitions are validated at construction time against the state graph.
+- **Decision** — Either `Accept` (new value + effects to emit) or `Reject` (reason string). Effects use `Effects.parallel()` or `Effects.ordered()` for execution semantics.
+- **Effect** — A sealed class of side effects stored in a transactional outbox. Effects must be serializable and idempotent (at-least-once delivery).
+
+The flow is: `Transition.decide()` → `StateMachine.transition()` → `Repository.saveWithOutbox()` → `EffectProcessor.processAll()` → `EffectHandler.handle()`.
+
+Key design principles:
+
+- `decide()` is **pure** — no side effects, only compute the decision
+- State changes and outbox messages are persisted **atomically** via `Repository.saveWithOutbox()`
+- Effects are executed **after commit** by a separate `EffectProcessor`
+- Effects can produce follow-up transitions (`EffectOutcome.TransitionProduced`), enabling multi-step workflows
+- The `StateMachine` is **idempotent** — re-applying a transition to a value already at the target state is a no-op
+
+## Core API
+
+- [State](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-state/index.html) : Abstract base class. Override `transitions()` to define the state graph. Override `canTransitionTo()` for parameterized states (e.g., data classes).
+- [Value](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-value/index.html) : Interface with `id`, `state`, and `update(newState)`. Implement on your domain data class.
+- [Transition](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-transition/index.html) : Abstract class with `from: Set<S>`, `to: S`, and abstract `decide(value): Decision<V, S, Ef>`. Has a convenience constructor for single-source transitions.
+- [Decision](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-decision/index.html) : Sealed class. `Decision.accept(value, effects)` for success. `Decision.reject(reason)` for rejection. Use `Decision.accept(value, Effects.ordered(...), Effects.parallel(...))` for mixed execution semantics.
+- [Effect](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-effect/index.html) : Marker interface. Define as a sealed class hierarchy.
+- [Effects](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-effects/index.html) : `Effects.parallel(effect)` for independent effects. `Effects.ordered(first, then...)` for sequential execution with dependencies.
+- [StateMachine](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-state-machine/index.html) : Orchestrates transitions. Call `stateMachine.transition(value, transition)` to apply.
+- [Repository](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-repository/index.html) : Interface with `saveWithOutbox(value, outboxMessages): Result<V>`. Must persist atomically.
+- [EffectHandler](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-effect-handler/index.html) : `fun interface` returning `Result<EffectOutcome>`. Use `when` to match on sealed effect types.
+- [EffectOutcome](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-effect-outcome/index.html) : `TransitionProduced(valueId, transition)` to continue workflow, `Completed` for terminal effects, `FailedWithTransition(valueId, transition, reason)` for handled failures.
+- [EffectProcessor](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-effect-processor/index.html) : Reads from outbox, executes effects via handler, applies follow-up transitions. Call `processAll()` on a schedule.
+- [Outbox](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-outbox/index.html) : Storage interface for outbox messages. `fetchPending()`, `markProcessed()`, `markFailed()`, `markDeadLetter()`.
+- [OutboxMessage](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-outbox-message/index.html) : Data class with `id`, `valueId`, `effect`, `type`, `dedupKey`, `dependsOnEffectId`, `status`, `attemptCount`.
+- [StateWithInvariants](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-state-with-invariants/index.html) : Implement on your sealed state class alongside `State<S>()` to define per-state invariants validated after transitions.
+- [Invariant](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-invariant/index.html) : `fun interface`. Use the `invariant(message) { predicate }` helper to create them.
+- [AwaitableStateMachine](https://block.github.io/kfsm/kfsm-v2/app.cash.kfsm.v2/-awaitable-state-machine/index.html) : Wraps `StateMachine` for blocking sync-style APIs. `transitionAndAwait(value, transition, timeout)` blocks until a settled state is reached.
+
+## Usage Examples
+
+- [Complete order workflow (README)](https://github.com/block/kfsm/blob/main/README.md) : States, Value, Effects, Transitions, EffectHandler, and wiring — end-to-end example.
+- [Document upload exemplar](https://github.com/block/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/v2/exemplar) : Reference implementation used by library tests. Shows parameterized states (`Rejected(reason)`), `canTransitionTo()` override, and multiple transition classes.
+- [Implementation guide](https://github.com/block/kfsm/blob/main/docs/implementation_guide.md) : Best practices for naming states, transitions, effects, and error handling.
+
+## Modules
+
+- [Core library](https://github.com/block/kfsm/tree/main/lib) : `app.cash.kfsm:kfsm-v2:<version>` — State, Value, Transition, Decision, Effects, StateMachine, EffectProcessor, AwaitableStateMachine.
+- [jOOQ integration](https://github.com/block/kfsm/tree/main/lib-jooq) : `app.cash.kfsm:kfsm-jooq-v2:<version>` — JooqOutbox (`SELECT ... FOR UPDATE SKIP LOCKED`), PollingEffectProcessor, MoshiOutboxSerializer, OutboxSchema (MySQL/PostgreSQL DDL).
+- [Guice integration](https://github.com/block/kfsm/tree/main/lib-guice) : Guice DI bindings.
+
+## Optional
+
+- [API docs (Dokka)](https://block.github.io/kfsm) : Full API reference.
+- [Changelog](https://github.com/block/kfsm/blob/main/CHANGELOG.md)
+- [Example module](https://github.com/block/kfsm/tree/main/example) : Working integration tests with MySQL-backed persistence.
