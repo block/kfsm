@@ -57,6 +57,11 @@ abstract class State<S : State<S>> {
   val subsequentStates: Set<S> by lazy { transitions() }
 
   /**
+   * Whether this state is a terminal (final) state with no outgoing transitions.
+   */
+  val isTerminal: Boolean get() = subsequentStates.isEmpty()
+
+  /**
    * The set of all states that can eventually be reached from this state through any number of transitions.
    */
   val reachableStates: Set<S> by lazy { computeReachableStates() }
