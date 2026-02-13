@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-24.02]
         cmd:
           - bin/gradle clean build -i --scan --no-daemon
 
