@@ -1,4 +1,5 @@
 [versions]
+arrow = "2.2.1"
 coroutines = "1.7.3"
 guice = "7.0.0"
 hikari = "5.1.0"
@@ -8,16 +9,20 @@ kotest = "5.8.0"
 # @pin
 kotlin = "2.1.20"
 moshi = "1.15.1"
+quiver = "1.0.5"
+kotlinLogging = "7.0.13"
 kotlinBinaryCompatibilityPlugin = "0.18.1"
+mavenPublish = "0.33.0"
 mockk = "1.13.10"
 mysql = "8.3.0"
 reflections = "0.10.2"
+slf4j = "2.0.17"
 testcontainers = "1.19.3"
 versionCatalogUpdateGradlePlugin = "0.8.3"
 versionsGradlePlugin = "0.50.0"
-mavenPublish = "0.33.0"
 
 [libraries]
+arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
 hikariCp = { module = "com.zaxxer:HikariCP", version.ref = "hikari" }
@@ -29,17 +34,21 @@ jooqKotlin = { module = "org.jooq:jooq-kotlin", version.ref = "jooq" }
 kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
 kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+kotlinLogging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlinLogging" }
 kotlinReflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+mavenPublishGradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshiKotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 moshiAdapters = { module = "com.squareup.moshi:moshi-adapters", version.ref = "moshi" }
 mysql = { module = "com.mysql:mysql-connector-j", version.ref = "mysql" }
+quiver = { module = "app.cash.quiver:lib", version.ref = "quiver" }
 reflections = { module = "org.reflections:reflections", version.ref = "reflections" }
+slf4jApi = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4jNop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
 testcontainersCore = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainersJunit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
 testcontainersMysql = { module = "org.testcontainers:mysql", version.ref = "testcontainers" }
-mavenPublishGradlePlugin = { module = "com.vanniktech:gradle-maven-publish-plugin", version.ref = "mavenPublish" }
 
 [bundles]
 kotest = [

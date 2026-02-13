@@ -22,10 +22,12 @@ mavenPublishing {
 dependencies {
   api(project(":lib"))
   api(libs.jooq)
+  implementation(libs.arrowCore)
   implementation(libs.jooqKotlin)
   implementation(libs.moshi)
   implementation(libs.moshiKotlin)
   implementation(libs.moshiAdapters)
+  implementation(libs.quiver)
 
   testImplementation(libs.kotestAssertions)
   testImplementation(libs.kotestJunitRunnerJvm)

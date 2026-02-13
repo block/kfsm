@@ -1,5 +1,6 @@
 package app.cash.kfsm.v2
 
+import arrow.core.raise.result
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -84,63 +85,51 @@ class AwaitableStateMachine<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    * @throws RejectedTransition if the transition is rejected
    * @throws Exception if the workflow fails
    */
-  fun transitionAndAwait(value: V, transition: Transition<ID, V, S, Ef>, timeout: Duration): Result<V> {
+  fun transitionAndAwait(value: V, transition: Transition<ID, V, S, Ef>, timeout: Duration): Result<V> = result {
     require(timeout.isPositive()) { "Timeout must be positive, was: $timeout" }
 
-    val requestId = pendingRequestStore.create(value.id)
+    val requestId = pendingRequestStore.create(value.id).bind()
     val deadline = System.nanoTime() + timeout.inWholeNanoseconds
 
-    return try {
-      // Apply the initial transition (persists to outbox)
-      val initialResult = stateMachine.transition(value, transition)
+    val updatedValue = stateMachine.transition(value, transition)
+      .onFailure { pendingRequestStore.delete(requestId) }
+      .bind()
 
-      if (initialResult.isFailure) {
-        pendingRequestStore.delete(requestId)
-        return initialResult
-      }
-
-      val updatedValue = initialResult.getOrThrow()
-
-      // If already settled, return immediately
-      if (isSettled(updatedValue.state)) {
-        pendingRequestStore.delete(requestId)
-        return Result.success(updatedValue)
-      }
-
-      // Poll for completion
-      val finalValue = pollForCompletion(requestId, deadline, timeout)
-      Result.success(finalValue)
-    } catch (e: WorkflowTimeoutException) {
-      pendingRequestStore.timeout(requestId)
-      Result.failure(e)
-    } catch (e: WorkflowFailedException) {
-      Result.failure(e)
-    } catch (e: Exception) {
+    if (isSettled(updatedValue.state)) {
       pendingRequestStore.delete(requestId)
-      Result.failure(e)
+      updatedValue
+    } else {
+      pollForCompletion(requestId, deadline, timeout)
+        .onFailure { e ->
+          when (e) {
+            is WorkflowTimeoutException -> pendingRequestStore.timeout(requestId)
+            is WorkflowFailedException -> {}
+            else -> pendingRequestStore.delete(requestId)
+          }
+        }
+        .bind()
     }
   }
 
-  private fun pollForCompletion(requestId: String, deadlineNanos: Long, timeout: Duration): V {
-    while (true) {
-      if (System.nanoTime() >= deadlineNanos) {
-        throw WorkflowTimeoutException(requestId, timeout)
-      }
+  private fun pollForCompletion(requestId: String, deadlineNanos: Long, timeout: Duration): Result<V> = result {
+    var status: PendingRequestStatus<V> = PendingRequestStatus.Waiting
+    while (status is PendingRequestStatus.Waiting) {
+      if (System.nanoTime() >= deadlineNanos) raise(WorkflowTimeoutException(requestId, timeout))
+      Thread.sleep(pollInterval.inWholeMilliseconds)
+      status = pendingRequestStore.getStatus(requestId).bind()
+    }
 
-      when (val status = pendingRequestStore.getStatus(requestId)) {
-        is PendingRequestStatus.Waiting -> Thread.sleep(pollInterval.inWholeMilliseconds)
-        is PendingRequestStatus.Completed -> {
-          pendingRequestStore.delete(requestId)
-          return status.value
-        }
-        is PendingRequestStatus.Failed -> {
-          pendingRequestStore.delete(requestId)
-          throw WorkflowFailedException(status.error)
-        }
-        is PendingRequestStatus.NotFound -> {
-          throw IllegalStateException("Pending request $requestId not found")
-        }
+    when (status) {
+      is PendingRequestStatus.Completed -> {
+        pendingRequestStore.delete(requestId)
+        status.value
       }
+      is PendingRequestStatus.Failed -> {
+        pendingRequestStore.delete(requestId)
+        raise(WorkflowFailedException(status.error))
+      }
+      is PendingRequestStatus.NotFound -> raise(IllegalStateException("Pending request $requestId not found"))
+      is PendingRequestStatus.Waiting -> error("Unreachable")
     }
   }
 
@@ -189,7 +178,7 @@ interface PendingRequestStore<ID, V> {
    * @param valueId The ID of the value being processed
    * @return A unique request ID
    */
-  fun create(valueId: ID): String
+  fun create(valueId: ID): Result<String>
 
   /**
    * Get the current status of a pending request.
@@ -197,7 +186,7 @@ interface PendingRequestStore<ID, V> {
    * @param requestId The request ID returned from [create]
    * @return The current status
    */
-  fun getStatus(requestId: String): PendingRequestStatus<V>
+  fun getStatus(requestId: String): Result<PendingRequestStatus<V>>
 
   /**
    * Mark a request as completed with the final value.
@@ -208,7 +197,7 @@ interface PendingRequestStore<ID, V> {
    * @param valueId The value ID
    * @param value The final value
    */
-  fun complete(valueId: ID, value: V)
+  fun complete(valueId: ID, value: V): Result<Unit>
 
   /**
    * Mark a request as failed.
@@ -216,21 +205,21 @@ interface PendingRequestStore<ID, V> {
    * @param valueId The value ID
    * @param error The error message
    */
-  fun fail(valueId: ID, error: String)
+  fun fail(valueId: ID, error: String): Result<Unit>
 
   /**
    * Mark a request as timed out.
    *
    * @param requestId The request ID
    */
-  fun timeout(requestId: String)
+  fun timeout(requestId: String): Result<Unit>
 
   /**
    * Delete a pending request (cleanup).
    *
    * @param requestId The request ID
    */
-  fun delete(requestId: String)
+  fun delete(requestId: String): Result<Unit>
 }
 
 /**

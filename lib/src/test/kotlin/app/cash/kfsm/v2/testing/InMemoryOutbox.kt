@@ -51,52 +51,59 @@ class InMemoryOutbox<ID, Ef : Effect> : Outbox<ID, Ef> {
         deadLetters.clear()
     }
 
-    override fun fetchPending(batchSize: Int, effectTypes: Set<String>?): List<OutboxMessage<ID, Ef>> =
-        messages
-            .filter { it.id !in processed && it.id !in deadLetters }
-            .filter { it.dependsOnEffectId == null || it.dependsOnEffectId in processed }
-            .let { pending ->
-                if (effectTypes.isNullOrEmpty()) pending
-                else pending.filter { it.effect::class.simpleName in effectTypes }
-            }
-            .take(batchSize)
+    override fun fetchPending(batchSize: Int, effectTypes: Set<String>?): Result<List<OutboxMessage<ID, Ef>>> =
+        Result.success(
+            messages
+                .filter { it.id !in processed && it.id !in deadLetters }
+                .filter { it.dependsOnEffectId == null || it.dependsOnEffectId in processed }
+                .let { pending ->
+                    if (effectTypes.isNullOrEmpty()) pending
+                    else pending.filter { it.effect::class.simpleName in effectTypes }
+                }
+                .take(batchSize)
+        )
 
-    override fun isProcessed(id: String): Boolean = id in processed
+    override fun isProcessed(id: String): Result<Boolean> = Result.success(id in processed)
 
-    override fun findById(id: String): OutboxMessage<ID, Ef>? =
-        messages.find { it.id == id }
+    override fun findById(id: String): Result<OutboxMessage<ID, Ef>?> =
+        Result.success(messages.find { it.id == id })
 
-    override fun markProcessed(id: String) {
+    override fun markProcessed(id: String): Result<Unit> {
         processed.add(id)
+        return Result.success(Unit)
     }
 
-    override fun markFailed(id: String, error: String, maxAttempts: Int?) {
+    override fun markFailed(id: String, error: String, maxAttempts: Int?): Result<Unit> {
         failed[id] = error
         if (maxAttempts != null && (failed.count { it.key == id } >= maxAttempts)) {
             deadLetters.add(id)
         }
+        return Result.success(Unit)
     }
 
-    override fun markDeadLetter(id: String, error: String) {
+    override fun markDeadLetter(id: String, error: String): Result<Unit> {
         deadLetters.add(id)
         failed[id] = error
+        return Result.success(Unit)
     }
 
-    override fun fetchDeadLetters(batchSize: Int, effectTypes: Set<String>?): List<OutboxMessage<ID, Ef>> =
-        messages
-            .filter { it.id in deadLetters }
-            .let { dead ->
-                if (effectTypes.isNullOrEmpty()) dead
-                else dead.filter { it.effect::class.simpleName in effectTypes }
-            }
-            .take(batchSize)
+    override fun fetchDeadLetters(batchSize: Int, effectTypes: Set<String>?): Result<List<OutboxMessage<ID, Ef>>> =
+        Result.success(
+            messages
+                .filter { it.id in deadLetters }
+                .let { dead ->
+                    if (effectTypes.isNullOrEmpty()) dead
+                    else dead.filter { it.effect::class.simpleName in effectTypes }
+                }
+                .take(batchSize)
+        )
 
-    override fun retryDeadLetter(id: String): Boolean {
+    override fun retryDeadLetter(id: String): Result<Boolean> {
         if (id in deadLetters) {
             deadLetters.remove(id)
             failed.remove(id)
-            return true
+            return Result.success(true)
         }
-        return false
+        return Result.success(false)
     }
 }
