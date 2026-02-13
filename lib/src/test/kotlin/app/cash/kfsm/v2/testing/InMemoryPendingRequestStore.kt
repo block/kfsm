@@ -2,6 +2,7 @@ package app.cash.kfsm.v2.testing
 
 import app.cash.kfsm.v2.PendingRequestStatus
 import app.cash.kfsm.v2.PendingRequestStore
+import arrow.core.raise.result
 import java.util.UUID
 
 /**
@@ -43,36 +44,33 @@ class InMemoryPendingRequestStore<ID, V> : PendingRequestStore<ID, V> {
         requests.clear()
     }
 
-    override fun create(valueId: ID): Result<String> {
+    override fun create(valueId: ID): Result<String> = result {
         val id = "req-${UUID.randomUUID()}"
         requests[id] = RequestEntry(valueId, PendingRequestStatus.Waiting)
-        return Result.success(id)
+        id
     }
 
-    override fun getStatus(requestId: String): Result<PendingRequestStatus<V>> =
-        Result.success(requests[requestId]?.status ?: PendingRequestStatus.NotFound)
+    override fun getStatus(requestId: String): Result<PendingRequestStatus<V>> = result {
+        requests[requestId]?.status ?: PendingRequestStatus.NotFound
+    }
 
-    override fun complete(valueId: ID, value: V): Result<Unit> {
+    override fun complete(valueId: ID, value: V): Result<Unit> = result {
         requests.entries
             .filter { it.value.valueId == valueId && it.value.status is PendingRequestStatus.Waiting }
             .forEach { it.value.status = PendingRequestStatus.Completed(value) }
-        return Result.success(Unit)
     }
 
-    override fun fail(valueId: ID, error: String): Result<Unit> {
+    override fun fail(valueId: ID, error: String): Result<Unit> = result {
         requests.entries
             .filter { it.value.valueId == valueId && it.value.status is PendingRequestStatus.Waiting }
             .forEach { it.value.status = PendingRequestStatus.Failed(error) }
-        return Result.success(Unit)
     }
 
-    override fun timeout(requestId: String): Result<Unit> {
+    override fun timeout(requestId: String): Result<Unit> = result {
         requests.remove(requestId)
-        return Result.success(Unit)
     }
 
-    override fun delete(requestId: String): Result<Unit> {
+    override fun delete(requestId: String): Result<Unit> = result {
         requests.remove(requestId)
-        return Result.success(Unit)
     }
 }
