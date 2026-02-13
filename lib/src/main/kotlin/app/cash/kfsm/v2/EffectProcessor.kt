@@ -1,5 +1,7 @@
 package app.cash.kfsm.v2
 
+import io.github.oshai.kotlinlogging.KotlinLogging
+
 /**
  * Result of processing an effect.
  */
@@ -69,6 +71,7 @@ class EffectProcessor<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
   private val effectTypes: Set<String>? = null,
   private val maxAttempts: Int? = null
 ) {
+  private val logger = KotlinLogging.logger {}
   /**
    * Process all pending messages in the outbox.
    *
@@ -76,7 +79,10 @@ class EffectProcessor<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    * @return Number of successfully processed messages
    */
   fun processAll(batchSize: Int = 100): Int {
-    val pending = outbox.fetchPending(batchSize, effectTypes)
+    val pending = outbox.fetchPending(batchSize, effectTypes).getOrElse {
+      logger.warn(it) { "Failed to fetch pending outbox messages" }
+      return 0
+    }
     var processed = 0
 
     for (message in pending) {
@@ -146,6 +152,7 @@ class EffectProcessor<ID, V : Value<ID, V, S>, S : State<S>, Ef : Effect>(
    */
   fun processOne(messageId: String): Result<ProcessingResult<V>> {
     val message = outbox.findById(messageId)
+      .getOrElse { return Result.failure(it) }
       ?: return Result.failure(MessageNotFound(messageId))
 
     return processOne(message)
@@ -182,7 +189,7 @@ interface Outbox<ID, Ef : Effect> {
    * @param effectTypes If provided, only fetch messages with these effect types.
    *                    If null or empty, fetch all types.
    */
-  fun fetchPending(batchSize: Int, effectTypes: Set<String>? = null): List<OutboxMessage<ID, Ef>>
+  fun fetchPending(batchSize: Int, effectTypes: Set<String>? = null): Result<List<OutboxMessage<ID, Ef>>>
 
   /**
    * Check if a message has been processed.
@@ -192,17 +199,17 @@ interface Outbox<ID, Ef : Effect> {
    * @param id The message ID to check
    * @return true if the message has been processed, false otherwise
    */
-  fun isProcessed(id: String): Boolean
+  fun isProcessed(id: String): Result<Boolean>
 
   /**
    * Find a message by ID.
    */
-  fun findById(id: String): OutboxMessage<ID, Ef>?
+  fun findById(id: String): Result<OutboxMessage<ID, Ef>?>
 
   /**
    * Mark a message as successfully processed.
    */
-  fun markProcessed(id: String)
+  fun markProcessed(id: String): Result<Unit>
 
   /**
    * Mark a message as failed with an error.
@@ -212,12 +219,12 @@ interface Outbox<ID, Ef : Effect> {
    * @param maxAttempts If provided and the message has reached this many attempts,
    *                    it will be marked as DEAD_LETTER instead of FAILED.
    */
-  fun markFailed(id: String, error: String, maxAttempts: Int? = null)
+  fun markFailed(id: String, error: String, maxAttempts: Int? = null): Result<Unit>
 
   /**
    * Mark a message as dead-lettered (will not be retried automatically).
    */
-  fun markDeadLetter(id: String, error: String)
+  fun markDeadLetter(id: String, error: String): Result<Unit>
 
   /**
    * Fetch dead-lettered messages for manual handling or alerting.
@@ -225,7 +232,7 @@ interface Outbox<ID, Ef : Effect> {
    * @param batchSize Maximum number of messages to return
    * @param effectTypes If provided, only fetch messages with these effect types
    */
-  fun fetchDeadLetters(batchSize: Int = 100, effectTypes: Set<String>? = null): List<OutboxMessage<ID, Ef>>
+  fun fetchDeadLetters(batchSize: Int = 100, effectTypes: Set<String>? = null): Result<List<OutboxMessage<ID, Ef>>>
 
   /**
    * Retry a dead-lettered message by resetting it to PENDING status.
@@ -233,7 +240,7 @@ interface Outbox<ID, Ef : Effect> {
    * @param id The message ID
    * @return true if the message was found and reset, false otherwise
    */
-  fun retryDeadLetter(id: String): Boolean
+  fun retryDeadLetter(id: String): Result<Boolean>
 }
 
 /**

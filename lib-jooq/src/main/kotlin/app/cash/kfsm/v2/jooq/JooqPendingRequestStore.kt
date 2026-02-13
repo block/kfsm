@@ -2,6 +2,7 @@ package app.cash.kfsm.v2.jooq
 
 import app.cash.kfsm.v2.PendingRequestStatus
 import app.cash.kfsm.v2.PendingRequestStore
+import arrow.core.raise.result
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import java.time.Instant
@@ -39,7 +40,7 @@ class JooqPendingRequestStore<ID, V>(
     private const val STATUS_FAILED = "FAILED"
   }
 
-  override fun create(valueId: ID): String {
+  override fun create(valueId: ID): Result<String> = result {
     val requestId = UUID.randomUUID().toString()
     dsl.insertInto(
       table,
@@ -50,17 +51,16 @@ class JooqPendingRequestStore<ID, V>(
       STATUS_WAITING,
       Instant.now()
     ).execute()
-    return requestId
+    requestId
   }
 
-  override fun getStatus(requestId: String): PendingRequestStatus<V> {
+  override fun getStatus(requestId: String): Result<PendingRequestStatus<V>> = result {
     val record = dsl.select(statusField, resultPayloadField)
       .from(table)
       .where(idField.eq(requestId))
       .fetchOne()
-      ?: return PendingRequestStatus.NotFound
 
-    return when (record.get(statusField)) {
+    when (record?.get(statusField)) {
       STATUS_WAITING -> PendingRequestStatus.Waiting
       STATUS_COMPLETED -> {
         val payload = record.get(resultPayloadField)!!
@@ -74,7 +74,7 @@ class JooqPendingRequestStore<ID, V>(
     }
   }
 
-  override fun complete(valueId: ID, value: V) {
+  override fun complete(valueId: ID, value: V): Result<Unit> = result {
     dsl.update(table)
       .set(statusField, STATUS_COMPLETED)
       .set(resultPayloadField, serializer.serializeValue(value))
@@ -84,7 +84,7 @@ class JooqPendingRequestStore<ID, V>(
       .execute()
   }
 
-  override fun fail(valueId: ID, error: String) {
+  override fun fail(valueId: ID, error: String): Result<Unit> = result {
     dsl.update(table)
       .set(statusField, STATUS_FAILED)
       .set(resultPayloadField, error)
@@ -94,7 +94,7 @@ class JooqPendingRequestStore<ID, V>(
       .execute()
   }
 
-  override fun timeout(requestId: String) {
+  override fun timeout(requestId: String): Result<Unit> = result {
     dsl.update(table)
       .set(statusField, STATUS_FAILED)
       .set(resultPayloadField, "Timed out")
@@ -104,7 +104,7 @@ class JooqPendingRequestStore<ID, V>(
       .execute()
   }
 
-  override fun delete(requestId: String) {
+  override fun delete(requestId: String): Result<Unit> = result {
     dsl.deleteFrom(table)
       .where(idField.eq(requestId))
       .execute()

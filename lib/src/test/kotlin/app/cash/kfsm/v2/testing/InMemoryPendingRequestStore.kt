@@ -43,32 +43,36 @@ class InMemoryPendingRequestStore<ID, V> : PendingRequestStore<ID, V> {
         requests.clear()
     }
 
-    override fun create(valueId: ID): String {
+    override fun create(valueId: ID): Result<String> {
         val id = "req-${UUID.randomUUID()}"
         requests[id] = RequestEntry(valueId, PendingRequestStatus.Waiting)
-        return id
+        return Result.success(id)
     }
 
-    override fun getStatus(requestId: String): PendingRequestStatus<V> =
-        requests[requestId]?.status ?: PendingRequestStatus.NotFound
+    override fun getStatus(requestId: String): Result<PendingRequestStatus<V>> =
+        Result.success(requests[requestId]?.status ?: PendingRequestStatus.NotFound)
 
-    override fun complete(valueId: ID, value: V) {
+    override fun complete(valueId: ID, value: V): Result<Unit> {
         requests.entries
             .filter { it.value.valueId == valueId && it.value.status is PendingRequestStatus.Waiting }
             .forEach { it.value.status = PendingRequestStatus.Completed(value) }
+        return Result.success(Unit)
     }
 
-    override fun fail(valueId: ID, error: String) {
+    override fun fail(valueId: ID, error: String): Result<Unit> {
         requests.entries
             .filter { it.value.valueId == valueId && it.value.status is PendingRequestStatus.Waiting }
             .forEach { it.value.status = PendingRequestStatus.Failed(error) }
+        return Result.success(Unit)
     }
 
-    override fun timeout(requestId: String) {
+    override fun timeout(requestId: String): Result<Unit> {
         requests.remove(requestId)
+        return Result.success(Unit)
     }
 
-    override fun delete(requestId: String) {
+    override fun delete(requestId: String): Result<Unit> {
         requests.remove(requestId)
+        return Result.success(Unit)
     }
 }

@@ -1,9 +1,11 @@
 package app.cash.kfsm.v2.jooq
 
+import arrow.core.raise.result
 import app.cash.kfsm.v2.Effect
 import app.cash.kfsm.v2.Outbox
 import app.cash.kfsm.v2.OutboxMessage
 import app.cash.kfsm.v2.OutboxStatus
+import app.cash.quiver.extensions.catch
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import java.sql.Timestamp
@@ -48,8 +50,8 @@ class JooqOutbox<ID : Any, Ef : Effect>(
   private val createdAtField = DSL.field(DSL.name("created_at"), Any::class.java)
   private val processedAtField = DSL.field(DSL.name("processed_at"), Any::class.java)
 
-  override fun fetchPending(batchSize: Int, effectTypes: Set<String>?): List<OutboxMessage<ID, Ef>> {
-    return dsl.transactionResult { config ->
+  override fun fetchPending(batchSize: Int, effectTypes: Set<String>?): Result<List<OutboxMessage<ID, Ef>>> = Result.catch {
+    dsl.transactionResult { config ->
       val tx = DSL.using(config)
       claimNextEntityMessages(tx, batchSize, effectTypes)
     }
@@ -130,61 +132,64 @@ class JooqOutbox<ID : Any, Ef : Effect>(
     )
   )
 
-  override fun isProcessed(id: String): Boolean {
-    return (dsl.selectCount()
+  override fun isProcessed(id: String): Result<Boolean> = Result.catch {
+    (dsl.selectCount()
       .from(table)
       .where(idField.eq(id))
       .and(statusField.eq(OutboxStatus.PROCESSED.name))
       .fetchOne(0, Int::class.java) ?: 0) > 0
   }
 
-  override fun findById(id: String): OutboxMessage<ID, Ef>? {
-    return dsl.selectFrom(table)
+  override fun findById(id: String): Result<OutboxMessage<ID, Ef>?> = Result.catch {
+    dsl.selectFrom(table)
       .where(idField.eq(id))
       .fetchOne()
       ?.let { recordToMessage(it) }
   }
 
-  override fun markProcessed(id: String) {
+  override fun markProcessed(id: String): Result<Unit> = Result.catch {
     dsl.update(table)
       .set(statusField, OutboxStatus.PROCESSED.name)
       .set(processedAtField, Instant.now())
       .where(idField.eq(id))
       .execute()
+    Unit
   }
 
-  override fun markFailed(id: String, error: String, maxAttempts: Int?) {
-    if (maxAttempts != null) {
-      // Check current attempt count and move to dead letter if exceeded
-      val currentAttempts = dsl.select(attemptCountField)
+  override fun markFailed(id: String, error: String, maxAttempts: Int?): Result<Unit> = result {
+    val currentAttempts = Result.catch {
+      dsl.select(attemptCountField)
         .from(table)
         .where(idField.eq(id))
         .fetchOne(attemptCountField) ?: 0
+    }.bind()
+    val shouldDeadLetter = maxAttempts != null && currentAttempts + 1 >= maxAttempts
 
-      if (currentAttempts + 1 >= maxAttempts) {
-        markDeadLetter(id, error)
-        return
+    return if (shouldDeadLetter) {
+      markDeadLetter(id, error)
+    } else {
+      Result.catch {
+        dsl.update(table)
+          .set(statusField, OutboxStatus.FAILED.name)
+          .set(lastErrorField, error.take(4000))
+          .set(attemptCountField, attemptCountField.plus(1))
+          .where(idField.eq(id))
+          .execute()
       }
     }
-
-    dsl.update(table)
-      .set(statusField, OutboxStatus.FAILED.name)
-      .set(lastErrorField, error.take(4000))
-      .set(attemptCountField, attemptCountField.plus(1))
-      .where(idField.eq(id))
-      .execute()
   }
 
-  override fun markDeadLetter(id: String, error: String) {
+  override fun markDeadLetter(id: String, error: String): Result<Unit> = Result.catch {
     dsl.update(table)
       .set(statusField, OutboxStatus.DEAD_LETTER.name)
       .set(lastErrorField, error.take(4000))
       .set(attemptCountField, attemptCountField.plus(1))
       .where(idField.eq(id))
       .execute()
+    Unit
   }
 
-  override fun fetchDeadLetters(batchSize: Int, effectTypes: Set<String>?): List<OutboxMessage<ID, Ef>> {
+  override fun fetchDeadLetters(batchSize: Int, effectTypes: Set<String>?): Result<List<OutboxMessage<ID, Ef>>> = Result.catch {
     var query = dsl.selectFrom(table)
       .where(statusField.eq(OutboxStatus.DEAD_LETTER.name))
 
@@ -192,14 +197,14 @@ class JooqOutbox<ID : Any, Ef : Effect>(
       query = query.and(effectTypeField.`in`(effectTypes))
     }
 
-    return query
+    query
       .orderBy(createdAtField)
       .limit(batchSize)
       .fetch()
       .map { record -> recordToMessage(record) }
   }
 
-  override fun retryDeadLetter(id: String): Boolean {
+  override fun retryDeadLetter(id: String): Result<Boolean> = Result.catch {
     val updated = dsl.update(table)
       .set(statusField, OutboxStatus.PENDING.name)
       .set(attemptCountField, 0)
@@ -208,7 +213,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
       .and(statusField.eq(OutboxStatus.DEAD_LETTER.name))
       .execute()
 
-    return updated > 0
+    updated > 0
   }
 
   /**

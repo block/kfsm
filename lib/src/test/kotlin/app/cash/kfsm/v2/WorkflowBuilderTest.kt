@@ -215,13 +215,13 @@ class WorkflowBuilderTest : StringSpec({
         outbox.add(secondMessage)
 
         // Initially only the first message should be pending (second is blocked)
-        val pending1 = outbox.fetchPending(10)
+        val pending1 = outbox.fetchPending(10).getOrThrow()
         pending1.size shouldBe 1
         pending1[0].id shouldBe "msg-1"
 
         // After processing the first, the second should become available
         outbox.markProcessed("msg-1")
-        val pending2 = outbox.fetchPending(10)
+        val pending2 = outbox.fetchPending(10).getOrThrow()
         pending2.size shouldBe 1
         pending2[0].id shouldBe "msg-2"
     }

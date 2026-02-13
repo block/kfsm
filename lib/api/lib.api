@@ -185,20 +185,20 @@ public final class app/cash/kfsm/v2/MessageNotFound : java/lang/Exception {
 }
 
 public abstract interface class app/cash/kfsm/v2/Outbox {
-	public abstract fun fetchDeadLetters (ILjava/util/Set;)Ljava/util/List;
-	public abstract fun fetchPending (ILjava/util/Set;)Ljava/util/List;
-	public abstract fun findById (Ljava/lang/String;)Lapp/cash/kfsm/v2/OutboxMessage;
-	public abstract fun isProcessed (Ljava/lang/String;)Z
-	public abstract fun markDeadLetter (Ljava/lang/String;Ljava/lang/String;)V
-	public abstract fun markFailed (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)V
-	public abstract fun markProcessed (Ljava/lang/String;)V
-	public abstract fun retryDeadLetter (Ljava/lang/String;)Z
+	public abstract fun fetchDeadLetters-gIAlu-s (ILjava/util/Set;)Ljava/lang/Object;
+	public abstract fun fetchPending-gIAlu-s (ILjava/util/Set;)Ljava/lang/Object;
+	public abstract fun findById-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun isProcessed-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun markDeadLetter-gIAlu-s (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun markFailed-0E7RQCE (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Object;
+	public abstract fun markProcessed-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun retryDeadLetter-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
 }
 
 public final class app/cash/kfsm/v2/Outbox$DefaultImpls {
-	public static synthetic fun fetchDeadLetters$default (Lapp/cash/kfsm/v2/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
-	public static synthetic fun fetchPending$default (Lapp/cash/kfsm/v2/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/util/List;
-	public static synthetic fun markFailed$default (Lapp/cash/kfsm/v2/Outbox;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)V
+	public static synthetic fun fetchDeadLetters-gIAlu-s$default (Lapp/cash/kfsm/v2/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun fetchPending-gIAlu-s$default (Lapp/cash/kfsm/v2/Outbox;ILjava/util/Set;ILjava/lang/Object;)Ljava/lang/Object;
+	public static synthetic fun markFailed-0E7RQCE$default (Lapp/cash/kfsm/v2/Outbox;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Integer;ILjava/lang/Object;)Ljava/lang/Object;
 }
 
 public final class app/cash/kfsm/v2/OutboxMessage {
@@ -284,12 +284,12 @@ public final class app/cash/kfsm/v2/PendingRequestStatus$Waiting : app/cash/kfsm
 }
 
 public abstract interface class app/cash/kfsm/v2/PendingRequestStore {
-	public abstract fun complete (Ljava/lang/Object;Ljava/lang/Object;)V
-	public abstract fun create (Ljava/lang/Object;)Ljava/lang/String;
-	public abstract fun delete (Ljava/lang/String;)V
-	public abstract fun fail (Ljava/lang/Object;Ljava/lang/String;)V
-	public abstract fun getStatus (Ljava/lang/String;)Lapp/cash/kfsm/v2/PendingRequestStatus;
-	public abstract fun timeout (Ljava/lang/String;)V
+	public abstract fun complete-gIAlu-s (Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun create-IoAF18A (Ljava/lang/Object;)Ljava/lang/Object;
+	public abstract fun delete-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun fail-gIAlu-s (Ljava/lang/Object;Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun getStatus-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
+	public abstract fun timeout-IoAF18A (Ljava/lang/String;)Ljava/lang/Object;
 }
 
 public abstract class app/cash/kfsm/v2/ProcessingResult {

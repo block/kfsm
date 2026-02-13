@@ -21,7 +21,12 @@ mavenPublishing {
 }
 
 dependencies {
+  implementation(libs.arrowCore)
+  implementation(libs.kotlinLogging)
   implementation(libs.kotlinReflect)
+  implementation(libs.quiver)
+  implementation(libs.slf4jApi)
+  implementation(libs.slf4jNop)
 
   testImplementation(libs.kotestProperty)
   testImplementation(libs.kotestAssertions)
