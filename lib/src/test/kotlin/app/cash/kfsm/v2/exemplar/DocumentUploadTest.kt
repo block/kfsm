@@ -221,6 +221,13 @@ class DocumentUploadTest : StringSpec({
     notifiedStatus shouldBe "Upload complete"
   }
 
+  "isTerminal is true for states with no subsequent states" {
+    DocumentState.Idle.isTerminal shouldBe false
+    DocumentState.Uploading.isTerminal shouldBe false
+    DocumentState.Scanning.isTerminal shouldBe false
+    DocumentState.Accepted.isTerminal shouldBe true
+  }
+
   "state machine utilities: mermaid diagram shows static transitions" {
     StateMachineUtilities.mermaid(DocumentState.Idle).shouldBeSuccess(
       """
@@ -229,6 +236,7 @@ class DocumentUploadTest : StringSpec({
       Idle --> Uploading
       Scanning --> Accepted
       Uploading --> Scanning
+      Accepted --> [*]
       """.trimIndent()
     )
   }
