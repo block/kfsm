@@ -55,13 +55,19 @@ object StateMachineUtilities {
    */
   fun <S : State<S>> mermaid(head: S): Result<String> =
     walkTree(head).map { states ->
+      val allStates = states.toSet()
       listOf("stateDiagram-v2", "[*] --> ${head::class.simpleName}")
         .plus(
-          states
-            .toSet()
+          allStates
             .flatMap { from ->
               from.subsequentStates.map { to -> "${from::class.simpleName} --> ${to::class.simpleName}" }
             }.toList()
+            .sorted()
+        )
+        .plus(
+          allStates
+            .filter { it.isTerminal }
+            .map { "${it::class.simpleName} --> [*]" }
             .sorted()
         ).joinToString("\n")
     }
