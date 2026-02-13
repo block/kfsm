@@ -2,17 +2,21 @@
 
 ## [Unreleased]
 
+## [2.3.0] - kFSM v2
+
+* Update outbox and pending request interfaces to return `Result` rather than throw exceptions.
+
 ## [2.2.0] - kFSM v2
 
-Add Jooq implementation for `PendingRequestStore`.
+* Add Jooq implementation for `PendingRequestStore`.
 
 ## [2.1.0] - kFSM v2
 
-Replaced the use of coroutines in `AwaitableStateMachine` with Java primitives.
+* Replaced the use of coroutines in `AwaitableStateMachine` with Java primitives.
 
 ## [2.0.0] - kFSM v2
 
-A complete redesign of kFSM with a new architecture centered around the transactional outbox pattern. v2 can be used alongside v1 in the same project.
+* A complete redesign of kFSM with a new architecture centered around the transactional outbox pattern. v2 can be used alongside v1 in the same project.
 
 ### Breaking Changes
 
