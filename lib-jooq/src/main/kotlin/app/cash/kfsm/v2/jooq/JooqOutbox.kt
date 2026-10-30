@@ -37,6 +37,8 @@ class JooqOutbox<ID : Any, Ef : Effect>(
   private val tableName: String = "outbox"
 ) : Outbox<ID, Ef> {
 
+  // This class is compiled against jOOQ 3.16 but must also link against newer jOOQ versions at runtime. jOOQ 3.19
+  // removed limit(int) and selectFrom(Table), so queries call limit(Number) and selectFrom(Name), which exist in both.
   private val table = DSL.table(DSL.name(tableName))
   private val idField = DSL.field(DSL.name("id"), String::class.java)
   private val valueIdField = DSL.field(DSL.name("value_id"), String::class.java)
@@ -90,7 +92,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
 
     val claimedValueId = query
       .orderBy(createdAtField)
-      .limit(1)
+      .limit(1 as Number)
       .forUpdate()
       .skipLocked()
       .fetchOne(valueIdField)
@@ -105,7 +107,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
     limit: Int = Int.MAX_VALUE,
     effectTypes: Set<String>? = null
   ): List<OutboxMessage<ID, Ef>> {
-    var query = tx.selectFrom(table)
+    var query = tx.selectFrom(table.qualifiedName)
       .where(valueIdField.eq(serializedValueId))
       .and(statusField.eq(OutboxStatus.PENDING.name))
       .and(dependencyProcessedCondition())
@@ -116,7 +118,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
 
     return query
       .orderBy(createdAtField)
-      .limit(limit)
+      .limit(limit as Number)
       .forUpdate()
       .fetch()
       .map { record -> recordToMessage(record) }
@@ -141,7 +143,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
   }
 
   override fun findById(id: String): Result<OutboxMessage<ID, Ef>?> = Result.catch {
-    dsl.selectFrom(table)
+    dsl.selectFrom(table.qualifiedName)
       .where(idField.eq(id))
       .fetchOne()
       ?.let { recordToMessage(it) }
@@ -190,7 +192,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
   }
 
   override fun fetchDeadLetters(batchSize: Int, effectTypes: Set<String>?): Result<List<OutboxMessage<ID, Ef>>> = Result.catch {
-    var query = dsl.selectFrom(table)
+    var query = dsl.selectFrom(table.qualifiedName)
       .where(statusField.eq(OutboxStatus.DEAD_LETTER.name))
 
     if (!effectTypes.isNullOrEmpty()) {
@@ -199,7 +201,7 @@ class JooqOutbox<ID : Any, Ef : Effect>(
 
     query
       .orderBy(createdAtField)
-      .limit(batchSize)
+      .limit(batchSize as Number)
       .fetch()
       .map { record -> recordToMessage(record) }
   }
