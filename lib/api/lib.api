@@ -341,6 +341,7 @@ public abstract class app/cash/kfsm/v2/State {
 	public fun canTransitionTo (Lapp/cash/kfsm/v2/State;)Z
 	public final fun getReachableStates ()Ljava/util/Set;
 	public final fun getSubsequentStates ()Ljava/util/Set;
+	public final fun isTerminal ()Z
 	public abstract fun transitions ()Ljava/util/Set;
 }
 
