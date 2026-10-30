@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.4.0] - kFSM v2
+
+* Add `State.isTerminal`, and show terminal states in `StateMachineUtilities.mermaid()` diagrams.
+* Fix `JooqOutbox` failing with `NoSuchMethodError` on jOOQ 3.19 and later.
+
 ## [2.3.0] - kFSM v2
 
 * Update outbox and pending request interfaces to return `Result` rather than throw exceptions.
